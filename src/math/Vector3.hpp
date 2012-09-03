@@ -63,11 +63,13 @@ template<typename T> struct Vector3 {
     }
 };
 
-template<typename T> Vector3<T> operator+(const Vector3<T>& a, const Vector3<T>& b) {
+template<typename T> Vector3<T> operator+(const Vector3<T>& a,
+                                          const Vector3<T>& b) {
     return Vector3<T>(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
-template<typename T> Vector3<T> operator-(const Vector3<T>& a, const Vector3<T>& b) {
+template<typename T> Vector3<T> operator-(const Vector3<T>& a,
+                                          const Vector3<T>& b) {
     return Vector3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
@@ -89,7 +91,8 @@ template<typename T> T dot(const Vector3<T>& a, const Vector3<T>& b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-template<typename T> Vector3<T> cross(const Vector3<T>& a, const Vector3<T>& b) {
+template<typename T> Vector3<T> cross(const Vector3<T>& a,
+                                      const Vector3<T>& b) {
     // TODO
     assert(false);
     return Vector3<T>();

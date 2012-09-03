@@ -36,14 +36,16 @@ template<typename T> struct Matrix4 {
     }
 };
 
-template<typename T> Matrix4<T> operator+(const Matrix4<T>& a, const Matrix4<T>& b) {
+template<typename T> Matrix4<T> operator+(const Matrix4<T>& a,
+                                          const Matrix4<T>& b) {
     Matrix4<T> result = a;
     result += b;
 
     return result;
 }
 
-template<typename T> Matrix4<T> operator-(const Matrix4<T>& a, const Matrix4<T>& b) {
+template<typename T> Matrix4<T> operator-(const Matrix4<T>& a,
+                                          const Matrix4<T>& b) {
     Matrix4<T> result = a;
     result -= b;
 
@@ -57,7 +59,8 @@ template<typename T> Matrix4<T> operator*(const Matrix4<T>& m, const T& t) {
     return result;
 }
 
-template<typename T> Matrix4<T> operator*(const Matrix4<T>& a, const Matrix4<T>& b) {
+template<typename T> Matrix4<T> operator*(const Matrix4<T>& a,
+                                          const Matrix4<T>& b) {
 
 }
 
