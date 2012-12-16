@@ -1,6 +1,8 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
+#include "core/GameObject.hpp"
+
 int main()
 {
     // create the window
