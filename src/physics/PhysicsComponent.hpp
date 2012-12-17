@@ -15,6 +15,10 @@ struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
     const Vector3f& getPosition() const {
         return state.position;
     }
+    
+    const Vector3f& getOrientation() const {
+        return state.orientation;
+    }
 
     const PhysicsState& getState() const {
         return state;
