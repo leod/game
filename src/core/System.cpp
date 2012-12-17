@@ -2,15 +2,15 @@
 
 namespace game {
 
-System::System(Family family)
-    : family(family) {
+System::System(FamilyId familyId)
+    : familyId(familyId) {
 }
 
 System::~System() {
 }
 
-const Family System::getFamily() const {
-    return family;
+const FamilyId System::getFamilyId() const {
+    return familyId;
 }
 
 void System::onRegister(Component*) {

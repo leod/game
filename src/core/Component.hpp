@@ -5,7 +5,7 @@
 
 namespace game {
 
-typedef int Family;
+typedef int FamilyId;
 
 struct Entity;
 struct EntityRegistry;
@@ -13,7 +13,7 @@ struct EntityRegistry;
 struct Component {
     virtual ~Component();
 
-    virtual const Family getFamily() const = 0;
+    virtual const FamilyId getFamilyId() const = 0;
 
 private:
     Entity* owner;
@@ -27,29 +27,32 @@ private:
 // generates a globally unique ID for the family.
 template <typename T>
 struct ComponentFamily : public Component {
-    static Family staticGetFamily() {
-        return family;
+    static FamilyId staticGetFamilyId() {
+        return familyId;
     }
 
-    virtual const Family getFamily() {
-        return family;
+    virtual const FamilyId getFamilyId() {
+        return familyId;
     }
 
 private:
-    static Family globalFamilyCounter;
+    static FamilyId globalFamilyCounter;
 
 	struct StaticCtor {
 		StaticCtor() {
-			family = globalFamilyCounter++;
+			familyId = globalFamilyCounter++;
 		}
 	};
 
     static StaticCtor staticCtor;
 	
-	static Family family;
+	static FamilyId familyId;
 };
 
-typedef std::map<Family, Component*> ComponentMap;
+typedef std::map<FamilyId, Component*> ComponentMap;
 typedef std::vector<Component*> ComponentList;
+
+template<typename T = Component>
+using ComponentListT = std::vector<T*>;
 
 } // namespace game

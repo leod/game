@@ -15,8 +15,8 @@ struct Entity {
         : id(id), components(components), registry(registry) {
     }
 
-    Component* component(Family family) {
-        auto it = components.find(family);
+    Component* component(FamilyId familyId) {
+        auto it = components.find(familyId);
         return it != components.end() ? it->second : nullptr;
     }
 
@@ -24,8 +24,8 @@ struct Entity {
         return dynamic_cast<T*>(component(T::staticGetFamily()));
     }
 
-    const Component* component(Family family) const {
-        auto it = components.find(family);
+    const Component* component(FamilyId familyId) const {
+        auto it = components.find(familyId);
         return it != components.end() ? it->second : nullptr;
     }
 

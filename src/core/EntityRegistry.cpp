@@ -9,10 +9,10 @@ EntityRegistry::EntityRegistry(SystemList systems)
     : biggestId() {
     for (auto s : systems) {
         // TODO: See if this limitation makes sense.
-        ASSERT_MSG(this->systems.find(s->getFamily()) == this->systems.end(),
+        ASSERT_MSG(this->systems.find(s->getFamilyId()) == this->systems.end(),
                    "Can't have two systems in the same family.");
 
-        this->systems[s->getFamily()] = s;
+        this->systems[s->getFamilyId()] = s;
     } 
 }
 
@@ -21,10 +21,10 @@ Entity* EntityRegistry::add(ComponentList components) {
     ComponentMap map;
 
     for (auto c : components) {
-        ASSERT_MSG(map.find(c->getFamily()) == map.end(),
+        ASSERT_MSG(map.find(c->getFamilyId()) == map.end(),
                    "Can't have two components in the same family.");
  
-        map[c->getFamily()] = c;
+        map[c->getFamilyId()] = c;
     } 
 
     // Create and register new entity
@@ -38,7 +38,7 @@ Entity* EntityRegistry::add(ComponentList components) {
 
     // Notify the systems about our new components
     for (auto c : components) {
-        auto it = systems.find(c->getFamily());
+        auto it = systems.find(c->getFamilyId());
 
         if (it != systems.end())
             it->second->onRegister(c);
