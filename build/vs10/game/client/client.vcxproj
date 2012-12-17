@@ -80,9 +80,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\core\Component.hpp" />
+    <ClInclude Include="..\..\..\..\src\core\GameObject.hpp" />
+    <ClInclude Include="..\..\..\..\src\math\BoundingBox.hpp" />
     <ClInclude Include="..\..\..\..\src\math\Matrix4.hpp" />
     <ClInclude Include="..\..\..\..\src\math\Vector2.hpp" />
     <ClInclude Include="..\..\..\..\src\math\Vector3.hpp" />
+    <ClInclude Include="..\..\..\..\src\net\NetComponent.hpp" />
+    <ClInclude Include="..\..\..\..\src\net\NetState.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\client\Main.cpp" />

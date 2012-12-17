@@ -14,11 +14,11 @@ struct EntityRegistry {
     Entity* get(EntityId);
     const Entity* get(EntityId) const;
 
-    ComponentList family(Family);
-    const ComponentList family(Family) const;
+    ComponentList family(FamilyId);
+    const ComponentList family(FamilyId) const;
 
-    System* system(Family);
-    const System* system(Family) const;
+    System* system(FamilyId);
+    const System* system(FamilyId) const;
 
 private:
     SystemMap systems;

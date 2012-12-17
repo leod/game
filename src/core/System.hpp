@@ -8,29 +8,29 @@
 namespace game {
 
 struct System {
-    System(Family family);
+    System(FamilyId familyId);
     virtual ~System();
 
-    const Family getFamily() const;
+    const FamilyId getFamilyId() const;
 
     virtual void onRegister(Component*);
     virtual void onUnregister(Component*);
 
 private:
-    const Family family;
+    const FamilyId familyId;
 };
 
 template<typename T> struct SystemBase {
     SystemBase()
-        : System(T::staticGetFamily()) {
+        : System(T::staticGetFamilyId()) {
     }
 
-    static Family staticGetFamily() {
-        return T::staticGetFamily();
+    static FamilyId staticGetFamilyId() {
+        return T::staticGetFamilyId();
     }
 };
 
 typedef std::vector<System*> SystemList;
-typedef std::map<Family, System*> SystemMap;
+typedef std::map<FamilyId, System*> SystemMap;
 
 } // namespace game
