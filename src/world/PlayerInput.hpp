@@ -12,7 +12,7 @@ struct PlayerInput {
     PlayerInput()
         : strafeLeft(),
           strafeRight(),
-          walkFoward(),
+          walkForward(),
           walkBackward() {
     }
 };

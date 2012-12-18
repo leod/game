@@ -1,11 +1,11 @@
-#include "graphcis/RenderSystem.hpp"
+#include "graphics/RenderSystem.hpp"
 
 namespace game {
 
-void RenderSystem::render(ComponentIt<RenderComponent> begin,
-                          ComponentIt<RenderComponent> end);
+void RenderSystem::render(ComponentItT<RenderComponent> begin,
+                          ComponentItT<RenderComponent> end) {
     for (auto it = begin; begin != end; ++it)
-        it->render();
+        (*it)->render();
 }
 
 } // namespace game

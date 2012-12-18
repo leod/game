@@ -10,7 +10,7 @@ void SFMLInputSource::dispatch() {
 }
 
 void SFMLInputSource::onWindowEvent(const sf::Event& event) {
-    events.push_back(event);
+    events.push(event);
 }
 
 void SFMLInputSource::dispatchOne(const sf::Event& event) {

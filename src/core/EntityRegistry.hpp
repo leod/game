@@ -4,6 +4,7 @@
 
 #include "core/Entity.hpp"
 #include "core/System.hpp"
+#include "core/Error.hpp"
 
 namespace game {
 
@@ -27,6 +28,8 @@ namespace detail {
             result = dynamic_cast<T*>(component);
             ASSERT_MSG(result != nullptr, "Component has invalid family.");
 #else
+            // AFAIK, static_cast produces undefined behavior if
+            // T isn't a subclass of Component.
             result = static_cast<T*>(component);
 #endif
             return result;
