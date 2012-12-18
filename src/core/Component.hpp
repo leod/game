@@ -49,5 +49,8 @@ private:
 	static FamilyId familyId;
 };
 
+template <typename T>
+FamilyId ComponentFamily<T>::familyId;
+
 
 } // namespace game
