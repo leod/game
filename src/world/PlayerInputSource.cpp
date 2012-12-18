@@ -6,20 +6,20 @@
 
 namespace game {
 
-PlayerInputSource(InputSource* source) {
-    source->onKeyPressed.bind(std::bind(
+PlayerInputSource::PlayerInputSource(InputSource* source) {
+    source->onKeyPressed.connect(std::bind(
             &PlayerInputSource::onKeyPressed,
             this, std::placeholders::_1));
-    source->onKeyReleased.bind(std::bind(
+    source->onKeyReleased.connect(std::bind(
             &PlayerInputSource::onKeyReleased,
             this, std::placeholders::_1));
-    source->onMouseButtonPressed.bind(std::bind(
+    source->onMouseButtonPressed.connect(std::bind(
             &PlayerInputSource::onMouseButtonPressed,
             this, std::placeholders::_1));
-    source->onMouseButtonReleased.bind(std::bind(
+    source->onMouseButtonReleased.connect(std::bind(
             &PlayerInputSource::onMouseButtonReleased,
             this, std::placeholders::_1));
-    source->onMouseMoved.bind(std::bind(
+    source->onMouseMoved.connect(std::bind(
             &PlayerInputSource::onMouseMoved,
             this, std::placeholders::_1));
 }
@@ -53,10 +53,13 @@ void PlayerInputSource::onKeyPressed(const KeyInput& input) {
 
         onPlayerInput(playerInput);
         break;
+
+    default:
+        break;
     }
 }
 
-void PlayerInputSource::onKeyReleased(const KeyReleased& input) {
+void PlayerInputSource::onKeyReleased(const KeyInput& input) {
     switch (input.code) {
     case Key::W:
         playerInput.walkForward = false;
@@ -80,6 +83,9 @@ void PlayerInputSource::onKeyReleased(const KeyReleased& input) {
         playerInput.strafeRight = false;
 
         onPlayerInput(playerInput);
+        break;
+
+    default:
         break;
     }
 }

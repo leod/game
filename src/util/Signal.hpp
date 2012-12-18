@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <functional>
 
 namespace game {
@@ -17,6 +18,7 @@ struct Signal {
             fn(values...); 
 
     }
+
 private:
     std::vector<std::function<void(Values...)>> fns;
 };

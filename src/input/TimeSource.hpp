@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Time.hpp"
+#include "util/Signal.hpp"
 
 namespace game {
 
