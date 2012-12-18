@@ -1,17 +1,19 @@
 #pragma once
 
-#include <SFML/Event.hpp>
+#include <queue>
+
+#include <SFML/Window/Event.hpp>
 
 #include "input/InputSource.hpp"
 
 namespace game {
 
 struct SFMLInputSource : public InputSource {
-    // Implements InputSource::update
-    void update();
+    // Implements InputSource::dispatch
+    void dispatch();
 
     // This function must be called whenever there is a new event on the window
-    void onNewEvent(const sf::Event&);
+    void onWindowEvent(const sf::Event&);
 
 private:
     // For now, we keep events in a queue

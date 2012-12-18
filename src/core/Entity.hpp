@@ -5,6 +5,7 @@
 namespace game {
 
 typedef int EntityId;
+typedef std::map<FamilyId, Component*> ComponentMap;
 
 struct EntityRegistry;
 

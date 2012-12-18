@@ -38,21 +38,16 @@ struct ComponentFamily : public Component {
 private:
     static FamilyId globalFamilyCounter;
 
-	struct StaticCtor {
-		StaticCtor() {
-			familyId = globalFamilyCounter++;
-		}
-	};
+    struct StaticCtor {
+        StaticCtor() {
+            familyId = globalFamilyCounter++;
+        }
+    };
 
     static StaticCtor staticCtor;
 	
 	static FamilyId familyId;
 };
 
-typedef std::map<FamilyId, Component*> ComponentMap;
-typedef std::vector<Component*> ComponentList;
-
-template<typename T = Component>
-using ComponentListT = std::vector<T*>;
 
 } // namespace game

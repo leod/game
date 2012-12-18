@@ -2,14 +2,14 @@
 
 namespace game {
 
-void SFMLInputSource::update() {
+void SFMLInputSource::dispatch() {
     while (!events.empty()) {
         dispatchOne(events.front());
         events.pop();
     }
 }
 
-void SFMLInputSource::onNewEvent(const sf::Event& event) {
+void SFMLInputSource::onWindowEvent(const sf::Event& event) {
     events.push_back(event);
 }
 

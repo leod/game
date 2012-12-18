@@ -13,7 +13,7 @@ struct NetComponent : public ComponentFamily<NetComponent> {
         : netStates(netStates) {
     }
 
-    void serialize(BitStream&);
+    void serialize(BitStream&) const;
     void unserialize(BitStream&);
 
 private:

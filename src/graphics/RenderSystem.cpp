@@ -2,9 +2,10 @@
 
 namespace game {
 
-void RenderSystem::render(ComponentListT<RenderComponent*> cs) {
-    for (auto c : cs)
-        c->render();
+void RenderSystem::render(ComponentIt<RenderComponent> begin,
+                          ComponentIt<RenderComponent> end);
+    for (auto it = begin; begin != end; ++it)
+        it->render();
 }
 
 } // namespace game

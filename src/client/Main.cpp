@@ -1,46 +1,60 @@
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include "core/GameObject.hpp"
+#include "core/EntityRegistry.hpp"
+#include "core/Time.hpp"
+#include "core/Tasks.hpp"
+#include "input/SFMLInputSource.hpp"
+#include "input/ClockTimeSource.hpp"
+#include "graphics/RenderSystem.hpp"
+
+using namespace game;
 
 int main()
 {
-    // create the window
     sf::Window window(sf::VideoMode(800, 600), "OpenGL", sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(false);
 
-    // load resources, initialize the OpenGL states, ...
+    SFMLInputSource input;
+    RenderSystem render;
+    EntityRegistry entities(SystemList {
+        &render     
+    });
+    Tasks tasks;
 
-    // run the main loop
     bool running = true;
-    while (running)
-    {
-        // handle events
-        sf::Event event;
-        while (window.pollEvent(event))
+
+    tasks.add(60, [&] () { input.dispatch(); });
+
+    input.onKeyPressed.connect([&] (KeyInput input) {
+        if (input.code == Key::Escape)
+            running = false; 
+    });
+
+    ClockTimeSource time;
+    Time deltaTime;
+
+    while (running) {
         {
-            if (event.type == sf::Event::Closed)
-            {
-                // end the program
-                running = false;
-            }
-            else if (event.type == sf::Event::Resized)
-            {
-                // adjust the viewport when the window is resized
-                glViewport(0, 0, event.size.width, event.size.height);
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed) {
+                    running = false;
+                    continue;
+                }
+
+                input.onWindowEvent(event);
             }
         }
 
-        // clear the buffers
+        tasks.run(deltaTime);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // draw...
-
-        // end the current frame (internally swaps the front and back buffers)
+        entities.withFamily(&RenderSystem::render, &render);
         window.display();
-    }
 
-    // release resources...
+        deltaTime = time.nextDelta();
+    }
 
     return 0;
 }
