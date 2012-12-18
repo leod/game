@@ -1,12 +1,14 @@
 #pragma once
 
+#include "math/Math.hpp"
+
 namespace game {
 
 struct PhysicsState {
-    Vector3f position;
-    Vector3f orientation; // Will probably be a quaternion
+    vec3 position;
+    vec3 orientation; // Will probably be a quaternion
 
-    PhysicsState(Vector3f position)
+    PhysicsState(vec3 position)
         : position(position), orientation() {
     }
 };

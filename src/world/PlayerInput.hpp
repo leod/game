@@ -1,13 +1,13 @@
 #pragma once
 
-#include "math/Vector2.hpp"
+#include "math/Math.hpp"
 
 namespace game {
 
 struct PlayerInput {
     bool strafeLeft, strafeRight,
          walkForward, walkBackward;
-    Vector2f orientation;
+    vec2 orientation;
 
     PlayerInput()
         : strafeLeft(),

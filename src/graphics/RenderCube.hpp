@@ -1,6 +1,5 @@
 #pragma once
 
-#include "math/Vector3.hpp"
 #include "graphics/RenderComponent.hpp"
 #include "physics/PhysicsComponent.hpp"
 

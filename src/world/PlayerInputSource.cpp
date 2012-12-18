@@ -2,11 +2,14 @@
 
 #include <functional>
 
+#include "math/Math.hpp"
 #include "input/InputSource.hpp"
 
 namespace game {
 
-PlayerInputSource::PlayerInputSource(InputSource* source) {
+PlayerInputSource::PlayerInputSource(sf::Window* window,
+                                     InputSource* source)
+    : window(window) {
     source->onKeyPressed.connect(std::bind(
             &PlayerInputSource::onKeyPressed,
             this, std::placeholders::_1));
@@ -97,6 +100,10 @@ void PlayerInputSource::onMouseButtonReleased(const MouseButtonInput& input) {
 }
 
 void PlayerInputSource::onMouseMoved(const MouseMoveInput& input) {
+    playerInput.orientation =
+            glm::normalize(vec2((float)input.x / window->getSize().x,
+                                (float)input.y / window->getSize().y));
+    onPlayerInput(playerInput);
 }
 
 } // namespace game
