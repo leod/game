@@ -10,9 +10,12 @@ namespace game {
 typedef std::function<void(void)> Task;
 
 struct TaskInfo {
+    Time period;
     Task task;
 
-    float period;
+    Time sleepTime;
+
+    TaskInfo(Time period, Task);
 };
 
 struct Tasks {
