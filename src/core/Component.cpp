@@ -8,7 +8,7 @@ Component::~Component() {
 
 }
 
-void Component::setOwner(Entity *newOwner) {
+void Component::setOwner(Entity* newOwner) {
     ASSERT_MSG(owner == nullptr, "Owner has already been set.");
     ASSERT_MSG(newOwner != nullptr, "Owner must be non-null.");
 
