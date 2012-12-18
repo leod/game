@@ -5,3 +5,7 @@
 
 using sf::Time;
 using sf::Clock;
+
+using sf::seconds;
+using sf::milliseconds;
+using sf::microseconds;
