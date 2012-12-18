@@ -18,7 +18,7 @@ struct Component {
 private:
     Entity* owner;
 
-    void setOwner(Entity *newOwner);
+    void setOwner(Entity* newOwner);
     friend class EntityRegistry;
 };
 
