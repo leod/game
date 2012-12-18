@@ -1,5 +1,7 @@
 #include "core/Tasks.hpp"
 
+#include <iostream>
+
 #include <algorithm>
 
 #include "core/Error.hpp"
@@ -26,15 +28,19 @@ void Tasks::run(Time delta) {
     std::make_heap(tasks.begin(), tasks.end(), isTaskBigger);
 
     do {
+        ASSERT(!tasks.empty());
+
         // Task is the task with the lowest timeUntilNextRun
-        auto task = tasks.front();
+        TaskInfo task = tasks.front();
 
         std::pop_heap(tasks.begin(), tasks.end(), isTaskBigger);
         tasks.pop_back();
 
         // If this task doesn't fit into the delta time, no task will
-        if (task.sleepTime > delta)
+        if (task.sleepTime > delta) {
+            tasks.push_back(task);
             break;
+        }
 
         task.task(); 
         task.sleepTime += task.period;
