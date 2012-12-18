@@ -20,7 +20,7 @@ private:
     const FamilyId familyId;
 };
 
-template<typename T> struct SystemBase {
+template<typename T> struct SystemBase : public System {
     SystemBase()
         : System(T::staticGetFamilyId()) {
     }
@@ -29,8 +29,5 @@ template<typename T> struct SystemBase {
         return T::staticGetFamilyId();
     }
 };
-
-typedef std::vector<System*> SystemList;
-typedef std::map<FamilyId, System*> SystemMap;
 
 } // namespace game

@@ -16,6 +16,19 @@ EntityRegistry::EntityRegistry(SystemList systems)
     } 
 }
 
+Entity* EntityRegistry::get(EntityId id) {
+    return entities[id];
+}
+
+const Entity* EntityRegistry::get(EntityId id) const {
+    auto it = entities.find(id);
+
+    ASSERT_MSG(it != entities.end(),
+               "Entity #" << id << " not found.");
+
+    return it->second;
+}
+
 Entity* EntityRegistry::add(ComponentList components) {
     // Convert component list to map
     ComponentMap map;
@@ -36,8 +49,11 @@ Entity* EntityRegistry::add(ComponentList components) {
 
     entities[id] = entity;
 
-    // Notify the systems about our new components
+    // Notify the systems about our new components and register
+    // the components in their family list
     for (auto c : components) {
+        families[c->getFamilyId()].push_back(c);
+
         auto it = systems.find(c->getFamilyId());
 
         if (it != systems.end())
@@ -45,19 +61,6 @@ Entity* EntityRegistry::add(ComponentList components) {
     }
 
     return entity;
-}
-
-Entity* EntityRegistry::get(EntityId id) {
-    return entities[id];
-}
-
-const Entity* EntityRegistry::get(EntityId id) const {
-    auto it = entities.find(id);
-
-    ASSERT_MSG(it != entities.end(),
-               "Entity #" << id << " not found.");
-
-    return it->second;
 }
 
 } // namespace game
