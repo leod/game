@@ -25,7 +25,7 @@ private:
 // ComponentFamily should be used as a baseclass for components
 // that define a family of components, as it automatically
 // generates a globally unique ID for the family.
-template <typename T>
+template<typename T>
 struct ComponentFamily : public Component {
     static FamilyId staticGetFamilyId() {
         return familyId;
@@ -49,8 +49,11 @@ private:
 	static FamilyId familyId;
 };
 
-template <typename T>
+template<typename T>
 FamilyId ComponentFamily<T>::familyId;
+
+template<typename T>
+using ComponentBase = ComponentFamily<T>;
 
 
 } // namespace game

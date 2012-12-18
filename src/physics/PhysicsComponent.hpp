@@ -1,22 +1,19 @@
 #pragma once
 
-#include "math/Vector3.hpp"
-#include "math/Vector2.hpp"
-
 #include "physics/PhysicsState.hpp"
 
 namespace game {
 
 struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
-    PhysicsComponent(const Vector3f& position)
+    PhysicsComponent(const vec3& position)
         : state(position) {
     }
 
-    const Vector3f& getPosition() const {
+    const vec3& getPosition() const {
         return state.position;
     }
     
-    const Vector3f& getOrientation() const {
+    const vec3& getOrientation() const {
         return state.orientation;
     }
 
