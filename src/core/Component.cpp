@@ -4,6 +4,10 @@
 
 namespace game {
 
+Component::Component()
+    : owner(nullptr) {
+}
+
 Component::~Component() {
 
 }
@@ -14,5 +18,7 @@ void Component::setOwner(Entity* newOwner) {
 
     owner = newOwner;
 }
+
+FamilyId Component::globalFamilyCounter;
 
 } // namespace game

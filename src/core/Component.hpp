@@ -1,7 +1,11 @@
 #pragma once
 
+#include <iostream>
+
 #include <vector>
 #include <map>
+
+#include "core/Error.hpp"
 
 namespace game {
 
@@ -11,6 +15,7 @@ struct Entity;
 struct EntityRegistry;
 
 struct Component {
+    Component();
     virtual ~Component();
 
     virtual const FamilyId getFamilyId() const = 0;
@@ -20,6 +25,9 @@ private:
 
     void setOwner(Entity* newOwner);
     friend class EntityRegistry;
+
+    static FamilyId globalFamilyCounter;
+    template<typename T> friend class ComponentFamily;
 };
 
 // ComponentFamily should be used as a baseclass for components
@@ -28,29 +36,28 @@ private:
 template<typename T>
 struct ComponentFamily : public Component {
     static FamilyId staticGetFamilyId() {
-        return familyId;
+        return familyId.familyId;
     }
 
-    virtual const FamilyId getFamilyId() {
-        return familyId;
+    virtual const FamilyId getFamilyId() const {
+        return familyId.familyId;
     }
 
 private:
-    static FamilyId globalFamilyCounter;
+    struct AutoFamilyId {
+        FamilyId familyId;
 
-    struct StaticCtor {
-        StaticCtor() {
-            familyId = globalFamilyCounter++;
+        AutoFamilyId()
+            : familyId(Component::globalFamilyCounter++) {
+            std::cout << familyId << std::endl;
         }
     };
 
-    static StaticCtor staticCtor;
-	
-	static FamilyId familyId;
+    static AutoFamilyId familyId;
 };
 
 template<typename T>
-FamilyId ComponentFamily<T>::familyId;
+typename ComponentFamily<T>::AutoFamilyId ComponentFamily<T>::familyId;
 
 template<typename T>
 using ComponentBase = ComponentFamily<T>;
