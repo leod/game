@@ -20,6 +20,10 @@ private:
     GLuint name;
 };
 
+void drawElements(Buffer<unsigned short> const&,
+                  GLenum mode,
+                  GLint count);
+
 template<typename T>
 Buffer<T>::Buffer(GLenum target, std::vector<T> const& data, GLenum usage)
     : target(target) {
