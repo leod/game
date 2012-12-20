@@ -36,11 +36,14 @@ private:
 template<typename T>
 struct ComponentFamily : public Component {
     static FamilyId staticGetFamilyId() {
+        ASSERT_MSG(familyId.familyId != 0,
+                   "AutoFamilyId not initialized properly.");
+
         return familyId.familyId;
     }
 
     virtual FamilyId const getFamilyId() const {
-        return familyId.familyId;
+        return staticGetFamilyId();
     }
 
 private:
@@ -48,7 +51,7 @@ private:
         FamilyId familyId;
 
         AutoFamilyId()
-            : familyId(Component::globalFamilyCounter++) {
+            : familyId(++Component::globalFamilyCounter) {
             std::cout << familyId << std::endl;
         }
     };
