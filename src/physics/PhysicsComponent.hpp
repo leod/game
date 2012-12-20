@@ -9,19 +9,19 @@ struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
         : state(position) {
     }
 
-    const vec3& getPosition() const {
+    vec3 const& getPosition() const {
         return state.position;
     }
     
-    const vec3& getOrientation() const {
+    vec3 const& getOrientation() const {
         return state.orientation;
     }
 
-    const PhysicsState& getState() const {
+    PhysicsState const& getState() const {
         return state;
     }
 
-    void setState(const PhysicsState& newState) {
+    void setState(PhysicsState const& newState) {
         state = newState;
     }
 

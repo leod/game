@@ -37,7 +37,7 @@ void PlayerInputComponent::tick() {
     physics->setState(state);
 }
 
-void PlayerInputComponent::onPlayerInput(const PlayerInput& input) {
+void PlayerInputComponent::onPlayerInput(PlayerInput const& input) {
     playerInput = input;
 }
 

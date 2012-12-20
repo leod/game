@@ -9,11 +9,11 @@ void SFMLInputSource::dispatch() {
     }
 }
 
-void SFMLInputSource::onWindowEvent(const sf::Event& event) {
+void SFMLInputSource::onWindowEvent(sf::Event const& event) {
     events.push(event);
 }
 
-void SFMLInputSource::dispatchOne(const sf::Event& event) {
+void SFMLInputSource::dispatchOne(sf::Event const& event) {
     switch (event.type) {
     case sf::Event::KeyPressed:
         onKeyPressed(event.key);

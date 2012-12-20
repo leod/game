@@ -18,7 +18,7 @@ struct Component {
     Component();
     virtual ~Component();
 
-    virtual const FamilyId getFamilyId() const = 0;
+    virtual FamilyId const getFamilyId() const = 0;
 
 private:
     Entity* owner;
@@ -39,7 +39,7 @@ struct ComponentFamily : public Component {
         return familyId.familyId;
     }
 
-    virtual const FamilyId getFamilyId() const {
+    virtual FamilyId const getFamilyId() const {
         return familyId.familyId;
     }
 

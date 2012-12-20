@@ -24,12 +24,12 @@ struct InputSource {
     // Dispatches signals according to newly arrived input
     virtual void dispatch() = 0;
 
-    Signal<const KeyInput&> onKeyPressed;
-    Signal<const KeyInput&> onKeyReleased;
-    Signal<const MouseButtonInput&> onMouseButtonPressed;
-    Signal<const MouseButtonInput&> onMouseButtonReleased;
-    Signal<const MouseMoveInput&> onMouseMoved;
-    Signal<const MouseWheelInput&> onMouseWheelMoved;
+    Signal<KeyInput const&> onKeyPressed;
+    Signal<KeyInput const&> onKeyReleased;
+    Signal<MouseButtonInput const&> onMouseButtonPressed;
+    Signal<MouseButtonInput const&> onMouseButtonReleased;
+    Signal<MouseMoveInput const&> onMouseMoved;
+    Signal<MouseWheelInput const&> onMouseWheelMoved;
 };
 
 } // namespace game

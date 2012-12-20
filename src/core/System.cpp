@@ -9,7 +9,7 @@ System::System(FamilyId familyId)
 System::~System() {
 }
 
-const FamilyId System::getFamilyId() const {
+FamilyId const System::getFamilyId() const {
     return familyId;
 }
 

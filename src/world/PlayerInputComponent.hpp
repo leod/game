@@ -19,7 +19,7 @@ private:
 
     PlayerInput playerInput;
 
-    void onPlayerInput(const PlayerInput&);
+    void onPlayerInput(PlayerInput const&);
 };
 
 }
