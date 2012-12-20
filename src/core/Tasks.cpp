@@ -14,7 +14,7 @@ TaskInfo::TaskInfo(Time period, Task task)
 
 bool isTaskBigger(const TaskInfo& a, const TaskInfo& b) {
     // We want tasks with a lower sleepTime first
-    return a.sleepTime < b.sleepTime; 
+    return a.sleepTime > b.sleepTime; 
 }
 
 void Tasks::add(float frequency, Task task) {
