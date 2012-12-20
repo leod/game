@@ -1,18 +1,23 @@
 #pragma once
 
 #include "core/Component.hpp"
+#include "world/PlayerInput.hpp"
+#include "world/TickComponent.hpp"
 
 namespace game {
 
 struct PlayerInputSource;
 struct PhysicsComponent;
-struct PlayerInput;
 
-struct PlayerInputComponent : public ComponentBase<PlayerInputComponent> {
+struct PlayerInputComponent : public TickComponent {
     PlayerInputComponent(PlayerInputSource*, PhysicsComponent*);
+
+    void tick();
 
 private:
     PhysicsComponent* physics;
+
+    PlayerInput playerInput;
 
     void onPlayerInput(const PlayerInput&);
 };
