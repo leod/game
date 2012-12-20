@@ -1,6 +1,6 @@
 #include "graphics/RenderCube.hpp"
 
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 namespace game {
 
