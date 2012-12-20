@@ -16,11 +16,13 @@ struct Buffer {
     void bind() const;
 
 private:
+    GLenum target;
     GLuint name;
 };
 
 template<typename T>
-Buffer<T>::Buffer(GLenum target, std::vector<T> const& data, GLenum usage) {
+Buffer<T>::Buffer(GLenum target, std::vector<T> const& data, GLenum usage)
+    : target(target) {
     glGenBuffers(1, &name);
     glBindBuffer(target, name);
     glBufferData(target, sizeof(T) * data.size(), &data[0], usage);
