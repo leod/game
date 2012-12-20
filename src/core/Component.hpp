@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include <vector>
 #include <map>
 
@@ -52,7 +50,6 @@ private:
 
         AutoFamilyId()
             : familyId(++Component::globalFamilyCounter) {
-            std::cout << familyId << std::endl;
         }
     };
 
