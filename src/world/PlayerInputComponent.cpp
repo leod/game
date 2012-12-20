@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include "math/Math.hpp"
 #include "physics/PhysicsComponent.hpp"
 #include "world/PlayerInput.hpp"
 #include "world/PlayerInputSource.hpp"
@@ -16,20 +17,28 @@ PlayerInputComponent::PlayerInputComponent(PlayerInputSource* source,
             this, std::placeholders::_1));
 }
 
-void PlayerInputComponent::onPlayerInput(const PlayerInput& input) {
+void PlayerInputComponent::tick() {
     // TODO: This is of course just for testing.
     PhysicsState state = physics->getState();
 
-    state.orientation.x = input.orientation.x;
-    state.orientation.z = input.orientation.y;
+    state.orientation.x = playerInput.orientation.x;
+    state.orientation.z = playerInput.orientation.y;
     state.orientation.y = 0;
 
-    if (input.walkForward)
-        state.position += state.orientation;
-    else if (input.walkBackward)
-        state.position -= state.orientation;
+    if (playerInput.walkForward)
+        state.position += 0.7f * state.orientation;
+    else if (playerInput.walkBackward)
+        state.position -= 0.7f * state.orientation;
+    else if (playerInput.strafeLeft)
+        state.position -= 0.5f * glm::cross(state.orientation, vec3(0, 1, 0));
+    else if (playerInput.strafeRight)
+        state.position += 0.5f * glm::cross(state.orientation, vec3(0, 1, 0));
 
     physics->setState(state);
+}
+
+void PlayerInputComponent::onPlayerInput(const PlayerInput& input) {
+    playerInput = input;
 }
 
 } // namespace game
