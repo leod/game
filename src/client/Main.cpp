@@ -30,7 +30,8 @@ ComponentList cube(vec3 position) {
 
 ComponentList player(vec3 position, PlayerInputSource* input) {
     PhysicsComponent* physics = new PhysicsComponent(vec3());
-    PlayerInputComponent* inputComponent = new PlayerInputComponent(input, physics);
+    PlayerInputComponent* inputComponent =
+            new PlayerInputComponent(input, physics);
     return ComponentList {
         physics,
         new RenderCube(physics, vec3(0, 0, 1)),
@@ -40,7 +41,8 @@ ComponentList player(vec3 position, PlayerInputSource* input) {
 
 int main()
 {
-    sf::Window window(sf::VideoMode(800, 600), "OpenGL", sf::Style::Default, sf::ContextSettings(32));
+    sf::Window window(sf::VideoMode(800, 600), "OpenGL",
+            sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(false);
     //window.setMouseCursorVisible(false);
 

@@ -11,8 +11,7 @@ RenderCube::RenderCube(PhysicsComponent const* physics, vec3 color)
 void RenderCube::render() {
     auto position = physics->getPosition();
     auto orientation = physics->getOrientation();
-	
-	auto angle = glm::atan(orientation.x, orientation.z);
+    auto angle = glm::atan(orientation.x, orientation.z);
  
     auto modelview = mat4();
     modelview = glm::translate(modelview, position);
