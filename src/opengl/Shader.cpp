@@ -33,9 +33,9 @@ Shader::Shader(GLenum type, std::string const& filename) {
             GLint logLength;
             char* log;
 
-            glGetProgramiv(name, GL_INFO_LOG_LENGTH, &logLength);
+            glGetShaderiv(name, GL_INFO_LOG_LENGTH, &logLength);
             log = static_cast<char*>(malloc(logLength));
-            glGetProgramInfoLog(name, logLength, NULL, log);
+            glGetShaderInfoLog(name, logLength, NULL, log);
             
             std::string str(log); 
             free(log);
@@ -51,14 +51,6 @@ Shader::~Shader() {
 
 GLuint Shader::getName() const {
     return name;
-}
-
-GLint Shader::getUniformLocation(char const* identifier) const {
-    return glGetUniformLocation(name, identifier);
-}
-
-GLint Shader::getAttribLocation(char const* identifier) const {
-    return glGetAttribLocation(name, identifier);
 }
 
 } // namespace game

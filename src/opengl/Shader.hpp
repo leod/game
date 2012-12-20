@@ -12,9 +12,6 @@ struct Shader {
 
     GLuint getName() const;
 
-    GLint getUniformLocation(char const*) const;
-    GLint getAttribLocation(char const*) const;
-
 private:
     GLuint name;
 };
