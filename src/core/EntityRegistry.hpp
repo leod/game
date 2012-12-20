@@ -20,24 +20,26 @@ typedef std::map<FamilyId, ComponentList> FamilyMap;
 // we lose type-information by only storing Component*s.
 // This way, we can eat our cake and then have it.
 namespace detail {
-    template<typename T>
-    struct CastComponent {
-        T* operator()(Component* component) const {
-            ASSERT(component != nullptr);
 
-            T* result;
+template<typename T>
+struct CastComponent {
+    T* operator()(Component* component) const {
+        ASSERT(component != nullptr);
+
+        T* result;
 #ifndef NDEBUG
-            result = dynamic_cast<T*>(component);
-            ASSERT_MSG(result != nullptr, "Component has invalid family.");
+        result = dynamic_cast<T*>(component);
+        ASSERT_MSG(result != nullptr, "Component has invalid family.");
 #else
-            // AFAIK, static_cast produces undefined behavior if
-            // T isn't a subclass of Component.
-            result = static_cast<T*>(component);
+        // AFAIK, static_cast produces undefined behavior if
+        // T isn't a subclass of Component.
+        result = static_cast<T*>(component);
 #endif
-            return result;
-        }
-    };
-}
+        return result;
+    }
+};
+
+} // namespace detail
 
 template<typename T>
 using ComponentItT =
