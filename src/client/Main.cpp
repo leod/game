@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <SFML/Window.hpp>
-#include <SFML/OpenGL.hpp>
+#include <GL/glew.h>
 
 #include "core/Component.hpp"
 #include "core/EntityRegistry.hpp"
