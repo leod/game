@@ -9,6 +9,29 @@ namespace game {
 
 struct Shader;
 
+namespace detail {
+
+template<typename T> struct AttribInfos {
+};
+
+template<> struct AttribInfos<vec2> {
+    enum {
+        Size = 2,
+        Type = GL_FLOAT,
+        Stride = sizeof(vec2)
+    };
+};
+
+template<> struct AttribInfos<vec3> {
+    enum {
+        Size = 3,
+        Type = GL_FLOAT,
+        Stride = sizeof(vec2)
+    };
+};
+
+} // namespace detail
+
 struct Program {
     Program(Shader const* vertex,
             Shader const* fragment,
@@ -31,8 +54,20 @@ struct Program {
     void setUniform(GLint location, mat4 const&) const;
 
     template<typename T>
-    void setAttribs(Buffer<T> const& buffer) {
+    void setAttribs(GLint location, Buffer<T> const& buffer) {
+        buffer.bind();
+        glVertexAttribPointer(
+            location, 
+            detail::AttribInfos<T>::Size,
+            detail::AttribInfos<T>::Type,
+            GL_FALSE,
+            detail::AttribInfos<T>::Stride,
+            nullptr);
+        glEnableVertexAttribArray(location);
+    }
 
+    void unsetAttribs(GLint location) {
+        glDisableVertexAttribArray(location);
     }
 
 private:
