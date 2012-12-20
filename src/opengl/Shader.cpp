@@ -53,4 +53,10 @@ GLuint Shader::getName() const {
     return name;
 }
 
+GLint Shader::getType() const {
+    GLint type;
+    glGetShaderiv(name, GL_SHADER_TYPE, &type);
+    return type;
+}
+
 } // namespace game
