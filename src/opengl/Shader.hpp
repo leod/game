@@ -11,6 +11,7 @@ struct Shader {
     ~Shader();
 
     GLuint getName() const;
+    GLint getType() const;
 
 private:
     GLuint name;
