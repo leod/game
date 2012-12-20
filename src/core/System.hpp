@@ -11,13 +11,13 @@ struct System {
     System(FamilyId familyId);
     virtual ~System();
 
-    const FamilyId getFamilyId() const;
+    FamilyId const getFamilyId() const;
 
     virtual void onRegister(Component*);
     virtual void onUnregister(Component*);
 
 private:
-    const FamilyId familyId;
+    FamilyId const familyId;
 };
 
 template<typename T> struct SystemBase : public System {

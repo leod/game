@@ -23,6 +23,8 @@ namespace detail {
     template<typename T>
     struct CastComponent {
         T* operator()(Component* component) const {
+            ASSERT(component != nullptr);
+
             T* result;
 #ifndef NDEBUG
             result = dynamic_cast<T*>(component);
@@ -48,7 +50,7 @@ struct EntityRegistry {
     EntityRegistry(SystemList);
 
     Entity* get(EntityId);
-    const Entity* get(EntityId) const;
+    Entity const* get(EntityId) const;
 
     // Creates a new entity from the given list of components and registers it.
     Entity* add(ComponentList);
@@ -56,12 +58,12 @@ struct EntityRegistry {
     // Returns the system that is registered as being responsible for the
     // given type of component (= family).
     // For example, system(RenderSystem::staticGetFamily()) returns the
-    // RenderSystem instance that was passed to the constructor
+    // SystemBase<RenderComponent> instance that was passed to the constructor
     // of the EntityRegistry (or nullptr, if none was given).
     //
     // The template functions can be used to hide some of the ugly clutter.
     System* system(FamilyId);
-    const System* system(FamilyId) const;
+    System const* system(FamilyId) const;
 
     template<typename T>
     T* system() {
@@ -69,7 +71,7 @@ struct EntityRegistry {
     }
 
     template<typename T>
-    const T* system() const {
+    T const* system() const {
         return dynamic_cast<T*>(system(T::staticGetFamilyId()));
     }
 
@@ -97,8 +99,8 @@ struct EntityRegistry {
 
     template<typename T, typename Target>
     void withFamily(void (Target::*f)(ComponentItT<T>, ComponentItT<T>),
-                    Target* target) {
-        (target->*f)(familyBegin<T>(), familyEnd<T>());
+                    Target& target) {
+        (target.*f)(familyBegin<T>(), familyEnd<T>());
     }
 
 private:

@@ -25,16 +25,16 @@ struct Entity {
         return dynamic_cast<T*>(component(T::staticGetFamilyId()));
     }
 
-    const Component* component(FamilyId familyId) const {
+    Component const* component(FamilyId familyId) const {
         auto it = components.find(familyId);
         return it != components.end() ? it->second : nullptr;
     }
 
-    template<typename T> const T* component() const {
+    template<typename T> T const* component() const {
         return dynamic_cast<T*>(component(T::staticGetFamilyId()));
     }
 
-    const EntityId getId() const {
+    EntityId const getId() const {
         return id;
     }
 
@@ -42,13 +42,13 @@ struct Entity {
         return registry;
     }
 
-    const EntityRegistry* getRegistry() const {
+    EntityRegistry const* getRegistry() const {
         return registry;
     }
 
 private:
-    const EntityId id;
-    const ComponentMap components;
+    EntityId const id;
+    ComponentMap const components;
 
     EntityRegistry* registry;
 };

@@ -20,7 +20,7 @@ Entity* EntityRegistry::get(EntityId id) {
     return entities[id];
 }
 
-const Entity* EntityRegistry::get(EntityId id) const {
+Entity const* EntityRegistry::get(EntityId id) const {
     auto it = entities.find(id);
 
     ASSERT_MSG(it != entities.end(),
@@ -55,7 +55,6 @@ Entity* EntityRegistry::add(ComponentList components) {
         families[c->getFamilyId()].push_back(c);
 
         auto it = systems.find(c->getFamilyId());
-
         if (it != systems.end())
             it->second->onRegister(c);
     }

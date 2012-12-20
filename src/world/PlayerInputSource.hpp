@@ -20,11 +20,11 @@ private:
 
     PlayerInput playerInput;
 
-    void onKeyPressed(const KeyInput&);
-    void onKeyReleased(const KeyInput&);
-    void onMouseButtonPressed(const MouseButtonInput&);
-    void onMouseButtonReleased(const MouseButtonInput&);
-    void onMouseMoved(const MouseMoveInput&);
+    void onKeyPressed(KeyInput const&);
+    void onKeyReleased(KeyInput const&);
+    void onMouseButtonPressed(MouseButtonInput const&);
+    void onMouseButtonReleased(MouseButtonInput const&);
+    void onMouseMoved(MouseMoveInput const&);
 };
 
 } // namespace game

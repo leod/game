@@ -12,7 +12,7 @@ TaskInfo::TaskInfo(Time period, Task task)
     : period(period), task(task), sleepTime(Time::Zero) {
 }
 
-bool isTaskBigger(const TaskInfo& a, const TaskInfo& b) {
+bool isTaskBigger(TaskInfo const& a, TaskInfo const& b) {
     // We want tasks with a lower sleepTime first
     return a.sleepTime > b.sleepTime; 
 }

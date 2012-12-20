@@ -28,7 +28,7 @@ PlayerInputSource::PlayerInputSource(sf::Window* window,
             this, std::placeholders::_1));
 }
 
-void PlayerInputSource::onKeyPressed(const KeyInput& input) {
+void PlayerInputSource::onKeyPressed(KeyInput const& input) {
     switch (input.code) {
     case Key::W:
         playerInput.walkBackward = false;
@@ -63,7 +63,7 @@ void PlayerInputSource::onKeyPressed(const KeyInput& input) {
     }
 }
 
-void PlayerInputSource::onKeyReleased(const KeyInput& input) {
+void PlayerInputSource::onKeyReleased(KeyInput const& input) {
     switch (input.code) {
     case Key::W:
         playerInput.walkForward = false;
@@ -94,13 +94,13 @@ void PlayerInputSource::onKeyReleased(const KeyInput& input) {
     }
 }
 
-void PlayerInputSource::onMouseButtonPressed(const MouseButtonInput& input) {
+void PlayerInputSource::onMouseButtonPressed(MouseButtonInput const& input) {
 }
 
-void PlayerInputSource::onMouseButtonReleased(const MouseButtonInput& input) {
+void PlayerInputSource::onMouseButtonReleased(MouseButtonInput const& input) {
 }
 
-void PlayerInputSource::onMouseMoved(const MouseMoveInput& input) {
+void PlayerInputSource::onMouseMoved(MouseMoveInput const& input) {
     vec2 mouse = vec2(input.x, input.y);
     vec2 center = vec2(window->getSize().x / 2, window->getSize().y / 2);
     playerInput.orientation = -glm::normalize(mouse - center);

@@ -9,7 +9,7 @@ struct PhysicsState {
     vec3 orientation; // Will probably be a quaternion
 
     PhysicsState(vec3 position)
-        : position(position), orientation() {
+        : position(position), orientation(0, 0, 0) {
     }
 };
 
