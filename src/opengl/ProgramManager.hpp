@@ -7,10 +7,10 @@
 
 #include <GL/glew.h>
 
-namespace game {
+#include "opengl/Shader.hpp"
+#include "opengl/Program.hpp"
 
-struct Shader;
-struct Program;
+namespace game {
 
 struct ProgramManager {
     Program* load(std::string const& vertexFilename,

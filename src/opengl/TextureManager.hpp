@@ -4,9 +4,9 @@
 #include <map>
 #include <memory>
 
-namespace game {
+#include "opengl/Texture.hpp"
 
-struct Texture;
+namespace game {
 
 struct TextureManager {
     Texture* load(std::string const& filename);

@@ -9,6 +9,8 @@
 #include "core/Tasks.hpp"
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
+#include "opengl/TextureManager.hpp"
+#include "opengl/ProgramManager.hpp"
 #include "graphics/RenderSystem.hpp"
 #include "graphics/RenderCube.hpp"
 #include "physics/PhysicsComponent.hpp"
@@ -47,7 +49,9 @@ int main()
     //window.setMouseCursorVisible(false);
 
     SFMLInputSource input;
-    RenderSystem render(&window);
+    TextureManager textures;
+    ProgramManager programs;
+    RenderSystem render(window, textures, programs);
     TickSystem ticks;
     EntityRegistry entities(SystemList {
         &render,
