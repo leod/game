@@ -1,6 +1,6 @@
 ROOT="../.."
 SRC="$ROOT/src"
-FILES="$SRC/client/*.cpp $SRC/core/*.cpp $SRC/graphics/*.cpp $SRC/input/*.cpp $SRC/world/*.cpp"
+FILES="$SRC/client/*.cpp $SRC/core/*.cpp $SRC/graphics/*.cpp $SRC/input/*.cpp $SRC/world/*.cpp $SRC/opengl/*.cpp"
 INCLUDE="-I$ROOT/src -I$ROOT/lib/ -I$ROOT/lib/SFML/include"
 LIB="-L$ROOT/lib/SFML/lib"
 LINK="-lsfml-graphics-s -lsfml-window-s -lsfml-system-s"
