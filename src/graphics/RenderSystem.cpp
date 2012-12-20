@@ -4,16 +4,25 @@
 
 namespace game {
 
-RenderSystem::RenderSystem(sf::Window* window)
-    : window(window) {
+RenderSystem::RenderSystem(sf::Window const& window,
+                           TextureManager& textures,
+                           ProgramManager& programs)
+    : window(window), textures(textures), programs(programs) {
+}
+
+TextureManager& RenderSystem::getTextures() {
+    return textures;
+}
+
+ProgramManager& RenderSystem::getPrograms() {
+    return programs;
 }
 
 void RenderSystem::render(ComponentItT<RenderComponent> begin,
                           ComponentItT<RenderComponent> end) {
     auto projection = glm::perspectiveFov(90.0f,
-            //(float)window->getSize().x / window->getSize().y,
-            (float)window->getSize().x,
-            (float)window->getSize().y,
+            (float)window.getSize().x,
+            (float)window.getSize().y,
             1.0f, 1000.0f);
     auto camera = glm::lookAt(cameraPosition, cameraTarget, vec3(0, 1, 0));
 

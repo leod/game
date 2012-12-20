@@ -1,7 +1,5 @@
 #include "opengl/TextureManager.hpp"
 
-#include "opengl/Texture.hpp"
-
 namespace game {
 
 Texture* TextureManager::load(std::string const& filename) {

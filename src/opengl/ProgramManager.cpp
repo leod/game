@@ -1,8 +1,6 @@
 #include "opengl/ProgramManager.hpp"
 
 #include "core/Error.hpp"
-#include "opengl/Shader.hpp"
-#include "opengl/Program.hpp"
 
 namespace game {
 

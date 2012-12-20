@@ -9,8 +9,16 @@
 
 namespace game {
 
+struct TextureManager;
+struct ProgramManager;
+
 struct RenderSystem : public SystemBase<RenderComponent> {
-    RenderSystem(sf::Window* window);
+    RenderSystem(sf::Window const& window,
+                 TextureManager& textures,
+                 ProgramManager& programs);
+
+    TextureManager& getTextures();
+    ProgramManager& getPrograms();
 
     void render(ComponentItT<RenderComponent> begin,
                 ComponentItT<RenderComponent> end);
@@ -18,7 +26,9 @@ struct RenderSystem : public SystemBase<RenderComponent> {
     void setCamera(vec3 position, vec3 target);
 
 private:
-    sf::Window* window;
+    sf::Window const& window;
+    TextureManager& textures;
+    ProgramManager& programs;
 
     vec3 cameraPosition, cameraTarget;
 };
