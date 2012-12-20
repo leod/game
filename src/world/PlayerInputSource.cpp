@@ -1,5 +1,6 @@
 #include "world/PlayerInputSource.hpp"
 
+#include <iostream>
 #include <functional>
 
 #include "math/Math.hpp"
@@ -100,9 +101,9 @@ void PlayerInputSource::onMouseButtonReleased(const MouseButtonInput& input) {
 }
 
 void PlayerInputSource::onMouseMoved(const MouseMoveInput& input) {
-    playerInput.orientation =
-            glm::normalize(vec2((float)input.x / window->getSize().x,
-                                (float)input.y / window->getSize().y));
+    vec2 mouse = vec2(input.x, input.y);
+    vec2 center = vec2(window->getSize().x / 2, window->getSize().y / 2);
+    playerInput.orientation = -glm::normalize(mouse - center);
     onPlayerInput(playerInput);
 }
 
