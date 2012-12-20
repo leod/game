@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 #include "math/Math.hpp"
+#include "opengl/Buffer.hpp"
 
 namespace game {
 
@@ -28,6 +29,11 @@ struct Program {
     void setUniform(GLint location, mat2 const&) const;
     void setUniform(GLint location, mat3 const&) const;
     void setUniform(GLint location, mat4 const&) const;
+
+    template<typename T>
+    void setAttribs(Buffer<T> const& buffer) {
+
+    }
 
 private:
     GLint name;
