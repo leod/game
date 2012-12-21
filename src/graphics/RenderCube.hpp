@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/Math.hpp"
+#include "opengl/Buffer.hpp"
 #include "graphics/RenderComponent.hpp"
 #include "physics/PhysicsComponent.hpp"
 
@@ -15,6 +16,8 @@ struct RenderCube : public RenderComponent {
 private:
     PhysicsComponent const* physics;
     vec3 color;
+    Buffer<vec3> positions;
+    Buffer<GLushort> indices;
 };
 
 } // namespace game

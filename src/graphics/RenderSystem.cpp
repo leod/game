@@ -20,18 +20,6 @@ ProgramManager& RenderSystem::getPrograms() {
 
 void RenderSystem::render(ComponentItT<RenderComponent> begin,
                           ComponentItT<RenderComponent> end) {
-    auto projection = glm::perspectiveFov(90.0f,
-            (float)window.getSize().x,
-            (float)window.getSize().y,
-            1.0f, 1000.0f);
-    auto camera = glm::lookAt(cameraPosition, cameraTarget, vec3(0, 1, 0));
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(glm::value_ptr(projection));
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(glm::value_ptr(camera));
-
     for (auto it = begin; it != end; ++it) {
         (*it)->render();
     }
@@ -40,6 +28,19 @@ void RenderSystem::render(ComponentItT<RenderComponent> begin,
 void RenderSystem::setCamera(vec3 position, vec3 target) {
     cameraPosition = position;
     cameraTarget = target;
+}
+
+mat4 RenderSystem::getProjection() const {
+    auto projection = glm::perspectiveFov(90.0f,
+            (float)window.getSize().x,
+            (float)window.getSize().y,
+            1.0f, 1000.0f);
+    return projection;
+}
+
+mat4 RenderSystem::getModelview() const {
+    auto camera = glm::lookAt(cameraPosition, cameraTarget, vec3(0, 1, 0));
+    return camera;
 }
 
 } // namespace game

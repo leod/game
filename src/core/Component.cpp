@@ -1,6 +1,7 @@
 #include "core/Component.hpp"
 
 #include "core/Error.hpp"
+#include "core/Entity.hpp"
 
 namespace game {
 
@@ -10,6 +11,22 @@ Component::Component()
 
 Component::~Component() {
 
+}
+
+Entity* Component::getOwner() {
+    return owner;
+}
+
+Entity const* Component::getOwner() const {
+    return owner;
+}
+
+EntityRegistry* Component::getRegistry() {
+    return owner->registry;
+}
+
+EntityRegistry const* Component::getRegistry() const {
+    return owner->registry;
 }
 
 void Component::setOwner(Entity* newOwner) {

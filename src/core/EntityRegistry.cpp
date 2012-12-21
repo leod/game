@@ -62,4 +62,12 @@ Entity* EntityRegistry::add(ComponentList components) {
     return entity;
 }
 
+System* EntityRegistry::system(FamilyId familyId) {
+    return systems[familyId];
+}
+
+System const* EntityRegistry::system(FamilyId familyId) const {
+    return systems.find(familyId)->second;
+}
+
 } // namespace game
