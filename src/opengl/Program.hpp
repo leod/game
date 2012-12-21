@@ -26,7 +26,7 @@ template<> struct AttribInfos<vec3> {
     enum {
         Size = 3,
         Type = GL_FLOAT,
-        Stride = sizeof(vec2)
+        Stride = sizeof(vec3)
     };
 };
 

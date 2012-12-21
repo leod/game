@@ -26,7 +26,7 @@ struct RenderSystem : public SystemBase<RenderComponent> {
     void setCamera(vec3 position, vec3 target);
 
     mat4 getProjection() const;
-    mat4 getModelview() const;
+    mat4 getView() const;
 
 private:
     sf::Window const& window;

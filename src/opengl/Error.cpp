@@ -13,7 +13,7 @@ void checkGLError() {
     if (error == GL_NO_ERROR)
        return; 
 
-    throw new std::runtime_error(
+    throw std::runtime_error(
             reinterpret_cast<char const*>(gluErrorString(error)));
 }
 

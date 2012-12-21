@@ -26,7 +26,7 @@ private:
     GLuint name;
 };
 
-void drawElements(Buffer<unsigned short> const&,
+void drawElements(Buffer<GLushort> const&,
                   GLenum mode,
                   GLint count = 0);
 
