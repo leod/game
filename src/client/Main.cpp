@@ -48,6 +48,17 @@ int main()
     window.setVerticalSyncEnabled(false);
     //window.setMouseCursorVisible(false);
 
+    // Now that we have an OpenGL context, we can initialize GLEW
+    {
+        auto err = glewInit();
+        if (err != GLEW_OK) {
+            std::cerr << "Failed to initialize GLEW: "
+                      << glewGetErrorString(err) << "."
+                      << std::endl;
+            return 1;
+        }
+    }
+
     SFMLInputSource input;
     TextureManager textures;
     ProgramManager programs;

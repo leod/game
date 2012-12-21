@@ -54,7 +54,7 @@ struct Program {
     void setUniform(GLint location, mat4 const&) const;
 
     template<typename T>
-    void setAttribs(GLint location, Buffer<T> const& buffer) {
+    void setAttrib(GLint location, Buffer<T> const& buffer) {
         buffer.bind();
         glVertexAttribPointer(
             location, 
@@ -66,7 +66,7 @@ struct Program {
         glEnableVertexAttribArray(location);
     }
 
-    void unsetAttribs(GLint location) {
+    void unsetAttrib(GLint location) {
         glDisableVertexAttribArray(location);
     }
 

@@ -4,22 +4,27 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <iostream>
 
 namespace game {
 
 Shader::Shader(GLenum type, std::string const& filename) {
     {
-        std::ifstream file(filename);
+        std::ifstream file(filename, std::ios::in);
 
-        if (!file.good())
+        if (!file)
             throw std::runtime_error("File " + filename + " not found.");
 
-        std::stringstream ss;
-        ss << filename;
+        // Read whole file into contents
+        std::string contents;
+        file.seekg(0, std::ios::end);
+        contents.resize(file.tellg());
+        file.seekg(0, std::ios::beg);
+        file.read(&contents[0], contents.size());
         file.close();
 
-        char const* source = ss.str().c_str();
-        GLint sourceLength = ss.str().size();
+        char const* source = contents.c_str();
+        GLint sourceLength = contents.size();
 
         name = glCreateShader(type);
         glShaderSource(name, 1, &source, &sourceLength);
@@ -40,7 +45,7 @@ Shader::Shader(GLenum type, std::string const& filename) {
             std::string str(log); 
             free(log);
 
-            throw std::runtime_error(str);
+            throw std::runtime_error("Error in " + filename + ": " + str);
         }
     }
 }

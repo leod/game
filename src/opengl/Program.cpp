@@ -1,6 +1,7 @@
 #include "opengl/Program.hpp"
 
 #include <stdexcept>
+#include <iostream>
 
 #include "core/Error.hpp"
 #include "opengl/Shader.hpp"
@@ -17,6 +18,8 @@ Program::Program(Shader const* vertex,
     glAttachShader(name, vertex->getName());
     glAttachShader(name, fragment->getName());
     if (geometry) glAttachShader(name, geometry->getName());
+
+    glLinkProgram(name);
 
     {
         GLint programOk;
