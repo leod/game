@@ -38,7 +38,7 @@ mat4 RenderSystem::getProjection() const {
     return projection;
 }
 
-mat4 RenderSystem::getModelview() const {
+mat4 RenderSystem::getView() const {
     auto camera = glm::lookAt(cameraPosition, cameraTarget, vec3(0, 1, 0));
     return camera;
 }
