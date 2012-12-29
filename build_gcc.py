@@ -58,6 +58,4 @@ def rebuild():
     clean()
     build()
 
-ds = ['src/', '.']
-#main(parallel_ok=False, jobs=5, dirs=ds)
 main()
