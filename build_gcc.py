@@ -60,4 +60,4 @@ def rebuild():
 
 ds = ['src/', '.']
 #main(parallel_ok=False, jobs=5, dirs=ds)
-main(dirs=ds, runner='atimes_runner')
+main()
