@@ -8,6 +8,20 @@
 
 namespace game {
 
+static std::string readFile(std::string const& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    std::string contents;
+
+    while (file.good()) {
+        char c;
+        file.read(&c, 1);
+
+        contents += c;
+    }
+
+    return contents;
+}
+
 Shader::Shader(GLenum type, std::string const& filename) {
     {
         std::ifstream file(filename, std::ios::in);
@@ -15,14 +29,7 @@ Shader::Shader(GLenum type, std::string const& filename) {
         if (!file)
             throw std::runtime_error("File " + filename + " not found.");
 
-        // Read whole file into contents
-        std::string contents;
-        file.seekg(0, std::ios::end);
-        contents.resize(file.tellg());
-        file.seekg(0, std::ios::beg);
-        file.read(&contents[0], contents.size());
-        file.close();
-
+        std::string contents = readFile(filename);
         char const* source = contents.c_str();
         GLint sourceLength = contents.size();
 
@@ -39,7 +46,7 @@ Shader::Shader(GLenum type, std::string const& filename) {
             char* log;
 
             glGetShaderiv(name, GL_INFO_LOG_LENGTH, &logLength);
-            log = static_cast<char*>(malloc(logLength));
+            log = static_cast<char*>(malloc(logLength + 1));
             glGetShaderInfoLog(name, logLength, NULL, log);
             
             std::string str(log); 

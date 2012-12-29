@@ -33,15 +33,18 @@ void RenderCube::render() {
         auto angle = glm::atan(orientation.x, orientation.z);
 
         model = glm::translate(model, position);
-        model = glm::rotate(model, glm::degrees(angle), vec3(0, 1, 0));
+        model = glm::rotate(model, glm::degrees(angle) - 90, vec3(0, 1, 0));
+        model = glm::scale(model, vec3(3, 3, 3));
     }
 
     program->bind();
     program->setUniform(program->getUniformLocation("projection"),
                         system->getProjection());
-    program->setUniform(program->getUniformLocation("modelview"),
-                        system->getView() * model);
-    program->setUniform(program->getUniformLocation("color"),
+    program->setUniform(program->getUniformLocation("view"),
+                        system->getView());
+    program->setUniform(program->getUniformLocation("model"),
+                        model);
+    program->setUniform(program->getUniformLocation("diffuse"),
                         color);
     program->setAttrib(0, positions);
     program->setAttrib(1, normals);
@@ -68,6 +71,8 @@ void RenderCube::render() {
     }
 
     program->unsetAttrib(program->getAttribLocation("position"));
+    program->unsetAttrib(program->getAttribLocation("normal"));
+    program->unbind();
 }
 
 std::vector<vec3> rawPositions = std::vector<vec3> {

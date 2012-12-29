@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include <GL/glew.h>
 
 #include "core/Error.hpp"
@@ -44,6 +42,7 @@ struct Program {
 
     GLint getName() const;
     void bind() const;
+    void unbind() const;
 
     GLuint getUniformLocation(char const*) const;
     GLuint getAttribLocation(char const*) const;
@@ -63,7 +62,6 @@ struct Program {
         ASSERT(detail::AttribInfos<T>::Size >= 1 &&
                detail::AttribInfos<T>::Size <= 4);
         ASSERT(detail::AttribInfos<T>::Stride >= 0);
-        std::cout << location << std::endl;
 
         buffer.bind();
         glVertexAttribPointer(

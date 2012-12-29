@@ -44,9 +44,9 @@ ComponentList player(vec3 position, PlayerInputSource* input) {
 
 int main()
 {
-    sf::Window window(sf::VideoMode(800, 600), "OpenGL",
+    sf::Window window(sf::VideoMode(1280, 1024), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
-    window.setVerticalSyncEnabled(false);
+    window.setVerticalSyncEnabled(true);
     //window.setMouseCursorVisible(false);
 
     // Now that we have an OpenGL context, we can initialize GLEW
@@ -74,7 +74,7 @@ int main()
     bool running = true;
 
     tasks.add(60, [&] () { input.dispatch(); });
-    tasks.add(30, [&] () { entities.withFamily(&TickSystem::tick, ticks); });
+    tasks.add(60, [&] () { entities.withFamily(&TickSystem::tick, ticks); });
 
     input.onKeyPressed.connect([&] (KeyInput input) {
         if (input.code == Key::Escape)
@@ -86,7 +86,7 @@ int main()
 
     PlayerInputSource playerInput(&window, &input);
     Entity* playerEnt = entities.add(player(vec3(), &playerInput));
-    //entities.add(cube(vec3(2, 0, -15)));
+    entities.add(cube(vec3(2, 0, -15)));
 
     while (running) {
         {
@@ -107,16 +107,23 @@ int main()
         {
             auto playerPhys = playerEnt->component<PhysicsComponent>();
 
-            vec3 cameraPosition = playerPhys->getPosition() + vec3(0, 1, -1);
+            vec3 cameraPosition = playerPhys->getPosition() +
+                                  vec3(0, 8, -0.001);
             vec3 cameraTarget = playerPhys->getPosition();
 
             render.setCamera(cameraPosition, cameraTarget);
         }
         
         glEnable(GL_DEPTH_TEST);
+        glClearColor(0.3, 0.3, 0.3, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /*glBegin(GL_QUADS);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadMatrixf(glm::value_ptr(render.getView()));
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf(glm::value_ptr(render.getProjection()));
+
+        glBegin(GL_QUADS);
         glColor3f(0.7, 0.7, 0.7);
         glVertex3f(-35, -1, -35);
         glColor3f(0.1, 0.1, 0.1);
@@ -125,7 +132,7 @@ int main()
         glVertex3f(35, -1, 35);
         glColor3f(0.5, 0.5, 0.5);
         glVertex3f(35, -1, -35);
-        glEnd();*/
+        glEnd();
 
         entities.withFamily(&RenderSystem::render, render);
         
