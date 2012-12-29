@@ -23,13 +23,9 @@ RenderCube::RenderCube(PhysicsComponent const* physics, vec3 color)
 }
 
 void RenderCube::render() {
-    checkGLError("rendercube start");
-
     auto system = getRegistry()->system<RenderSystem>();
     auto program = system->getPrograms().load("shaders/cube_vertex.glsl",
                                               "shaders/cube_fragment.glsl");
-    checkGLError("rendercube leload::");
-
     auto model = mat4();
     {
         auto position = physics->getPosition();
@@ -47,15 +43,9 @@ void RenderCube::render() {
                         system->getView() * model);
     program->setUniform(program->getUniformLocation("color"),
                         color);
-    program->setAttrib(0,
-                       positions);
-    checkGLError("rendercube middle'");
-program->getAttribLocation("normal");
-    checkGLError("whatdafuck middle'");
-    program->setAttrib(1,
-                       normals);
+    program->setAttrib(0, positions);
+    program->setAttrib(1, normals);
 
-    checkGLError("rendercube middle");
     indices.bind();
 
     {
@@ -78,7 +68,6 @@ program->getAttribLocation("normal");
     }
 
     program->unsetAttrib(program->getAttribLocation("position"));
-    checkGLError("rendercube end");
 }
 
 std::vector<vec3> rawPositions = std::vector<vec3> {

@@ -66,7 +66,6 @@ struct Program {
         std::cout << location << std::endl;
 
         buffer.bind();
-        checkGLError("yomamu");
         glVertexAttribPointer(
             location, 
             detail::AttribInfos<T>::Size,
@@ -74,9 +73,7 @@ struct Program {
             GL_FALSE,
             detail::AttribInfos<T>::Stride,
             nullptr);
-        checkGLError("yomam");
         glEnableVertexAttribArray(location);
-        checkGLError("yomamo");
     }
 
     void unsetAttrib(GLuint location) {
