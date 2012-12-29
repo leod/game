@@ -16,8 +16,10 @@ struct RenderCube : public RenderComponent {
 private:
     PhysicsComponent const* physics;
     vec3 color;
+
     Buffer<vec3> positions;
-    Buffer<GLushort> indices;
+    Buffer<vec3> normals;
+    Buffer<GLshort> indices;
 };
 
 } // namespace game

@@ -7,5 +7,5 @@ LINK="-lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lglu32 -lopengl32"
 OUT="$ROOT/game.exe"
 DEFINES="-DSFML_STATIC -DGLEW_STATIC"
 
-"C:/MinGW/bin/g++.exe" -O3 -std=c++11 -g -Wall -o$OUT $INCLUDE $LIB $DEFINES $FILES $LINK 
+"C:/MinGW/bin/g++.exe" -std=c++11 -g -Wall -o$OUT $INCLUDE $LIB $DEFINES $FILES $LINK 
 
