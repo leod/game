@@ -34,7 +34,7 @@ mat4 RenderSystem::getProjection() const {
     auto projection = glm::perspectiveFov(90.0f,
             (float)window.getSize().x,
             (float)window.getSize().y,
-            1.0f, 1000.0f);
+            0.1f, 1000.0f);
     return projection;
 }
 

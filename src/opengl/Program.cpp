@@ -53,6 +53,10 @@ void Program::bind() const {
     glUseProgram(name);
 }
 
+void Program::unbind() const {
+    glUseProgram(0);
+}
+
 GLuint Program::getUniformLocation(char const* identifier) const {
     return glGetUniformLocation(name, identifier);
 }

@@ -3,13 +3,14 @@ from fabricate import *
 
 target = 'game'
 cflags = '-Wall -g -std=c++11'.split()
-libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
-        'opengl32',]
 
 src_dir = 'src'
-include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',]
-lib_dirs = ['lib/SFML/lib',]
+include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
+                'lib/enet/include']
+lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
 defines = ['SFML_STATIC', 'GLEW_STATIC']
+libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
+        'opengl32', 'enet']
 
 packages = [
     ('client', ['Main',]),
