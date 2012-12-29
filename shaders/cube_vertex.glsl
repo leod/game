@@ -1,11 +1,14 @@
 #version 330
 
-in vec4 position;
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
 
 uniform mat4 projection;
 uniform mat4 modelview;
 
 void main() {
-    gl_Position = projection * modelview * position;
+    gl_Position = projection *
+                  modelview *
+                  vec4(position.x, position.y, position.z, 1);
 }
 

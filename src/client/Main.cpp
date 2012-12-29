@@ -107,7 +107,7 @@ int main()
         {
             auto playerPhys = playerEnt->component<PhysicsComponent>();
 
-            vec3 cameraPosition = playerPhys->getPosition() + vec3(0, 5, -1);
+            vec3 cameraPosition = playerPhys->getPosition() + vec3(0, 1, -1);
             vec3 cameraTarget = playerPhys->getPosition();
 
             render.setCamera(cameraPosition, cameraTarget);

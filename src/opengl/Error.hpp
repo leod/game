@@ -1,7 +1,9 @@
 #pragma once
 
+#include <string>
+
 namespace game {
 
-void checkGLError();
+void checkGLError(std::string const& location = "");
 
 } // namespace game
