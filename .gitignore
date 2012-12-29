@@ -1,17 +1,9 @@
-# Compiled object files
-*.slo
-*.lo
+# Binaries
 *.o
-
 *.exe
-
-# Compiled dynamic libraries
-*.so
-
-# Compiled static libraries
-*.lai
-*.la
+*.dll
 *.a
+*.pyc
 
 # Visual Studio files
 *.vcxproj.filters
@@ -23,5 +15,7 @@ ipch/
 Debug/
 Release/
 
-# Vim
 *.swp
+lib/
+fabricate.py
+.deps
