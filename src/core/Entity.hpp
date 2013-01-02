@@ -36,7 +36,7 @@ struct Entity {
         return dynamic_cast<T*>(component(T::staticGetFamilyId()));
     }
 
-    EntityId const getId() const {
+    EntityId getId() const {
         return id;
     }
 

@@ -24,7 +24,7 @@ using namespace game;
 
 ComponentList cube(vec3 position) {
     auto phys = new PhysicsComponent(position);
-    return ComponentList {
+    return {
         phys,
         new RenderCube(phys, vec3(1, 0, 0)),
         new CircularMotion(phys)
@@ -32,10 +32,10 @@ ComponentList cube(vec3 position) {
 }
 
 ComponentList player(vec3 position, PlayerInputSource* input) {
-    PhysicsComponent* physics = new PhysicsComponent(vec3());
+    PhysicsComponent* physics = new PhysicsComponent(position);
     PlayerInputComponent* inputComponent =
             new PlayerInputComponent(input, physics);
-    return ComponentList {
+    return {
         physics,
         new RenderCube(physics, vec3(0, 0, 1)),
         inputComponent
@@ -65,7 +65,7 @@ int main()
     ProgramManager programs;
     RenderSystem render(window, textures, programs);
     TickSystem ticks;
-    EntityRegistry entities(SystemList {
+    EntityRegistry entities({
         &render,
         &ticks
     });
@@ -73,7 +73,7 @@ int main()
 
     bool running = true;
 
-    tasks.add(60, [&] () { input.dispatch(); });
+    tasks.add(60, MEMBER_FN_0(input, dispatch));
     tasks.add(60, [&] () { entities.withFamily(&TickSystem::tick, ticks); });
 
     input.onKeyPressed.connect([&] (KeyInput input) {
