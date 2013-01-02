@@ -51,6 +51,7 @@ struct ChatMsg
                      int /* time */> {
     ChatMsg() {
     }
+
     ChatMsg(const std::string& s, int i)
         : Message<ChatMsg, std::string, int>(s, i) {
     }
@@ -58,24 +59,6 @@ struct ChatMsg
 
 int main()
 {
-    MessageTypeInfo const* ti = &ChatMsg::typeInfo;
-
-    BitStreamWriter w; 
-    ChatMsg msg("bla", 42);
-    ti->write(msg.toUntyped(), w);
-
-    BitStreamReader r(w.ptr(), w.size());
-    UntypedMessage* msg2 = static_cast<UntypedMessage*>(malloc(ti->size));
-    ChatMsg* msg3 = new(msg2) ChatMsg();
-    ti->read(msg2, r);
-
-    msg3->unpack([] (const std::string& s, const int& time) {
-        std::cout << "message: " << s << "\n"
-                  << "time: " << time << std::endl; 
-    });
-
-    return 0;
-
     sf::Window window(sf::VideoMode(1280, 1024), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(true);
