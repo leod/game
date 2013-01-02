@@ -11,7 +11,7 @@ struct System {
     System(FamilyId familyId);
     virtual ~System();
 
-    FamilyId const getFamilyId() const;
+    FamilyId getFamilyId() const;
 
     virtual void onRegister(Component*);
     virtual void onUnregister(Component*);
