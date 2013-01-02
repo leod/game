@@ -54,7 +54,7 @@ void write(BitStreamWriter& stream, std::string const& str) {
 void read(BitStreamReader& stream, std::string& str) {
     size_t size;
     read(stream, size);
-    str.resize(size);
+    str = std::string(size, ' ');
 
     // This might just explode on you.
     stream.readBytes(

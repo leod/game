@@ -22,10 +22,9 @@ namespace game {
 // should be unique based on T.
 //
 // WARNING: Contains template poo.
-
 typedef void UntypedMessage;
 
-MessageId globalMessageIdCounter;
+MessageId globalLocalMessageIdCounter;
 
 template<typename T, typename... Types>
 struct Message {
@@ -55,18 +54,14 @@ struct Message {
         return static_cast<UntypedMessage*>(this);
     }
 
-    static MessageId getMessageId() {
-        return messageId.messageId;
-    }
-
-    static void write(UntypedMessage const* message, BitStreamWriter& stream) {
+    static void write(BitStreamWriter& stream, UntypedMessage const* message) {
         Message const& self = *static_cast<Message const*>(message);
 
         WriteFunctor f(stream);
         self.iterate<sizeof...(Types)>(f);
     }
 
-    static void read(UntypedMessage* message, BitStreamReader& stream) {
+    static void read(BitStreamReader& stream, UntypedMessage* message) {
         Message& self = *static_cast<Message*>(message);
 
         ReadFunctor f(stream);
@@ -74,19 +69,6 @@ struct Message {
     }
 
 private:
-    // TODO: Message Ids need to be equivalent on all servers and clients.
-    // We must not rely on static constructors being run in the same order.
-    // One simple solution will be tstd::function<R(const Types&...)>o register all message types manually.
-    struct AutoMessageId {
-        MessageId messageId;
-
-        AutoMessageId()
-            : messageId(globalMessageIdCounter++) {
-        }
-    };
-
-    static AutoMessageId messageId;
-
     // Helper definitions for unpacking the tuple m into a function call
     // <http://stackoverflow.com/questions/7858817/unpacking-a-tuple-to-call-a-matching-function-pointer>
     template<int...>
@@ -155,9 +137,6 @@ private:
         }
     };
 };
-
-template<typename T, typename... Types>
-typename Message<T, Types...>::AutoMessageId Message<T, Types...>::messageId;
 
 template<typename T, typename... Types>
 MessageTypeInfo const Message<T, Types...>::typeInfo = {
