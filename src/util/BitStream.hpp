@@ -3,9 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
-
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/is_pod.hpp>
+#include <type_traits>
 
 namespace game {
 
@@ -18,6 +16,7 @@ struct BitStreamWriter {
     void writeBytes(uint8_t const* data, size_t size);
 
     uint8_t const* ptr() const;
+    size_t size() const;
 
 private:
     std::vector<uint8_t> buffer;
@@ -36,17 +35,12 @@ private:
 };
 
 template<typename T,
-         typename boost::enable_if<boost::is_pod<T>, int>::type = 0>
+         typename = typename std::enable_if<std::is_pod<T>::value>::type>
 void write(BitStreamWriter& stream, const T& value) {
     stream.writeBytes(reinterpret_cast<uint8_t const*>(&value), sizeof(T));
 }
 
-void write(BitStreamWriter& stream, const std::string& str) {
-    write(stream, str.size());
-    stream.writeBytes(
-            reinterpret_cast<const uint8_t*>(str.c_str()),
-            str.size());
-}
+void write(BitStreamWriter&, std::string const&);
 
 template<typename T>
 void write(BitStreamWriter& stream, const std::vector<T>& v) {
@@ -57,21 +51,12 @@ void write(BitStreamWriter& stream, const std::vector<T>& v) {
 }
 
 template<typename T,
-         typename boost::enable_if<boost::is_pod<T>, int>::type = 0>
+         typename = typename std::enable_if<std::is_pod<T>::value>::type>
 void read(BitStreamReader& stream, T& value) {
     stream.readBytes(reinterpret_cast<uint8_t*>(&value), sizeof(T));
 }
 
-void read(BitStreamReader& stream, std::string& str) {
-    size_t size;
-    read(stream, size);
-    str.resize(size);
-
-    // This might just explode on you.
-    stream.readBytes(
-            reinterpret_cast<uint8_t*>(const_cast<char*>(str.c_str())),
-            size);
-}
+void read(BitStreamReader&, std::string&);
 
 template<typename T>
 void read(BitStreamReader& stream, std::vector<T>& v) {
