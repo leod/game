@@ -8,7 +8,7 @@ src_dir = 'src'
 include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
                 'lib/enet/include']
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
-defines = ['SFML_STATIC', 'GLEW_STATIC']
+defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32']
 libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
         'opengl32', 'enet']
 
@@ -18,6 +18,7 @@ packages = [
     ('graphics', ['RenderCube', 'RenderSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
+    ('net', ['Message', 'MessageHub',]),
     ('opengl', ['Buffer', 'Error', 'Program', 'ProgramManager', 'Shader',
                 'Texture', 'TextureManager',]),
     ('world', ['PlayerInputComponent', 'PlayerInputSource', 'TickSystem',]),

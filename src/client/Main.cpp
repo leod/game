@@ -22,6 +22,7 @@
 #include "world/CircularMotion.hpp"
 
 #include "net/Message.hpp"
+#include "net/MessageHub.hpp"
 
 using namespace game;
 

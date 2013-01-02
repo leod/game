@@ -2,6 +2,6 @@
 
 namespace game {
 
-MessageId globalMessageIdCounter = 0;
+MessageId globalLocalMessageIdCounter = 0;
 
 } // namespace game
