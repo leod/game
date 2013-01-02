@@ -18,7 +18,6 @@ struct Signal {
     void operator()(Values... values) {
         for (auto fn : fns)
             fn(values...); 
-
     }
 
 private:

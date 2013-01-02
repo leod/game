@@ -21,6 +21,7 @@ packages = [
     ('opengl', ['Buffer', 'Error', 'Program', 'ProgramManager', 'Shader',
                 'Texture', 'TextureManager',]),
     ('world', ['PlayerInputComponent', 'PlayerInputSource', 'TickSystem',]),
+    ('util', ['BitStream',]),
 ]
 
 def build():

@@ -73,7 +73,8 @@ int main()
 
     bool running = true;
 
-    tasks.add(60, MEMBER_FN_0(input, dispatch));
+    //tasks.add(60, MEMBER_FN_0(input, dispatch));
+    tasks.add(60, [&] () { input.dispatch(); });
     tasks.add(60, [&] () { entities.withFamily(&TickSystem::tick, ticks); });
 
     input.onKeyPressed.connect([&] (KeyInput input) {
