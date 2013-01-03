@@ -24,8 +24,6 @@ namespace game {
 // WARNING: Contains template poo.
 typedef void UntypedMessage;
 
-MessageId globalLocalMessageIdCounter;
-
 template<typename T, typename... Types>
 struct Message {
     static MessageTypeInfo const typeInfo;
@@ -36,14 +34,14 @@ struct Message {
 
     }
 
-    Message(const Types&... data)
+    Message(Types const&... data)
         : m(data...) {
     }
 
     // TODO: Allow non-void functors
-    template<typename F>
-    void unpack(F f) const {
-        callFn(typename Gens<sizeof...(Types)>::Type(), f);
+    template<typename F, typename... Params>
+    void unpack(F f, Params const&... params) const {
+        callFn(typename Gens<sizeof...(Types)>::Type(), f, params...);
     }
 
     UntypedMessage* toUntyped() {
@@ -84,9 +82,9 @@ private:
         typedef Seq<S...> Type;
     };
 
-    template<int... S, typename F>
-    void callFn(Seq<S...>, F f) const {
-        f(std::get<S>(m)...);
+    template<int... S, typename F, typename... Params>
+    void callFn(Seq<S...>, F f, Params const&... params) const {
+        f(params..., std::get<S>(m)...);
     }
 
     // Iterate through the members of the tuple via template programming

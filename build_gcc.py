@@ -10,7 +10,7 @@ include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
 defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32']
 libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
-        'opengl32', 'enet']
+        'opengl32', 'ws2_32', 'winmm']
 
 packages = [
     ('client', ['Main',]),
@@ -18,7 +18,7 @@ packages = [
     ('graphics', ['RenderCube', 'RenderSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
-    ('net', ['Message', 'MessageHub',]),
+    ('net', ['MessageHub',]),
     ('opengl', ['Buffer', 'Error', 'Program', 'ProgramManager', 'Shader',
                 'Texture', 'TextureManager',]),
     ('world', ['PlayerInputComponent', 'PlayerInputSource', 'TickSystem',]),
@@ -46,10 +46,14 @@ def link(build_dir=os.path.join('build', 'gcc'), flags=None):
     objects = [os.path.join(build_dir, package + '_' + source + '.o')
                for (package, sources) in packages
                for source in sources]
+    bs = join_flags('lib/enet/.libs/', ['callbacks.o', 'compress.o', 'host.o',
+                                        'list.o', 'packet.o', 'peer.o',
+                                        'protocol.o', 'unix.o', 'win32.o'])
     after();
     run('g++',
         join_flags('-L', lib_dirs), 
-        objects, join_flags('-l', libs), '-o', target, flags)
+        '--verbose',
+        objects, bs, join_flags('-l', libs), '-o', target, flags)
 
 def check():
     return int(outofdate(build))

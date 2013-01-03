@@ -1,8 +1,10 @@
 #include "net/MessageHub.hpp"
 
+#include <stdexcept>
+
 namespace game {
 
-void MessageHub::dispatch(ENetPacket* packet) {
+void MessageHub::dispatch(ENetPeer* peer, ENetPacket* packet) const {
     BitStreamReader stream(packet->data, packet->dataLength);
 
     // Read message id
@@ -17,7 +19,7 @@ void MessageHub::dispatch(ENetPacket* packet) {
     auto type = typeIt->second;
 
     // Create package storage and unserialize
-    boost::scoped_array<uint8_t> data(new uint8_t[type->size]);
+    boost::scoped_array<uint8_t> data(new uint8_t[type.ti->size]);
     auto message = static_cast<UntypedMessage*>(data.get());
 
     type.ti->read(stream, message);
@@ -25,21 +27,19 @@ void MessageHub::dispatch(ENetPacket* packet) {
     // Call corresponding dispatchers
     auto range = dispatchers.equal_range(id);
     for (auto it = range.first; it != range.second; it++)
-        it->second(message);
+        it->second(peer, message);
 }
 
-MessageType const&
+MessageHub::MessageType const&
 MessageHub::lookupType(std::type_info const& typeInfo) const {
     auto typeIt = structInfoToMsgType.find(&typeInfo);
 
-    if(typeInfoIt != structInfoToMsgType.end())
+    if(typeIt == structInfoToMsgType.end())
         throw std::runtime_error(std::string("Message type ") +
-                                 typeid(Message).name() +
+                                 typeInfo.name() +
                                  "has not been registered.");
 
-    auto type = typeIt->second;
-
-    return type;
+    return typeIt->second;
 }
 
 void MessageHub::send(ENetPeer* peer, MessageType const& type,
@@ -47,7 +47,7 @@ void MessageHub::send(ENetPeer* peer, MessageType const& type,
     // Serialize message into a bitstream
     BitStreamWriter stream; 
     write(stream, type.id); 
-    type.ti->write(stream, message.toUntyped());
+    type.ti->write(stream, message);
 
     // Create enet packet and send off
     ENetPacket* packet = enet_packet_create(
