@@ -19,7 +19,7 @@ void MessageHub::dispatch(ENetPeer* peer, ENetPacket* packet) const {
 
     auto type = typeIt->second;
 
-    // Create package storage and unserialize
+    // Create packet storage and unserialize
     boost::scoped_array<uint8_t> data(new uint8_t[type.ti->size]);
     auto message = static_cast<UntypedMessage*>(data.get());
 
@@ -29,6 +29,12 @@ void MessageHub::dispatch(ENetPeer* peer, ENetPacket* packet) const {
     auto range = dispatchers.equal_range(id);
     for (auto it = range.first; it != range.second; it++)
         it->second(peer, message);
+}
+
+MessageHub::MessageHub(InfoMap structInfoToMsgType,
+                       IdMap idToMsgType)
+    : structInfoToMsgType(structInfoToMsgType),
+      idToMsgType(idToMsgType) {
 }
 
 MessageHub::MessageType const&
