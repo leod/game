@@ -2,11 +2,12 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 
-#include "core/Entity.hpp"
-#include "core/System.hpp"
 #include "core/Error.hpp"
 
 namespace game {
+
+struct System;
+struct Entity;
 
 template<typename T> using ComponentListT = std::vector<T*>;
 typedef ComponentListT<Component> ComponentList;
@@ -95,6 +96,18 @@ struct EntityRegistry {
 
     template<typename T>
     ComponentItT<T> familyEnd() {
+        return ComponentItT<T>(families[T::staticGetFamilyId()].end(),
+                               detail::CastComponent<T>());
+    }
+    
+    template<typename T>
+    ComponentItT<T const> familyBegin() const {
+        return ComponentItT<T>(families[T::staticGetFamilyId()].begin(),
+                               detail::CastComponent<T>());
+    }
+
+    template<typename T>
+    ComponentItT<T const> familyEnd() const {
         return ComponentItT<T>(families[T::staticGetFamilyId()].end(),
                                detail::CastComponent<T>());
     }
