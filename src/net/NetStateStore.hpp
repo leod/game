@@ -7,6 +7,13 @@
 namespace game {
 
 struct NetStateStore {
+    struct Entry {
+        NetEntityId id;
+        size_t size;
+
+        uint8_t const* data; // Points into buffer
+    };
+
     // Adds a new entry
     uint8_t* allocate(NetEntityId, size_t);
 
@@ -14,16 +21,9 @@ struct NetStateStore {
     size_t size() const;
 
     // Returns the nth entry
-    uint8_t const* operator[](size_t) const;
+    Entry const& operator[](size_t) const;
 
 private:
-    struct Entry {
-        NetEntityId id;
-        size_t size;
-
-        uint8_t* data; // Points into buffer
-    };
-
     std::vector<uint8_t> buffer;
     std::vector<Entry> entries;
 };

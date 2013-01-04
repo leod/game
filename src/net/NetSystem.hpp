@@ -20,6 +20,9 @@ struct NetSystem : public SystemBase<NetComponent> {
     void writeRawStates(BitStreamWriter&) const;
     void readRawStates(BitStreamReader&, NetStateStore&) const;
 
+    // For testing
+    void applyStates(NetStateStore const&);
+
 private:
     std::map<NetEntityId, NetComponent*> components;
 };
