@@ -1,6 +1,7 @@
 #include "core/EntityRegistry.hpp"
 
 #include "core/Entity.hpp"
+#include "core/System.hpp"
 #include "core/Error.hpp"
 
 namespace game {
@@ -13,6 +14,9 @@ EntityRegistry::EntityRegistry(SystemList systems)
                    "Can't have two systems in the same family.");
 
         this->systems[s->getFamilyId()] = s;
+
+        ASSERT(s->registry == nullptr);
+        s->registry = this;
     } 
 }
 

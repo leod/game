@@ -3,7 +3,7 @@
 namespace game {
 
 System::System(FamilyId familyId)
-    : familyId(familyId) {
+    : familyId(familyId), registry(nullptr) {
 }
 
 System::~System() {
