@@ -1,23 +1,25 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "core/Component.hpp"
 
 namespace game {
 
-typedef std::vector<NetState> NetStateList;
+struct NetState;
+
+typedef uint16_t NetEntityId;
 
 struct NetComponent : public ComponentFamily<NetComponent> {
-    NetComponent(NetEntityId id)
-        : netStates(netStates) {
-    }
+    NetComponent(NetEntityId, std::vector<NetState*>);
 
-    void serialize(BitStream&) const;
-    void unserialize(BitStream&);
+    NetEntityId getNetId() const;
+    std::vector<NetState*> const& getStates() const;
 
 private:
-    NetStateList netStateList;
+    NetEntityId netId;
+    std::vector<NetState*> states; // TODO: Mem cleanup
 };
 
-}
+} // namespace game
