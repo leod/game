@@ -13,7 +13,6 @@ libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
         'opengl32', 'ws2_32', 'winmm']
 
 packages = [
-    ('client', ['Main',]),
     ('core', ['Component', 'EntityRegistry', 'System', 'Tasks',]),
     ('graphics', ['RenderCube', 'RenderSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
@@ -26,14 +25,23 @@ packages = [
     ('util', ['BitStream',]),
 ]
 
+clientPackages = [
+    ('client', ['Main',]),
+]
+
+serverPackages = [
+    ('server', ['Main',]),
+]
+
 def build():
-    compile()
-    link()
+    compile(packages + clientPackages + serverPackages)
+    link(packages + clientPackages, 'client')
+    link(packages + serverPackages, 'server')
 
 def join_flags(flag, params):
     return [flag + param for param in params]
 
-def compile(build_dir=os.path.join('build', 'gcc'), flags=None):
+def compile(packages, build_dir=os.path.join('build', 'gcc'), flags=None):
     for package, sources in packages:
         for source in sources:
             run('g++',
@@ -43,10 +51,12 @@ def compile(build_dir=os.path.join('build', 'gcc'), flags=None):
                 '-o', os.path.join(build_dir, package + '_'  + source + '.o'),
                 cflags, flags)
 
-def link(build_dir=os.path.join('build', 'gcc'), flags=None):
+def link(packages, target, build_dir=os.path.join('build', 'gcc'), flags=None):
     objects = [os.path.join(build_dir, package + '_' + source + '.o')
                for (package, sources) in packages
                for source in sources]
+    # This is a workaround. Linking libenet.a and libwinmm.a directly
+    # causes ld.exe to crash.
     bs = join_flags('lib/enet/.libs/', ['callbacks.o', 'compress.o', 'host.o',
                                         'list.o', 'packet.o', 'peer.o',
                                         'protocol.o', 'unix.o', 'win32.o'])

@@ -27,18 +27,17 @@
 using namespace game;
 
 ComponentList cube(vec3 position) {
-    auto phys = new PhysicsComponent(position);
+    auto physics = new PhysicsComponent(position);
     return {
-        phys,
-        new RenderCube(phys, vec3(1, 0, 0)),
-        new CircularMotion(phys)
+        physics,
+        new RenderCube(physics, vec3(1, 0, 0)),
+        new CircularMotion(physics)
     };
 }
 
 ComponentList player(vec3 position, PlayerInputSource* input) {
-    PhysicsComponent* physics = new PhysicsComponent(position);
-    PlayerInputComponent* inputComponent =
-            new PlayerInputComponent(input, physics);
+    auto physics = new PhysicsComponent(position);
+    auto inputComponent = new PlayerInputComponent(input, physics);
     return {
         physics,
         new RenderCube(physics, vec3(0, 0, 1)),
@@ -89,7 +88,6 @@ int main()
 
     bool running = true;
 
-    //tasks.add(60, MEMBER_FN_0(input, dispatch));
     tasks.add(60, [&] () { input.dispatch(); });
     tasks.add(60, [&] () { ticks.tick(); });
 

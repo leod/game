@@ -17,9 +17,10 @@ struct MessageHub {
     // the order in which the message types are passed to the constructor
     // of MessageHub needs to be canonical.
     template<typename... Messages>
-    MessageHub()
-        : structInfoToMsgType(makeInfoMap<Messages...>()),
-          idToMsgType(makeIdMap<Messages...>(structInfoToMsgType)) {
+    static MessageHub* make() {
+        auto structInfoToMsgType = makeInfoMap<Messages...>();
+        return new MessageHub(structInfoToMsgType,
+                              makeIdMap<Messages...>(structInfoToMsgType));
     }
 
     template<typename Message>
@@ -63,9 +64,6 @@ private:
         MessageTypeInfo const* ti;
     };
 
-    MessageType const& lookupType(std::type_info const&) const; 
-    void send(ENetPeer*, MessageType const&, UntypedMessage const*) const;
-
     typedef std::map<std::type_info const*, MessageType> InfoMap;
     InfoMap const structInfoToMsgType;
 
@@ -76,6 +74,11 @@ private:
     typedef std::multimap<MessageId, Dispatcher> DispatcherMap;
     DispatcherMap dispatchers;
 
+    MessageHub(InfoMap, IdMap);
+
+    MessageType const& lookupType(std::type_info const&) const; 
+    void send(ENetPeer*, MessageType const&, UntypedMessage const*) const;
+
     template<typename Message, typename... Messages>
     static InfoMap makeInfoMap(MessageId count = 0) {
         auto m = makeInfoMap<Messages...>(count + 1);
@@ -84,7 +87,9 @@ private:
         return m;
     }
 
-    static InfoMap makeInfoMap(MessageId) {
+    template<typename... Messages>
+    static InfoMap makeInfoMap(MessageId count = 0) {
+        (void)count;
         return InfoMap();
     } 
 
@@ -105,7 +110,9 @@ private:
         return m;
     }
 
-    static IdMap makeIdMap(MessageId) {
+    template<typename... Messages>
+    static IdMap makeIdMap(InfoMap const&, MessageId count = 0) {
+        (void)count;
         return IdMap();
     }
 };
