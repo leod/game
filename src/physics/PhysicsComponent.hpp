@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/Component.hpp"
 #include "physics/PhysicsState.hpp"
 
 namespace game {

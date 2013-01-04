@@ -18,11 +18,10 @@ ProgramManager& RenderSystem::getPrograms() {
     return programs;
 }
 
-void RenderSystem::render(ComponentItT<RenderComponent> begin,
-                          ComponentItT<RenderComponent> end) {
-    for (auto it = begin; it != end; ++it) {
-        (*it)->render();
-    }
+void RenderSystem::render() {
+    iterate([&] (RenderComponent* component) {
+        component->render();
+    });
 }
 
 void RenderSystem::setCamera(vec3 position, vec3 target) {

@@ -1,28 +1,10 @@
 #include "world/PhysicsNetState.hpp"
 
+#include "core/Error.hpp"
 #include "util/BitStream.hpp"
 #include "physics/PhysicsComponent.hpp"
-#include "net/NetState.hpp"
 
 namespace game {
-
-static NetStateType stateType;
-
-PhysicsNetState::PhysicsNetState(PhysicsComponent* physics)
-    : physics(physics) {
-}
-
-NetStateType const& type() {
-    return stateType;
-}
-
-PhysicsState PhysicsNetState::load() {
-    return physics->getState();
-}
-
-void store(PhysicsState const& state) {
-    physics->setState(state);
-}
 
 void writeState(BitStreamWriter& stream, PhysicsState const* state) {
     write(stream, state->position);
@@ -34,6 +16,28 @@ void readState(BitStreamReader& stream, PhysicsState* state) {
     read(stream, state->orientation);
 }
 
-NetStateType stateType = makeNetStateType(writeState, readState, nullptr);
+void interpolateState(PhysicsState const*, PhysicsState const*, float,
+                      PhysicsState*) {
+    ASSERT(false);
+}
+
+static NetStateType const stateType =
+        makeNetStateType(writeState, readState, interpolateState);
+
+PhysicsNetState::PhysicsNetState(PhysicsComponent* physics)
+    : physics(physics) {
+}
+
+NetStateType const& PhysicsNetState::type() const {
+    return stateType;
+}
+
+PhysicsState PhysicsNetState::load() const {
+    return physics->getState();
+}
+
+void PhysicsNetState::store(PhysicsState const& state) {
+    physics->setState(state);
+}
 
 } // namespace game

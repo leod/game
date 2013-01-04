@@ -6,8 +6,7 @@
 namespace game {
 
 struct TickSystem : public SystemBase<TickComponent> {
-    void tick(ComponentItT<TickComponent> begin,
-              ComponentItT<TickComponent> end);
+    void tick();
 };
 
 } // namespace game

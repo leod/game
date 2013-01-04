@@ -20,8 +20,7 @@ struct RenderSystem : public SystemBase<RenderComponent> {
     TextureManager& getTextures();
     ProgramManager& getPrograms();
 
-    void render(ComponentItT<RenderComponent> begin,
-                ComponentItT<RenderComponent> end);
+    void render();
 
     void setCamera(vec3 position, vec3 target);
 

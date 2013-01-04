@@ -9,14 +9,22 @@ System::System(FamilyId familyId)
 System::~System() {
 }
 
-FamilyId System::getFamilyId() const {
-    return familyId;
-}
-
 void System::onRegister(Component*) {
 }
 
 void System::onUnregister(Component*) {
+}
+
+FamilyId System::getFamilyId() const {
+    return familyId;
+}
+
+EntityRegistry* System::getRegistry() {
+    return registry;
+}
+
+EntityRegistry const* System::getRegistry() const {
+    return registry;
 }
 
 }

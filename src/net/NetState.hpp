@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdlib>
+#include <cstring>
 
 namespace game {
 
@@ -18,42 +18,44 @@ typedef void (*NetStateInterpolator)(UntypedState const* a,
 struct NetStateType {
     size_t size;
 
-    NetStateWriter writer;
-    NetStateReader reader;
-    NetStateInterpolator interpolator;
+    NetStateWriter write;
+    NetStateReader reade;
+    NetStateInterpolator interpolate;
 };
 
 template<typename T>
-NetStateType makeNetStateType(void (*writer)(BitStreamWriter&, T const*),
-                              void (*reader)(BitStreamReader&, T*),
-                              void (*interpolator)(T const*, T const*,
-                                                   float, T*)) {
+NetStateType makeNetStateType(void (*write)(BitStreamWriter&, T const*),
+                              void (*read)(BitStreamReader&, T*),
+                              void (*interpolate)(T const*, T const*,
+                                                  float, T*)) {
     NetStateType type = {
         sizeof(T),
-        static_cast<NetStateWriter>(writer),
-        static_cast<NetStateReader>(reader),
-        static_cast<NetStateInterpolator>(interpolator)
+        reinterpret_cast<NetStateWriter>(write),
+        reinterpret_cast<NetStateReader>(read),
+        reinterpret_cast<NetStateInterpolator>(interpolate)
     };
 
     return type;
 }
 
 struct NetState {
-    virtual NetStateType const& type() = 0; 
-    virtual void load(UntypedState*) = 0;
+    virtual NetStateType const& type() const = 0; 
+    virtual void load(UntypedState*) const = 0;
     virtual void store(UntypedState const*) = 0;
 };
 
 template<typename State>
 struct NetStateBase : public NetState {
-    virtual State load() = 0;
+    virtual State load() const = 0;
     virtual void store(State const&) = 0;
 
-    void load(UntypedState* out) {
+    // Implements NetState
+    void load(UntypedState* out) const {
         State state = load();
         memcpy(out, reinterpret_cast<void*>(&state), sizeof(State));
     }
 
+    // Implements NetState
     void store(UntypedState const* state) {
         store(*static_cast<State const*>(state));
     }

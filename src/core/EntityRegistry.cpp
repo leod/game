@@ -14,6 +14,7 @@ EntityRegistry::EntityRegistry(SystemList systems)
                    "Can't have two systems in the same family.");
 
         this->systems[s->getFamilyId()] = s;
+        families[s->getFamilyId()] = ComponentList();
 
         ASSERT(s->registry == nullptr);
         s->registry = this;

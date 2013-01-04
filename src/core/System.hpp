@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <functional>
 
 #include "core/Component.hpp"
 #include "core/EntityRegistry.hpp"
@@ -12,10 +13,12 @@ struct System {
     System(FamilyId);
     virtual ~System();
 
-    FamilyId getFamilyId() const;
-
     virtual void onRegister(Component*);
     virtual void onUnregister(Component*);
+
+    FamilyId getFamilyId() const;
+    EntityRegistry* getRegistry();
+    EntityRegistry const* getRegistry() const;
 
 private:
     FamilyId const familyId;
@@ -34,19 +37,19 @@ template<typename T> struct SystemBase : public System {
     }
 
     void iterate(std::function<void(T*)> const& f) {
-        for (auto it = registry->familyBegin<T>();
-             it != registry->familyEnd<T>();
-             ++it) {
-            f(*it);
-        }
+        EntityRegistry* registry = getRegistry();
+        auto it = registry->familyBegin<T>();
+        auto end = registry->familyEnd<T>();
+
+        for (; it != end; ++it) f(*it);
     }
 
-    void iterate(std::function<void(T*)> const& f) const {
-        for (auto it = registry->familyBegin<T>();
-             it != registry->familyEnd<T>();
-             ++it) {
-            f(*it);
-        }
+    void iterate(std::function<void(T const*)> const& f) const {
+        EntityRegistry const* registry = getRegistry();
+        auto it = registry->familyBegin<T>();
+        auto end = registry->familyEnd<T>();
+
+        for (; it != end; ++it) f(*it);
     }
 };
 
