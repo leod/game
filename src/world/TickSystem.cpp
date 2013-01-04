@@ -2,10 +2,10 @@
 
 namespace game {
 
-void TickSystem::tick(ComponentItT<TickComponent> begin,
-                      ComponentItT<TickComponent> end) {
-    for (auto it = begin; it != end; ++it)
-        (*it)->tick();
+void TickSystem::tick() {
+    iterate([&] (TickComponent* component) {
+        component->tick();
+    });
 }
 
 } // namespace game

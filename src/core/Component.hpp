@@ -67,5 +67,4 @@ typename ComponentFamily<T>::AutoFamilyId ComponentFamily<T>::familyId;
 template<typename T>
 using ComponentBase = ComponentFamily<T>;
 
-
 } // namespace game

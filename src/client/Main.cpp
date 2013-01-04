@@ -91,7 +91,7 @@ int main()
 
     //tasks.add(60, MEMBER_FN_0(input, dispatch));
     tasks.add(60, [&] () { input.dispatch(); });
-    tasks.add(60, [&] () { entities.withFamily(&TickSystem::tick, ticks); });
+    tasks.add(60, [&] () { ticks.tick(); });
 
     input.onKeyPressed.connect([&] (KeyInput input) {
         if (input.code == Key::Escape)
@@ -151,7 +151,7 @@ int main()
         glVertex3f(35, -1, -35);
         glEnd();
 
-        entities.withFamily(&RenderSystem::render, render);
+        render.render();
         
         /*glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);

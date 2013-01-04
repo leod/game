@@ -3,11 +3,11 @@
 #include <boost/iterator/transform_iterator.hpp>
 
 #include "core/Error.hpp"
+#include "core/Entity.hpp"
 
 namespace game {
 
 struct System;
-struct Entity;
 
 template<typename T> using ComponentListT = std::vector<T*>;
 typedef ComponentListT<Component> ComponentList;
@@ -47,6 +47,11 @@ using ComponentItT =
     boost::transform_iterator<detail::CastComponent<T>,
                               typename ComponentList::iterator,
                               T*>;
+template<typename T>
+using ConstComponentItT =
+    boost::transform_iterator<detail::CastComponent<T>,
+                              typename ComponentList::const_iterator,
+                              T const*>;
 typedef ComponentItT<Component*> ComponentIt;
 
 struct EntityRegistry {
@@ -60,7 +65,7 @@ struct EntityRegistry {
 
     // Returns the system that is registered as being responsible for the
     // given type of component (= family).
-    // For example, system(RenderSystem::staticGetFamily()) returns the
+    // For example, system(RenderSystem::staticGetFamilyId()) returns the
     // SystemBase<RenderComponent> instance that was passed to the constructor
     // of the EntityRegistry (or nullptr, if none was given).
     //
@@ -101,21 +106,23 @@ struct EntityRegistry {
     }
     
     template<typename T>
-    ComponentItT<T const> familyBegin() const {
-        return ComponentItT<T>(families[T::staticGetFamilyId()].begin(),
-                               detail::CastComponent<T>());
+    ConstComponentItT<T> familyBegin() const {
+        auto familyIt = families.find(T::staticGetFamilyId());
+        ASSERT(familyIt != families.end());
+        auto& family = familyIt->second;
+
+        return ConstComponentItT<T>(family.begin(),
+                                    detail::CastComponent<T>());
     }
 
     template<typename T>
-    ComponentItT<T const> familyEnd() const {
-        return ComponentItT<T>(families[T::staticGetFamilyId()].end(),
-                               detail::CastComponent<T>());
-    }
+    ConstComponentItT<T> familyEnd() const {
+        auto familyIt = families.find(T::staticGetFamilyId());
+        ASSERT(familyIt != families.end());
+        auto& family = familyIt->second;
 
-    template<typename T, typename Target>
-    void withFamily(void (Target::*f)(ComponentItT<T>, ComponentItT<T>),
-                    Target& target) {
-        (target.*f)(familyBegin<T>(), familyEnd<T>());
+        return ConstComponentItT<T>(family.end(),
+                                    detail::CastComponent<T>());
     }
 
 private:

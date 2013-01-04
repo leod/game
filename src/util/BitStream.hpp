@@ -34,8 +34,8 @@ private:
     size_t index;
 };
 
-template<typename T,
-         typename = typename std::enable_if<std::is_pod<T>::value>::type>
+template<typename T/*,
+         typename = typename std::enable_if<std::is_pod<T>::value>::type*/>
 void write(BitStreamWriter& stream, const T& value) {
     stream.writeBytes(reinterpret_cast<uint8_t const*>(&value), sizeof(T));
 }
@@ -50,8 +50,8 @@ void write(BitStreamWriter& stream, const std::vector<T>& v) {
         write(stream, e);
 }
 
-template<typename T,
-         typename = typename std::enable_if<std::is_pod<T>::value>::type>
+template<typename T/*,
+         typename = typename std::enable_if<std::is_pod<T>::value>::type*/>
 void read(BitStreamReader& stream, T& value) {
     stream.readBytes(reinterpret_cast<uint8_t*>(&value), sizeof(T));
 }

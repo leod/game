@@ -1,17 +1,18 @@
 #pragma once
 
 #include "physics/PhysicsState.hpp"
+#include "net/NetState.hpp"
 
 namespace game {
 
 struct PhysicsComponent;
-struct NetStateType;
 
-struct PhysicsNetState : NetStateBase<PhysicsState> {
+struct PhysicsNetState : public NetStateBase<PhysicsState> {
     PhysicsNetState(PhysicsComponent*);
 
-    NetStateType const& type();
-    PhysicsState load();
+    // Implement NetStateBase<PhysicsState>
+    NetStateType const& type() const;
+    PhysicsState load() const;
     void store(PhysicsState const&);
 
 private:
