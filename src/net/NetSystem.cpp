@@ -5,8 +5,40 @@
 #include "core/Error.hpp"
 #include "util/BitStream.hpp"
 #include "net/NetState.hpp"
+#include "net/NetStateStore.hpp"
 
 namespace game {
+
+void NetSystem::onRegister(NetComponent* component) {
+    ASSERT_MSG(components.find(component->getNetId()) == components.end(),
+               "NetEntityId " << component->getNetId() <<
+               " is being used more than once");
+
+    components[component->getNetId()] = component;
+}
+
+void NetSystem::onUnregister(NetComponent* component) {
+    size_t numErased = components.erase(component->getNetId());
+    ASSERT(numErased == 1);
+}
+
+NetComponent* NetSystem::get(NetEntityId id) {
+    auto componentIt = components.find(id);
+
+    ASSERT_MSG(componentIt != components.end(),
+               "Net entity " << id << " not found");
+
+    return componentIt->second;
+}
+
+NetComponent const* NetSystem::get(NetEntityId id) const {
+    auto componentIt = components.find(id);
+
+    ASSERT_MSG(componentIt != components.end(),
+               "Net entity " << id << " not found");
+
+    return componentIt->second;
+}
 
 void NetSystem::writeRawStates(BitStreamWriter& stream) const {
     iterate([&] (NetComponent const* component) {
@@ -26,17 +58,25 @@ void NetSystem::writeRawStates(BitStreamWriter& stream) const {
     });
 }
 
-void NetSystem::onRegister(NetComponent* component) {
-    ASSERT_MSG(components.find(component->getNetId()) == components.end(),
-               "NetEntityId " << component->getNetId() <<
-               " is being used more than once");
+void NetSystem::readRawStates(BitStreamReader& stream,
+                              NetStateStore& store) const {
+    while (!stream.eof()) {
+        NetEntityId netId;
+        read(stream, netId);
 
-    components[component->getNetId()] = component;
-}
+        NetComponent const* component = get(netId);
 
-void NetSystem::onUnregister(NetComponent* component) {
-    size_t numErased = components.erase(component->getNetId());
-    ASSERT(numErased == 1);
+        size_t requiredSize = 0;
+        for (auto state : component->getStates())
+            requiredSize += state->type().size;
+
+        uint8_t* buffer = store.allocate(netId, requiredSize);
+
+        for (auto state : component->getStates()) {
+            state->type().read(stream, buffer);
+            buffer += state->type().size;
+        }
+    }
 }
 
 } // namespace game

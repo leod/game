@@ -13,7 +13,6 @@ TaskInfo::TaskInfo(Time period, Task task)
 
 bool compareTaskPriority(TaskInfo const& a, TaskInfo const& b) {
     // We want tasks with a lower sleepTime first
-
     return a.sleepTime > b.sleepTime; 
 }
 

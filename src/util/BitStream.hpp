@@ -27,6 +27,8 @@ struct BitStreamReader {
 
     void readBytes(uint8_t* out, size_t size);
 
+    bool eof();
+
 private:
     uint8_t const* buffer;
     size_t const bufferLength;

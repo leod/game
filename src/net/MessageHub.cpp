@@ -1,6 +1,7 @@
 #include "net/MessageHub.hpp"
 
 #include <stdexcept>
+#include <boost/scoped_array.hpp>
 
 namespace game {
 

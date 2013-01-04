@@ -18,9 +18,6 @@ namespace game {
 // which can be used to read and write messages without knowing their
 // concrete compile-time types.
 //
-// Message<T, Types...> also statically holds an id for the message type which
-// should be unique based on T.
-//
 // WARNING: Contains template poo.
 typedef void UntypedMessage;
 
