@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "core/Error.hpp"
 #include "util/BitStream.hpp"
 #include "net/NetState.hpp"
 
@@ -23,6 +24,19 @@ void NetSystem::writeRawStates(BitStreamWriter& stream) const {
             state->type().write(stream, &buffer[0]);
         }
     });
+}
+
+void NetSystem::onRegister(NetComponent* component) {
+    ASSERT_MSG(components.find(component->getNetId()) == components.end(),
+               "NetEntityId " << component->getNetId() <<
+               " is being used more than once");
+
+    components[component->getNetId()] = component;
+}
+
+void NetSystem::onUnregister(NetComponent* component) {
+    size_t numErased = components.erase(component->getNetId());
+    ASSERT(numErased == 1);
 }
 
 } // namespace game

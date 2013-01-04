@@ -4,6 +4,7 @@
 #include <map>
 #include <functional>
 
+#include "core/Error.hpp"
 #include "core/Component.hpp"
 #include "core/EntityRegistry.hpp"
 
@@ -30,6 +31,24 @@ private:
 template<typename T> struct SystemBase : public System {
     SystemBase()
         : System(T::staticGetFamilyId()) {
+    }
+
+    void onRegister(Component* c) {
+        T* t = dynamic_cast<T*>(c);
+        ASSERT(t != nullptr);
+        onRegister(t);
+    }
+
+    void onUnregister(Component* c) {
+        T* t = dynamic_cast<T*>(c);
+        ASSERT(t != nullptr);
+        onUnregister(t);
+    }
+
+    virtual void onRegister(T*) {
+    }
+
+    virtual void onUnregister(T*) {
     }
 
     static FamilyId staticGetFamilyId() {
