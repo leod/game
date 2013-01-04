@@ -27,6 +27,7 @@ NetComponent* NetSystem::get(NetEntityId id) {
 
     ASSERT_MSG(componentIt != components.end(),
                "Net entity " << id << " not found");
+    ASSERT(componentIt->second->getNetId() == id);
 
     return componentIt->second;
 }
@@ -36,6 +37,7 @@ NetComponent const* NetSystem::get(NetEntityId id) const {
 
     ASSERT_MSG(componentIt != components.end(),
                "Net entity " << id << " not found");
+    ASSERT(componentIt->second->getNetId() == id);
 
     return componentIt->second;
 }
@@ -76,6 +78,17 @@ void NetSystem::readRawStates(BitStreamReader& stream,
             state->type().read(stream, buffer);
             buffer += state->type().size;
         }
+    }
+}
+
+void NetSystem::applyStates(NetStateStore const& store) {
+    for (size_t i = 0; i < store.size(); ++i) {
+        auto entry = store[i];
+        
+        NetComponent const* component = get(entry.id);
+        
+        for (auto state : component->getStates())
+            state->store(entry.data);
     }
 }
 

@@ -13,15 +13,15 @@ uint8_t* NetStateStore::allocate(NetEntityId id, size_t size) {
     };
     entries.push_back(newEntry);
 
-    return newEntry.data;
+    return &buffer[oldSize];
 }
 
 size_t NetStateStore::size() const {
     return entries.size();
 }
 
-uint8_t const* NetStateStore::operator[](size_t index) const {
-    return entries.at(index).data;
+NetStateStore::Entry const& NetStateStore::operator[](size_t index) const {
+    return entries.at(index);
 }
 
 } // namespace game
