@@ -3,8 +3,6 @@
 #include <map>
 #include <functional>
 
-#include <boost/scoped_array.hpp>
-
 #include <enet/enet.h>
 
 #include "core/Error.hpp"

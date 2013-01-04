@@ -19,7 +19,7 @@ struct NetStateType {
     size_t size;
 
     NetStateWriter write;
-    NetStateReader reade;
+    NetStateReader read;
     NetStateInterpolator interpolate;
 };
 

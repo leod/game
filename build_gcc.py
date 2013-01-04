@@ -18,7 +18,7 @@ packages = [
     ('graphics', ['RenderCube', 'RenderSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
-    ('net', ['MessageHub', 'NetComponent', 'NetSystem']),
+    ('net', ['MessageHub', 'NetComponent', 'NetStateStore', 'NetSystem',]),
     ('opengl', ['Buffer', 'Error', 'Program', 'ProgramManager', 'Shader',
                 'Texture', 'TextureManager',]),
     ('world', ['PhysicsNetState', 'PlayerInputComponent', 'PlayerInputSource',

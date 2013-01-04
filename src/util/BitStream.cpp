@@ -44,6 +44,10 @@ void BitStreamReader::readBytes(uint8_t* out, size_t size) {
     index += size;
 }
 
+bool BitStreamReader::eof() {
+    return index == bufferLength;
+}
+
 void write(BitStreamWriter& stream, std::string const& str) {
     write(stream, str.size());
     stream.writeBytes(
