@@ -23,6 +23,9 @@
 
 #include "net/Message.hpp"
 #include "net/MessageHub.hpp"
+#include "net/NetSystem.hpp"
+#include "net/Definitions.hpp"
+#include "net/NetStateStore.hpp"
 
 using namespace game;
 
@@ -45,16 +48,100 @@ ComponentList player(vec3 position, PlayerInputSource* input) {
     };
 }
 
-struct ChatMsg
-    : public Message<ChatMsg,
-                     std::string /* message */,
-                     int /* time */> {
-    ChatMsg() {
+// I'll split Client and Server up as soon as I'll find out what they do.
+struct Client {
+    Client(sf::Window& window, InputSource& input)
+        : window(window),
+          input(input),
+          renderSystem(window, textures, programs),
+          entities({ &renderSystem, &tickSystem, &netSystem }),
+          playerInput(window, input),
+          playerEnt(nullptr),
+          host(nullptr),
+          messageHub(MessageHub::make<>()),
+          tick(0) {
+        tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
     }
 
-    ChatMsg(const std::string& s, int i)
-        : Message<ChatMsg, std::string, int>(s, i) {
+    void startTick() {
+        if (tickStateQueue.empty())
+            return;
     }
+
+    void update(Time delta) {
+        tasks.run(delta);
+    }
+
+    void render() {
+        // For debugging
+        if (playerEnt) {
+            auto playerPhys = playerEnt->component<PhysicsComponent>();
+
+            vec3 cameraPosition = playerPhys->getPosition() +
+                                  vec3(0, 8, -0.001);
+            vec3 cameraTarget = playerPhys->getPosition();
+
+            renderSystem.setCamera(cameraPosition, cameraTarget);
+        }
+        else
+            renderSystem.setCamera(vec3(0, 8, -0.001), vec3(0, 0, 0));
+        
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.3, 0.3, 0.3, 0.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadMatrixf(glm::value_ptr(renderSystem.getView()));
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf(glm::value_ptr(renderSystem.getProjection()));
+
+        glBegin(GL_QUADS);
+        glColor3f(0.7, 0.7, 0.7);
+        glVertex3f(-35, -1, -35);
+        glColor3f(0.1, 0.1, 0.1);
+        glVertex3f(-35, -1, 35);
+        glColor3f(0.9, 0.9, 0.9);
+        glVertex3f(35, -1, 35);
+        glColor3f(0.5, 0.5, 0.5);
+        glVertex3f(35, -1, -35);
+        glEnd();
+
+        /*glBegin(GL_LINES);
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex3f(0.0, 0.0, 0.0);
+        glVertex3f(100.0, 0.0, 0.0);
+        glColor3f(0.0, 1.0, 0.0);
+        glVertex3f(0.0, 0.0, 0.0);
+        glVertex3f(0.0, 100.0, 0.0);
+        glColor3f(0.0, 0.0, 1.0);
+        glVertex3f(0.0, 0.0, 0.0);
+        glVertex3f(0.0, 0.0, 100.0);
+        glEnd();*/
+
+        renderSystem.render();
+
+        window.display();
+    }
+
+    sf::Window& window;
+    InputSource& input;
+    Tasks tasks;
+
+    TextureManager textures;
+    ProgramManager programs;
+    RenderSystem renderSystem;
+    TickSystem tickSystem;
+    NetSystem netSystem;
+    EntityRegistry entities;
+
+    PlayerInputSource playerInput;
+    Entity* playerEnt;
+
+    ENetHost* host;
+    std::unique_ptr<MessageHub> messageHub;
+
+    Tick tick;
+    std::queue<NetStateStore> tickStateQueue;
 };
 
 int main()
@@ -76,20 +163,11 @@ int main()
     }
 
     SFMLInputSource input;
-    TextureManager textures;
-    ProgramManager programs;
-    RenderSystem render(window, textures, programs);
-    TickSystem ticks;
-    EntityRegistry entities({
-        &render,
-        &ticks
-    });
     Tasks tasks;
 
     bool running = true;
 
     tasks.add(60, [&] () { input.dispatch(); });
-    tasks.add(60, [&] () { ticks.tick(); });
 
     input.onKeyPressed.connect([&] (KeyInput input) {
         if (input.code == Key::Escape)
@@ -99,9 +177,7 @@ int main()
     ClockTimeSource time;
     Time deltaTime;
 
-    PlayerInputSource playerInput(&window, &input);
-    Entity* playerEnt = entities.add(player(vec3(), &playerInput));
-    entities.add(cube(vec3(2, 0, -15)));
+    Client client(window, input);
 
     while (running) {
         {
@@ -117,53 +193,9 @@ int main()
         }
 
         tasks.run(deltaTime);
-
-        // For debugging
-        {
-            auto playerPhys = playerEnt->component<PhysicsComponent>();
-
-            vec3 cameraPosition = playerPhys->getPosition() +
-                                  vec3(0, 8, -0.001);
-            vec3 cameraTarget = playerPhys->getPosition();
-
-            render.setCamera(cameraPosition, cameraTarget);
-        }
+        client.update(deltaTime);
+        client.render();
         
-        glEnable(GL_DEPTH_TEST);
-        glClearColor(0.3, 0.3, 0.3, 0.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(glm::value_ptr(render.getView()));
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf(glm::value_ptr(render.getProjection()));
-
-        glBegin(GL_QUADS);
-        glColor3f(0.7, 0.7, 0.7);
-        glVertex3f(-35, -1, -35);
-        glColor3f(0.1, 0.1, 0.1);
-        glVertex3f(-35, -1, 35);
-        glColor3f(0.9, 0.9, 0.9);
-        glVertex3f(35, -1, 35);
-        glColor3f(0.5, 0.5, 0.5);
-        glVertex3f(35, -1, -35);
-        glEnd();
-
-        render.render();
-        
-        /*glBegin(GL_LINES);
-        glColor3f(1.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(100.0, 0.0, 0.0);
-        glColor3f(0.0, 1.0, 0.0);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 100.0, 0.0);
-        glColor3f(0.0, 0.0, 1.0);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 100.0);
-        glEnd();*/
-
-        window.display();
         checkGLError();
 
         deltaTime = time.nextDelta();

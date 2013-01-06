@@ -26,13 +26,13 @@ void PlayerInputComponent::tick() {
     state.orientation.y = 0;
 
     if (playerInput.walkForward)
-        state.position += 0.7f * state.orientation;
+        state.position += 0.3f * state.orientation;
     else if (playerInput.walkBackward)
-        state.position -= 0.7f * state.orientation;
+        state.position -= 0.3f * state.orientation;
     else if (playerInput.strafeLeft)
-        state.position -= 0.5f * glm::cross(state.orientation, vec3(0, 1, 0));
+        state.position -= 0.1f * glm::cross(state.orientation, vec3(0, 1, 0));
     else if (playerInput.strafeRight)
-        state.position += 0.5f * glm::cross(state.orientation, vec3(0, 1, 0));
+        state.position += 0.1f * glm::cross(state.orientation, vec3(0, 1, 0));
 
     physics->setState(state);
 }

@@ -13,7 +13,7 @@ smooth out vec4 color;
 
 void main() {
     vec3 normalWorldSpace = normalize(mat3(model) * normal);
-    float cosAngle = clamp(dot(normalWorldSpace, vec3(1, 0, 0)) + 0.5, 0, 1);
+    float cosAngle = clamp(dot(normalWorldSpace, vec3(1, 0, 0)) + 0.9, 0, 1);
     color = vec4(cosAngle * diffuse, 1.0);
 
     gl_Position = projection *
