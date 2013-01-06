@@ -35,6 +35,10 @@ struct Message {
         : m(data...) {
     }
 
+    static Message make(Types const&... data) {
+        return Message(data...);
+    }
+
     // TODO: Allow non-void functors
     template<typename F, typename... Params>
     void unpack(F f, Params const&... params) const {
