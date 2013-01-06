@@ -11,12 +11,12 @@ namespace game {
 struct InputSource;
 
 struct PlayerInputSource {
-    PlayerInputSource(sf::Window*, InputSource*);
+    PlayerInputSource(sf::Window&, InputSource&);
 
-    Signal<const PlayerInput&> onPlayerInput;
+    Signal<PlayerInput const&> onPlayerInput;
 
 private:
-    sf::Window* window;
+    sf::Window& window;
 
     PlayerInput playerInput;
 

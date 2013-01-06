@@ -8,22 +8,22 @@
 
 namespace game {
 
-PlayerInputSource::PlayerInputSource(sf::Window* window,
-                                     InputSource* source)
+PlayerInputSource::PlayerInputSource(sf::Window& window,
+                                     InputSource& source)
     : window(window) {
-    source->onKeyPressed.connect(std::bind(
+    source.onKeyPressed.connect(std::bind(
             &PlayerInputSource::onKeyPressed,
             this, std::placeholders::_1));
-    source->onKeyReleased.connect(std::bind(
+    source.onKeyReleased.connect(std::bind(
             &PlayerInputSource::onKeyReleased,
             this, std::placeholders::_1));
-    source->onMouseButtonPressed.connect(std::bind(
+    source.onMouseButtonPressed.connect(std::bind(
             &PlayerInputSource::onMouseButtonPressed,
             this, std::placeholders::_1));
-    source->onMouseButtonReleased.connect(std::bind(
+    source.onMouseButtonReleased.connect(std::bind(
             &PlayerInputSource::onMouseButtonReleased,
             this, std::placeholders::_1));
-    source->onMouseMoved.connect(std::bind(
+    source.onMouseMoved.connect(std::bind(
             &PlayerInputSource::onMouseMoved,
             this, std::placeholders::_1));
 }
@@ -102,7 +102,7 @@ void PlayerInputSource::onMouseButtonReleased(MouseButtonInput const& input) {
 
 void PlayerInputSource::onMouseMoved(MouseMoveInput const& input) {
     vec2 mouse = vec2(input.x, input.y);
-    vec2 center = vec2(window->getSize().x / 2, window->getSize().y / 2);
+    vec2 center = vec2(window.getSize().x / 2, window.getSize().y / 2);
     playerInput.orientation = -glm::normalize(mouse - center);
     onPlayerInput(playerInput);
 }

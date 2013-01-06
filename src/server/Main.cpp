@@ -17,6 +17,7 @@
 
 using namespace game;
 
+// I'll split Client and Server up as soon as I'll find out what they do.
 struct Server {
     Tasks tasks;
 
@@ -31,10 +32,7 @@ struct Server {
     Tick tick; // tmp
 
     Server()
-        : tasks(),
-          netSystem(),
-          tickSystem(),
-          entities({ &netSystem, &tickSystem }),
+        : entities({ &netSystem, &tickSystem }),
           host(nullptr),
           clients(),
           messageHub(MessageHub::make<>()),
@@ -50,12 +48,12 @@ struct Server {
     void start() {
         ENetAddress address;
         address.host = ENET_HOST_ANY;
-        address.port = 1337;
+        address.port = 20000;
 
         host = enet_host_create(&address, 32, 2, 0, 0);
 
         if (host == nullptr)
-            throw new std::runtime_error("Failed to create host");
+            throw std::runtime_error("Failed to create host");
     }
 
     void receive() {
@@ -139,8 +137,14 @@ continue_outer_loop:
 };
 
 int main() {
-    Server server;
-    server.start();
+    try {
+        enet_initialize();
+
+        Server server;
+        server.start();
+    } catch(std::exception& exception) {
+        std::cerr << exception.what() << std::endl;
+    }
 
     return 0;
 }
