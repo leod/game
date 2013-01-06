@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "util/BitStream.hpp"
-#include "net/MessageTypeInfo.hpp"
+#include "net/MessageType.hpp"
 
 namespace game {
 
@@ -14,7 +14,7 @@ namespace game {
 //
 // By deriving from Message<T, Types...>, functions for writing and
 // reading the message into a bitstream are generated based on Types.
-// Based on these functions, an instance of MessageTypeInfo is created,
+// Based on these functions, an instance of MessageType is created,
 // which can be used to read and write messages without knowing their
 // concrete compile-time types.
 //
@@ -23,7 +23,7 @@ typedef void UntypedMessage;
 
 template<typename T, typename... Types>
 struct Message {
-    static MessageTypeInfo const typeInfo;
+    static MessageType const typeInfo;
 
     std::tuple<Types...> m;
 
@@ -138,7 +138,7 @@ private:
 };
 
 template<typename T, typename... Types>
-MessageTypeInfo const Message<T, Types...>::typeInfo = {
+MessageType const Message<T, Types...>::typeInfo = {
     sizeof(T),
     &T::write,
     &T::read

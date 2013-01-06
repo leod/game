@@ -2,14 +2,21 @@
 
 #include <map>
 #include <functional>
+#include <vector>
 
 #include <enet/enet.h>
 
 #include "core/Error.hpp"
 #include "util/BitStream.hpp"
-#include "net/MessageTypeInfo.hpp"
+#include "net/MessageType.hpp"
 
 namespace game {
+
+typedef std::vector<std::pair<std::type_info const*, MessageType const*>>
+        MessageTypeInfoVector;
+
+template<typename Message, typename... Messages>
+void makeMessageTypeInfoVector(MessageTypeInfoVector&);
 
 struct MessageHub {
     // The constructor creates ids for the message types based on their order.
@@ -18,9 +25,9 @@ struct MessageHub {
     // of MessageHub needs to be canonical.
     template<typename... Messages>
     static MessageHub* make() {
-        auto structInfoToMsgType = makeInfoMap<Messages...>();
-        return new MessageHub(structInfoToMsgType,
-                              makeIdMap<Messages...>(structInfoToMsgType));
+        MessageTypeInfoVector typeInfos;
+        makeMessageTypeInfoVector<Messages..., void>(typeInfos);
+        return new MessageHub(typeInfos);
     }
 
     template<typename Message>
@@ -59,62 +66,35 @@ struct MessageHub {
     void dispatch(ENetPeer*, ENetPacket*) const;
 
 private:
-    struct MessageType {
+    struct NamedMessageType {
         MessageId id;
-        MessageTypeInfo const* ti;
+        MessageType const* ti;
     };
-
-    typedef std::map<std::type_info const*, MessageType> InfoMap;
-    InfoMap const structInfoToMsgType;
-
-    typedef std::map<MessageId, MessageType> IdMap;
-    IdMap const idToMsgType;
-
+    typedef std::map<std::type_info const*, NamedMessageType> TypeInfoMap;
+    typedef std::map<MessageId, NamedMessageType> IdMap;
     typedef std::function<void(ENetPeer*, UntypedMessage const*)> Dispatcher;
-    typedef std::multimap<MessageId, Dispatcher> DispatcherMap;
-    DispatcherMap dispatchers;
 
-    MessageHub(InfoMap, IdMap);
+    MessageHub(MessageTypeInfoVector const&);
 
-    MessageType const& lookupType(std::type_info const&) const; 
-    void send(ENetPeer*, MessageType const&, UntypedMessage const*) const;
+    NamedMessageType const& lookupType(std::type_info const&) const; 
+    void send(ENetPeer*, NamedMessageType const&, UntypedMessage const*) const;
 
-    template<typename Message, typename... Messages>
-    static InfoMap makeInfoMap(MessageId count = 0) {
-        auto m = makeInfoMap<Messages...>(count + 1);
-        m[&typeid(Message)] = { count, &Message::typeInfo };
+    static TypeInfoMap makeTypeInfoMap(MessageTypeInfoVector const&);
+    static IdMap makeIdMap(MessageTypeInfoVector const&);
 
-        return m;
-    }
-
-    template<typename... Messages>
-    static InfoMap makeInfoMap(MessageId count = 0) {
-        (void)count;
-        return InfoMap();
-    } 
-
-    template<typename Message, typename... Messages>
-    static IdMap makeIdMap(InfoMap const& structInfoToMsgType,
-                           MessageId count = 0) {
-        auto m = makeIdMap<Messages...>(structInfoToMsgType, count + 1);
-
-        // Check that the two maps structInfoToMsgType and idToMsgType
-        // agree on the id of the Message
-        auto typeIt = structInfoToMsgType.find(&typeid(Message));
-        ASSERT(typeIt != structInfoToMsgType.end());
-        auto type = typeIt->second;
-        ASSERT(type.id == count);
-
-        m[count] = type;
-
-        return m;
-    }
-
-    template<typename... Messages>
-    static IdMap makeIdMap(InfoMap const&, MessageId count = 0) {
-        (void)count;
-        return IdMap();
-    }
+    TypeInfoMap const typeInfoMap;
+    IdMap const idMap;
+    std::multimap<MessageId, Dispatcher> dispatchers;
 };
+
+template<typename Message, typename... Messages>
+inline void makeMessageTypeInfoVector(MessageTypeInfoVector& vector) {
+    vector.push_back(std::make_pair(&typeid(Message), &Message::typeInfo));
+    makeMessageTypeInfoVector<Messages...>(vector);
+}
+
+template<>
+inline void makeMessageTypeInfoVector<void>(MessageTypeInfoVector&) {
+}
 
 } // namespace game

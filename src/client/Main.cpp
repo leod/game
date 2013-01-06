@@ -23,6 +23,7 @@
 
 #include "net/Message.hpp"
 #include "net/MessageHub.hpp"
+#include "net/MessageTypes.hpp"
 #include "net/NetSystem.hpp"
 #include "net/Definitions.hpp"
 #include "net/NetStateStore.hpp"
@@ -58,7 +59,7 @@ struct Client {
           playerInput(window, input),
           playerEnt(nullptr),
           host(nullptr),
-          messageHub(MessageHub::make<>()),
+          messageHub(makeMessageHub()),
           tick(0) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
     }
