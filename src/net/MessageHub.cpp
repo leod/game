@@ -13,8 +13,8 @@ void MessageHub::dispatch(ENetPeer* peer, ENetPacket* packet) const {
     read(stream, id);
 
     // Look up message type
-    auto typeIt = idToMsgType.find(id);
-    if (typeIt == idToMsgType.end())
+    auto typeIt = idMap.find(id);
+    if (typeIt == idMap.end())
         throw std::runtime_error("Received message of unknown type.");
 
     auto type = typeIt->second;
@@ -31,17 +31,15 @@ void MessageHub::dispatch(ENetPeer* peer, ENetPacket* packet) const {
         it->second(peer, message);
 }
 
-MessageHub::MessageHub(InfoMap structInfoToMsgType,
-                       IdMap idToMsgType)
-    : structInfoToMsgType(structInfoToMsgType),
-      idToMsgType(idToMsgType) {
+MessageHub::MessageHub(MessageTypeInfoVector const& types)
+    : typeInfoMap(makeTypeInfoMap(types)), idMap(makeIdMap(types)) {
 }
 
-MessageHub::MessageType const&
+MessageHub::NamedMessageType const&
 MessageHub::lookupType(std::type_info const& typeInfo) const {
-    auto typeIt = structInfoToMsgType.find(&typeInfo);
+    auto typeIt = typeInfoMap.find(&typeInfo);
 
-    if(typeIt == structInfoToMsgType.end())
+    if(typeIt == typeInfoMap.end())
         throw std::runtime_error(std::string("Message type ") +
                                  typeInfo.name() +
                                  "has not been registered.");
@@ -49,7 +47,7 @@ MessageHub::lookupType(std::type_info const& typeInfo) const {
     return typeIt->second;
 }
 
-void MessageHub::send(ENetPeer* peer, MessageType const& type,
+void MessageHub::send(ENetPeer* peer, NamedMessageType const& type,
                       UntypedMessage const* message) const {
     // Serialize message into a bitstream
     BitStreamWriter stream; 
@@ -61,6 +59,23 @@ void MessageHub::send(ENetPeer* peer, MessageType const& type,
             stream.ptr(), stream.size(), ENET_PACKET_FLAG_RELIABLE);
     enet_peer_send(peer, 0, packet);
     enet_packet_destroy(packet);
+}
+
+MessageHub::TypeInfoMap
+MessageHub::makeTypeInfoMap(MessageTypeInfoVector const& types) {
+    TypeInfoMap m; 
+    for (size_t i = 0; i < types.size(); ++i) {
+        m[types[i].first] = { static_cast<MessageId>(i), types[i].second };
+    }
+    return m;
+}
+
+MessageHub::IdMap MessageHub::makeIdMap(MessageTypeInfoVector const& types) {
+    IdMap m; 
+    for (size_t i = 0; i < types.size(); ++i) {
+        m[i] = { static_cast<MessageId>(i), types[i].second };
+    }
+    return m;
 }
 
 } // namespace game
