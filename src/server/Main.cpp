@@ -55,6 +55,8 @@ struct Server {
           messageHub(makeMessageHub()),
           tick(0) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
+
+        createTestWorld();
     }
 
     ~Server() {
@@ -129,9 +131,13 @@ struct Server {
     }
 
     void runTick() {
+        receive();
+
         tickSystem.tick();
 
         for (auto& client : clients) {
+            std::cout << "sending state " << tick << std::endl;
+
             BitStreamWriter stream;
             write(stream, tick);
             netSystem.writeRawStates(stream);
@@ -152,7 +158,6 @@ struct Server {
                 stream.size(),
                 0);
         enet_peer_send(client.peer, 1, packet);
-        enet_packet_destroy(packet);
     }
 
     ClientId makeClientId() const {

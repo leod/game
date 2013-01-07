@@ -1,6 +1,7 @@
 #include "net/MessageHub.hpp"
 
 #include <stdexcept>
+#include <sstream>
 #include <boost/scoped_array.hpp>
 
 namespace game {
@@ -14,8 +15,14 @@ void MessageHub::dispatch(ENetPeer* peer, ENetPacket* packet) const {
 
     // Look up message type
     auto typeIt = idMap.find(id);
-    if (typeIt == idMap.end())
-        throw std::runtime_error("Received message of unknown type.");
+    if (typeIt == idMap.end()) {
+        std::stringstream error;
+        error << "Received message of unknown type: ";
+        error << id;
+        error << ".";
+
+        throw std::runtime_error(error.str());
+    }
 
     auto type = typeIt->second;
 
@@ -53,12 +60,13 @@ void MessageHub::send(ENetPeer* peer, UntypedMessage const* message,
     BitStreamWriter stream; 
     write(stream, type.id); 
     type.ti->write(stream, message);
+    
+    std::cout << "sending " << stream.size() << std::endl;
 
     // Create enet packet and send off
     ENetPacket* packet = enet_packet_create(
             stream.ptr(), stream.size(), ENET_PACKET_FLAG_RELIABLE);
     enet_peer_send(peer, 0, packet);
-    enet_packet_destroy(packet);
 }
 
 MessageHub::TypeInfoMap
