@@ -16,10 +16,10 @@ struct CircularMotion : public TickComponent {
     void tick() {
         auto state = physics->getState();
 
-        state.orientation.x = glm::sin((float) time / 10);
-        state.orientation.x = state.orientation.x;
-        state.orientation.z = glm::cos((float) time / 10);
-        state.orientation.z = state.orientation.z;
+        state.orientation.x = glm::sign(glm::sin((float) time / 20)) * 0.3;
+        //state.orientation.x = state.orientation.x;
+        //state.orientation.z = glm::cos((float) time / 10);
+        //state.orientation.z = state.orientation.z;
         state.orientation.y = 0;
 
         state.position += 0.09f * state.orientation;

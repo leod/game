@@ -17,7 +17,7 @@ enum {
 };
 
 enum {
-    TICK_FREQUENCY = 5
+    TICK_FREQUENCY = 20
 };
 
 } // namespace game
