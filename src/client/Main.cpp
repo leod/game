@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+#include <stdexcept>
 #include <cstdlib>
 
 #include <SFML/Window.hpp>
@@ -10,16 +12,20 @@
 #include "core/Tasks.hpp"
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
+
 #include "opengl/TextureManager.hpp"
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Error.hpp"
 #include "graphics/RenderSystem.hpp"
 #include "graphics/RenderCube.hpp"
+
 #include "physics/PhysicsComponent.hpp"
+
 #include "world/PlayerInputSource.hpp"
 #include "world/PlayerInputComponent.hpp"
 #include "world/TickSystem.hpp"
 #include "world/CircularMotion.hpp"
+#include "world/PhysicsNetState.hpp"
 
 #include "net/Message.hpp"
 #include "net/MessageHub.hpp"
@@ -30,27 +36,38 @@
 
 using namespace game;
 
-ComponentList cube(vec3 position) {
+ComponentList teapot(NetEntityId id, vec3 position) {
     auto physics = new PhysicsComponent(position);
     return {
         physics,
         new RenderCube(physics, vec3(1, 0, 0)),
-        new CircularMotion(physics)
-    };
-}
-
-ComponentList player(vec3 position, PlayerInputSource* input) {
-    auto physics = new PhysicsComponent(position);
-    auto inputComponent = new PlayerInputComponent(input, physics);
-    return {
-        physics,
-        new RenderCube(physics, vec3(0, 0, 1)),
-        inputComponent
+        new NetComponent(0, id, { new PhysicsNetState(physics) })
     };
 }
 
 // I'll split Client and Server up as soon as I'll find out what they do.
 struct Client {
+    sf::Window& window;
+    InputSource& input;
+    Tasks tasks;
+
+    TextureManager textures;
+    ProgramManager programs;
+    RenderSystem renderSystem;
+    TickSystem tickSystem;
+    NetSystem netSystem;
+    EntityRegistry entities;
+
+    PlayerInputSource playerInput;
+    Entity* playerEnt;
+
+    ENetHost* host;
+    ENetPeer* peer;
+    std::unique_ptr<MessageHub> messageHub;
+
+    Tick tick;
+    std::queue<NetStateStore> tickStateQueue;
+
     Client(sf::Window& window, InputSource& input)
         : window(window),
           input(input),
@@ -59,14 +76,89 @@ struct Client {
           playerInput(window, input),
           playerEnt(nullptr),
           host(nullptr),
+          peer(nullptr),
           messageHub(makeMessageHub()),
           tick(0) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
+
+        netSystem.registerType(0, teapot);
+
+        messageHub->onMessage<CreateEntity>(
+                [&] (NetEntityTypeId type,
+                     NetEntityId id,
+                     vec3 pos) -> void {
+                    netSystem.createEntity(type, id, pos);      
+                });
+    }
+
+    ~Client() {
+        if (host)
+            enet_host_destroy(host);
+        if (peer)
+            enet_peer_reset(peer);
+    }
+
+    void connect(ENetAddress const& address) {
+        host = enet_host_create(nullptr, 1, 2, 0, 0);
+        if (host == nullptr)
+            throw std::runtime_error("Failed to create ENet client host");
+
+        peer = enet_host_connect(host, &address, 2, 0);
+
+        if (peer == nullptr)
+            throw std::runtime_error("Failed to connect to host");
+
+        // Wait for connection attempt to succeed
+        auto const maxWaitTime = 5000; // Milliseconds
+
+        ENetEvent event;
+        if (enet_host_service(host, &event, maxWaitTime) <= 0 ||
+            event.type != ENET_EVENT_TYPE_CONNECT)
+            throw std::runtime_error("Failed to connect to host");
+    }
+
+    void receive() {
+        ENetEvent event;
+
+        while (enet_host_service(host, &event, 0) > 0) {
+            switch (event.type) {
+            case ENET_EVENT_TYPE_RECEIVE:
+                if (event.channelID == CHANNEL_MESSAGES)
+                    messageHub->dispatch(event.peer, event.packet);
+                else {
+                    BitStreamReader stream(event.packet->data,
+                                           event.packet->dataLength);
+                    Tick tick;
+                    read(stream, tick);
+
+                    NetStateStore store;
+                    netSystem.readRawStates(stream, store);
+
+                    tickStateQueue.push(store);
+                }
+
+                enet_packet_destroy(event.packet);
+
+                break;
+
+            case ENET_EVENT_TYPE_DISCONNECT:
+                std::cout << "Client disconnected" << std::endl;
+                break;
+
+            default:
+                ASSERT(false);
+            }
+        }
     }
 
     void startTick() {
         if (tickStateQueue.empty())
             return;
+
+        auto const& nextState = tickStateQueue.front();
+        netSystem.applyStates(nextState);
+
+        tickStateQueue.pop();
     }
 
     void update(Time delta) {
@@ -123,26 +215,6 @@ struct Client {
 
         window.display();
     }
-
-    sf::Window& window;
-    InputSource& input;
-    Tasks tasks;
-
-    TextureManager textures;
-    ProgramManager programs;
-    RenderSystem renderSystem;
-    TickSystem tickSystem;
-    NetSystem netSystem;
-    EntityRegistry entities;
-
-    PlayerInputSource playerInput;
-    Entity* playerEnt;
-
-    ENetHost* host;
-    std::unique_ptr<MessageHub> messageHub;
-
-    Tick tick;
-    std::queue<NetStateStore> tickStateQueue;
 };
 
 int main()
@@ -163,6 +235,8 @@ int main()
         }
     }
 
+    enet_initialize();
+
     SFMLInputSource input;
     Tasks tasks;
 
@@ -179,6 +253,14 @@ int main()
     Time deltaTime;
 
     Client client(window, input);
+
+    {
+        ENetAddress address;
+        enet_address_set_host(&address, "localhost");
+        address.port = 20000;
+
+        client.connect(address);
+    }
 
     while (running) {
         {

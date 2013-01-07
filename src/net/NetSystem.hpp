@@ -1,6 +1,10 @@
 #pragma once
 
+#include <functional>
+
 #include "core/System.hpp"
+#include "core/EntityRegistry.hpp"
+#include "math/Math.hpp"
 #include "net/NetComponent.hpp"
 
 namespace game {
@@ -8,6 +12,8 @@ namespace game {
 struct BitStreamWriter;
 struct BitStreamReader;
 struct NetStateStore;
+
+typedef std::function<ComponentList(NetEntityId, vec3)> NetEntityMaker;
 
 struct NetSystem : public SystemBase<NetComponent> {
     // Implement SystemBase<NetComponent>
@@ -23,8 +29,15 @@ struct NetSystem : public SystemBase<NetComponent> {
     // For testing
     void applyStates(NetStateStore const&);
 
+    // TODO: Ids Will be automated.
+    void registerType(NetEntityTypeId, NetEntityMaker);
+
+    Entity* createEntity(NetEntityTypeId, NetEntityId, vec3);
+
 private:
     std::map<NetEntityId, NetComponent*> components;
+
+    std::map<NetEntityTypeId, NetEntityMaker> entityTypes;
 };
 
 } // namespace game

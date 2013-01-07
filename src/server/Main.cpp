@@ -8,14 +8,31 @@
 #include "core/EntityRegistry.hpp"
 #include "core/Tasks.hpp"
 #include "core/Error.hpp"
+#include "core/Time.hpp"
+#include "input/ClockTimeSource.hpp"
 #include "net/NetSystem.hpp"
 #include "net/MessageHub.hpp"
+#include "net/MessageTypes.hpp"
 #include "net/Definitions.hpp"
+#include "net/NetState.hpp"
+#include "net/NetComponent.hpp"
 #include "world/TickSystem.hpp"
+#include "world/PhysicsNetState.hpp"
+#include "world/CircularMotion.hpp"
+#include "physics/PhysicsComponent.hpp"
 
 #include "server/ClientInfo.hpp"
 
 using namespace game;
+
+ComponentList teapot(NetEntityId id, vec3 position) {
+    auto physics = new PhysicsComponent(position);
+    return {
+        physics,
+        new NetComponent(0, id, { new PhysicsNetState(physics) }),
+        new CircularMotion(physics)
+    };
+}
 
 // I'll split Client and Server up as soon as I'll find out what they do.
 struct Server {
@@ -35,7 +52,7 @@ struct Server {
         : entities({ &netSystem, &tickSystem }),
           host(nullptr),
           clients(),
-          messageHub(MessageHub::make<>()),
+          messageHub(makeMessageHub()),
           tick(0) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
     }
@@ -43,6 +60,10 @@ struct Server {
     ~Server() {
         if (host)
             enet_host_destroy(host);
+    }
+
+    void createTestWorld() {
+        entities.add(teapot(0, vec3(0, 0, 0)));
     }
 
     void start() {
@@ -82,6 +103,19 @@ struct Server {
                     clients.push_back(newClient);
                 }
 
+                netSystem.iterate([&] (NetComponent* component) {
+                    // TODO: Hacky :P
+                    vec3 position(0, 0, 0);
+                    if (auto physics = component->getOwner()
+                            ->component<PhysicsComponent>())
+                        position = physics->getPosition(); 
+
+                    messageHub->send(event.peer,
+                        CreateEntity::make(component->getNetTypeId(),
+                                           component->getNetId(),
+                                           position));
+                });
+
                 break;
 
             case ENET_EVENT_TYPE_DISCONNECT:
@@ -106,6 +140,10 @@ struct Server {
         }
 
         tick++;
+    }
+
+    void update(Time delta) {
+        tasks.run(delta);
     }
 
     void sendState(ClientInfo& client, BitStreamWriter const& stream) {
@@ -142,6 +180,14 @@ int main() {
 
         Server server;
         server.start();
+
+        ClockTimeSource time;
+        Time deltaTime;
+
+        while (true) {
+            server.update(deltaTime);
+            deltaTime = time.nextDelta();            
+        }
     } catch(std::exception& exception) {
         std::cerr << exception.what() << std::endl;
     }

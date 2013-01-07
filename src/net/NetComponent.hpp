@@ -10,15 +10,20 @@ namespace game {
 struct NetState;
 
 typedef uint16_t NetEntityId;
+typedef uint16_t NetEntityTypeId;
 
 struct NetComponent : public ComponentFamily<NetComponent> {
-    NetComponent(NetEntityId, std::vector<NetState*>);
+    NetComponent(NetEntityTypeId, NetEntityId, std::vector<NetState*>&&);
 
     NetEntityId getNetId() const;
+    NetEntityTypeId getNetTypeId() const;
+
     std::vector<NetState*> const& getStates() const;
 
 private:
+    NetEntityTypeId netTypeId;
     NetEntityId netId;
+
     std::vector<NetState*> states; // TODO: Mem cleanup
 };
 

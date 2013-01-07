@@ -64,7 +64,6 @@ def link(packages, target, build_dir=os.path.join('build', 'gcc'), flags=None):
     after();
     run('g++',
         join_flags('-L', lib_dirs), 
-        '--verbose',
         objects, bs, join_flags('-l', libs), '-o', target, flags)
 
 def check():
