@@ -1,5 +1,8 @@
 #include "world/PhysicsNetState.hpp"
 
+#include "util/Print.hpp"
+#include "core/Entity.hpp"
+
 #include "core/Error.hpp"
 #include "util/BitStream.hpp"
 #include "physics/PhysicsComponent.hpp"
@@ -16,9 +19,10 @@ void readState(BitStreamReader& stream, PhysicsState* state) {
     read(stream, state->orientation);
 }
 
-void interpolateState(PhysicsState const*, PhysicsState const*, float,
-                      PhysicsState*) {
-    ASSERT(false);
+void interpolateState(PhysicsState const* a, PhysicsState const* b, float t,
+                      PhysicsState* state) {
+    state->position = a->position * (1 - t) + b->position * t;
+    state->orientation = a->orientation * (1 - t) + b->orientation * t;
 }
 
 static NetStateType const stateType =

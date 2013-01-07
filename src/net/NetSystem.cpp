@@ -80,6 +80,42 @@ void NetSystem::readRawStates(BitStreamReader& stream,
     }
 }
 
+void NetSystem::interpolateStates(NetStateStore const& a,
+                                  NetStateStore const& b,
+                                  float t) {
+    // We shall ignore this issue for now
+    ASSERT_MSG(a.size() == b.size() && a.dataSize() == b.dataSize(),
+               "Implement me: " << a.size() << ", " << b.size() << ", "
+                                << a.dataSize() << ", " << b.dataSize()); 
+
+    // Buffer for the interpolation result
+    std::vector<uint8_t> buffer;
+
+    for (size_t i = 0; i < a.size(); ++i) {
+        auto entryA = a[i],
+             entryB = b[i];
+        ASSERT_MSG(entryA.id == entryB.id, "Implement me.");
+        auto offsetA = entryA.offset,
+             offsetB = entryB.offset;
+
+        auto component = get(entryA.id);
+
+        for (auto state : component->getStates()) {
+            if (buffer.size() < state->type().size)
+                buffer.resize(state->type().size);
+
+            auto dataA = a.data(offsetA),
+                 dataB = b.data(offsetB);
+
+            state->type().interpolate(dataA, dataB, t, &buffer[0]);
+            state->store(&buffer[0]);
+
+            offsetA += state->type().size;
+            offsetB += state->type().size;
+        }
+    }
+}
+
 void NetSystem::applyStates(NetStateStore const& store) {
     for (size_t i = 0; i < store.size(); ++i) {
         auto entry = store[i];
@@ -98,7 +134,8 @@ void NetSystem::registerType(NetEntityTypeId typeId, NetEntityMaker f) {
     entityTypes[typeId] = f;
 }
 
-Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id, vec3 pos) {
+Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
+        vec3 pos) {
     return getRegistry()->add(entityTypes[typeId](id, pos));
 }
 

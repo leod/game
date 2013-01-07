@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <memory>
 
+#include <SFML/Window.hpp> // tmp
+#include <SFML/System.hpp>
 #include <enet/enet.h>
 
 #include "core/EntityRegistry.hpp"
@@ -36,6 +38,8 @@ ComponentList teapot(NetEntityId id, vec3 position) {
 
 // I'll split Client and Server up as soon as I'll find out what they do.
 struct Server {
+    sf::Clock clock; // tmp
+
     Tasks tasks;
 
     NetSystem netSystem;
@@ -53,7 +57,7 @@ struct Server {
           host(nullptr),
           clients(),
           messageHub(makeMessageHub()),
-          tick(0) {
+          tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
 
         createTestWorld();
@@ -138,19 +142,20 @@ struct Server {
         tickSystem.tick();
 
         for (auto& client : clients) {
-            std::cout << "sending state " << tick << std::endl;
-
             BitStreamWriter stream;
             write(stream, tick);
             netSystem.writeRawStates(stream);
 
             sendState(client, stream);
+
+            std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": sending state " << tick << std::endl;
         }
 
         tick++;
     }
 
     void update(Time delta) {
+        receive();
         tasks.run(delta);
     }
 
@@ -194,6 +199,8 @@ int main() {
         while (true) {
             server.update(deltaTime);
             deltaTime = time.nextDelta();            
+
+            sf::sleep(sf::milliseconds(5));
         }
     } catch(std::exception& exception) {
         std::cerr << exception.what() << std::endl;
