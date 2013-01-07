@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "core/Error.hpp"
+#include "core/Entity.hpp"
 #include "util/BitStream.hpp"
 #include "net/NetState.hpp"
 #include "net/NetStateStore.hpp"
@@ -82,11 +83,14 @@ void NetSystem::readRawStates(BitStreamReader& stream,
 void NetSystem::applyStates(NetStateStore const& store) {
     for (size_t i = 0; i < store.size(); ++i) {
         auto entry = store[i];
+        auto offset = entry.offset;
         
         NetComponent const* component = get(entry.id);
         
-        for (auto state : component->getStates())
-            state->store(entry.data);
+        for (auto state : component->getStates()) {
+            state->store(store.data(offset));
+            offset += state->type().size;
+        }
     }
 }
 

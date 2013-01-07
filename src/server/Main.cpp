@@ -66,6 +66,8 @@ struct Server {
 
     void createTestWorld() {
         entities.add(teapot(0, vec3(0, 0, 0)));
+        entities.add(teapot(1, vec3(-3, 0, 0)));
+        entities.add(teapot(2, vec3(3, 0, 0)));
     }
 
     void start() {

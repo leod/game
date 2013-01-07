@@ -3,11 +3,20 @@
 #include <cstdint>
 #include <tuple>
 #include <functional>
+#include <ostream>
+#include <iostream>
 
 #include "util/BitStream.hpp"
+#include "util/Print.hpp"
 #include "net/MessageType.hpp"
 
 namespace game {
+
+template<typename T, typename... Args>
+struct Message;
+
+template<typename T, typename... Args>
+std::ostream& operator<<(std::ostream&, Message<T, Args...> const&);
 
 // Messages are defined by deriving a struct T from Message<T, Types...>.
 // Types is a type tuple containing the data of the message.
@@ -37,7 +46,7 @@ struct Message {
 
     static T make(Types const&... data) {
         T message;
-        message.m = std::tuple<Types..>(data...);
+        message.m = std::make_tuple(data...);
 
         return message;
     }
@@ -146,5 +155,11 @@ MessageType const Message<T, Types...>::typeInfo = {
     &T::write,
     &T::read
 };
+
+template<typename T, typename... Args>
+std::ostream& operator<<(std::ostream& o, Message<T, Args...> const& message)
+{
+    return o << message.m;
+}
 
 } // namespace game

@@ -9,7 +9,7 @@ uint8_t* NetStateStore::allocate(NetEntityId id, size_t size) {
     Entry newEntry = {
         id,
         size,
-        &buffer[oldSize]
+        oldSize
     };
     entries.push_back(newEntry);
 
@@ -22,6 +22,10 @@ size_t NetStateStore::size() const {
 
 NetStateStore::Entry const& NetStateStore::operator[](size_t index) const {
     return entries.at(index);
+}
+
+uint8_t const* NetStateStore::data(size_t offset) const {
+    return &buffer[offset];
 }
 
 } // namespace game
