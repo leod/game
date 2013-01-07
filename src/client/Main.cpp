@@ -131,6 +131,8 @@ struct Client {
                     Tick tick;
                     read(stream, tick);
 
+                    std::cout << "Received state for tick " << tick << std::endl;
+
                     NetStateStore store;
                     netSystem.readRawStates(stream, store);
 
@@ -162,6 +164,7 @@ struct Client {
     }
 
     void update(Time delta) {
+        receive();
         tasks.run(delta);
     }
 

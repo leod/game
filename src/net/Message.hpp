@@ -35,8 +35,11 @@ struct Message {
         : m(data...) {
     }
 
-    static Message make(Types const&... data) {
-        return Message(data...);
+    static T make(Types const&... data) {
+        T message;
+        message.m = std::tuple<Types..>(data...);
+
+        return message;
     }
 
     // TODO: Allow non-void functors
