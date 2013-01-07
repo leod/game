@@ -45,8 +45,12 @@ ComponentList teapot(NetEntityId id, vec3 position) {
     };
 }
 
+#define INTERPOLATION_FREQUENCY 60
+
 // I'll split Client and Server up as soon as I'll find out what they do.
 struct Client {
+    sf::Clock clock; // tmp
+
     sf::Window& window;
     InputSource& input;
     Tasks tasks;
@@ -67,6 +71,10 @@ struct Client {
 
     Tick tick;
     bool startNextTick;
+    bool isFirstTick;
+    NetStateStore curState;
+    NetStateStore nextState;
+    float tickInterpolation;
     std::queue<NetStateStore> tickStateQueue;
 
     Client(sf::Window& window, InputSource& input)
@@ -80,8 +88,10 @@ struct Client {
           peer(nullptr),
           messageHub(makeMessageHub()),
           tick(0),
-          startNextTick(false) {
+          startNextTick(false),
+          isFirstTick(true) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
+        tasks.add(INTERPOLATION_FREQUENCY, [&] () { interpolate(); });
 
         netSystem.registerType(0, teapot);
 
@@ -133,9 +143,9 @@ struct Client {
                     Tick tick;
                     read(stream, tick);
 
-                    std::cout << "Received state for tick " << tick << std::endl;
+                    std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": received state for tick " << tick << std::endl;
 
-                    tickStateQueue.emplace();
+                    tickStateQueue.emplace(tick);
                     netSystem.readRawStates(stream, tickStateQueue.back());
 
                     if (startNextTick)
@@ -157,17 +167,50 @@ struct Client {
     }
 
     void startTick() {
-        if (tickStateQueue.empty()) {
+        if (tickStateQueue.size() < 1) {
             // Start the tick as soon as it arrives, so we don't have to wait
             // for Tasks to call startTick() again
             startNextTick = true;
             return;
         }
 
-        auto const& nextState = tickStateQueue.front();
-        netSystem.applyStates(nextState);
+        if (isFirstTick) {
+            if (tickStateQueue.size() < 2) {
+                startNextTick = true;
+                return;
+            }
 
-        tickStateQueue.pop();
+            curState = tickStateQueue.front();
+            tickStateQueue.pop();
+
+            nextState = tickStateQueue.front();
+            tickStateQueue.pop();
+
+            isFirstTick = false;
+        } else {
+            curState = nextState;
+
+            nextState = tickStateQueue.front();
+            tickStateQueue.pop();
+        }
+
+        tick = curState.tick();
+        tickInterpolation = 0;
+
+        std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": started tick " << curState.tick() << std::endl;
+    }
+
+    void interpolate() {
+        if (tick == 0)
+            return;
+
+        tickInterpolation += (float)TICK_FREQUENCY / INTERPOLATION_FREQUENCY;
+        if (tickInterpolation >= 1) {
+            tickInterpolation = 1;
+            std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": end of tick" << std::endl;
+            startTick();
+        }
+        netSystem.interpolateStates(curState, nextState, tickInterpolation);
     }
 
     void update(Time delta) {

@@ -26,6 +26,8 @@ struct NetSystem : public SystemBase<NetComponent> {
     void writeRawStates(BitStreamWriter&) const;
     void readRawStates(BitStreamReader&, NetStateStore&) const;
 
+    void interpolateStates(NetStateStore const&, NetStateStore const&, float);
+
     // For testing
     void applyStates(NetStateStore const&);
 

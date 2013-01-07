@@ -2,6 +2,18 @@
 
 namespace game {
 
+NetStateStore::NetStateStore() {
+
+}
+
+NetStateStore::NetStateStore(Tick tick_)
+    : tick_(tick_) {
+}
+
+Tick NetStateStore::tick() const {
+    return tick_;
+}
+
 uint8_t* NetStateStore::allocate(NetEntityId id, size_t size) {
     size_t oldSize = buffer.size();
     buffer.resize(oldSize + size); 
@@ -18,6 +30,10 @@ uint8_t* NetStateStore::allocate(NetEntityId id, size_t size) {
 
 size_t NetStateStore::size() const {
     return entries.size();
+}
+
+size_t NetStateStore::dataSize() const {
+    return buffer.size();
 }
 
 NetStateStore::Entry const& NetStateStore::operator[](size_t index) const {
