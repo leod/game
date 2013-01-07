@@ -46,8 +46,6 @@ void NetSystem::writeRawStates(BitStreamWriter& stream) const {
     iterate([&] (NetComponent const* component) {
         write(stream, component->getNetId());
 
-        // Meh. My current interface for NetState requires me to have
-        // a temporary buffer for load.
         std::vector<uint8_t> buffer;
 
         for (auto state : component->getStates()) {
@@ -90,6 +88,14 @@ void NetSystem::applyStates(NetStateStore const& store) {
         for (auto state : component->getStates())
             state->store(entry.data);
     }
+}
+
+void NetSystem::registerType(NetEntityTypeId typeId, NetEntityMaker f) {
+    entityTypes[typeId] = f;
+}
+
+Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id, vec3 pos) {
+    return getRegistry()->add(entityTypes[typeId](id, pos));
 }
 
 } // namespace game

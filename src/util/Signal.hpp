@@ -3,7 +3,10 @@
 #include <vector>
 #include <functional>
 
+using namespace std::placeholders;
+
 #define MEMBER_FN_0(a, fn) std::bind(&decltype(a)::fn, &a)
+#define MEMBER_FN_3(a, fn) std::bind(&decltype(a)::fn, &a, _1, _2, _3)
 
 namespace game {
 

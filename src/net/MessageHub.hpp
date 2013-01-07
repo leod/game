@@ -35,12 +35,12 @@ struct MessageHub {
         send(peer, message.toUntyped(), lookupType(typeid(Message)));
     }
 
-    template<typename Message, typename... Params>
-    void onMessage(std::function<void(Params...)> f) {
+    template<typename Message, typename F>
+    void onMessage(F f) {
         auto type = lookupType(typeid(Message));
 
         dispatchers.insert(std::make_pair(type.id,
-            [&] (ENetPeer*, UntypedMessage const* messageHandle) {
+            [=] (ENetPeer*, UntypedMessage const* messageHandle) {
                 Message const* message =
                     static_cast<Message const*>(messageHandle); 
 
@@ -49,12 +49,12 @@ struct MessageHub {
         ));
     }
 
-    template<typename Message, typename... Params>
-    void onMessageWithPeer(std::function<void(Params...)> f) {
+    template<typename Message, typename F>
+    void onMessageWithPeer(F f) {
         auto type = lookupType(typeid(Message));
 
         dispatchers.insert(std::make_pair(type.id,
-            [&] (ENetPeer* peer, UntypedMessage const* messageHandle) {
+            [=] (ENetPeer* peer, UntypedMessage const* messageHandle) {
                 Message const* message =
                     static_cast<Message const*>(messageHandle); 
 
@@ -77,7 +77,7 @@ private:
     MessageHub(MessageTypeInfoVector const&);
 
     NamedMessageType const& lookupType(std::type_info const&) const; 
-    void send(ENetPeer*, NamedMessageType const&, UntypedMessage const*) const;
+    void send(ENetPeer*, UntypedMessage const*, NamedMessageType const&) const;
 
     static TypeInfoMap makeTypeInfoMap(MessageTypeInfoVector const&);
     static IdMap makeIdMap(MessageTypeInfoVector const&);

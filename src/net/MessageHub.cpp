@@ -47,8 +47,8 @@ MessageHub::lookupType(std::type_info const& typeInfo) const {
     return typeIt->second;
 }
 
-void MessageHub::send(ENetPeer* peer, NamedMessageType const& type,
-                      UntypedMessage const* message) const {
+void MessageHub::send(ENetPeer* peer, UntypedMessage const* message,
+                      NamedMessageType const& type) const {
     // Serialize message into a bitstream
     BitStreamWriter stream; 
     write(stream, type.id); 

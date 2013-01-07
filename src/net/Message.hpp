@@ -50,7 +50,7 @@ struct Message {
     }
 
     UntypedMessage const* toUntyped() const {
-        return static_cast<UntypedMessage*>(this);
+        return static_cast<UntypedMessage const*>(this);
     }
 
     static void write(BitStreamWriter& stream, UntypedMessage const* message) {
