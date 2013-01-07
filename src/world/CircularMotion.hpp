@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+#include "util/Print.hpp"
+
 #include "physics/PhysicsComponent.hpp"
 #include "world/TickComponent.hpp"
 
@@ -13,13 +16,13 @@ struct CircularMotion : public TickComponent {
     void tick() {
         auto state = physics->getState();
 
-        state.orientation.x = glm::sin((float) time / 90);
+        state.orientation.x = glm::sin((float) time / 10);
         state.orientation.x = state.orientation.x;
-        state.orientation.z = glm::cos((float) time / 90);
+        state.orientation.z = glm::cos((float) time / 10);
         state.orientation.z = state.orientation.z;
         state.orientation.y = 0;
 
-        state.position += 0.02f * state.orientation;
+        state.position += 0.09f * state.orientation;
 
         physics->setState(state);
 

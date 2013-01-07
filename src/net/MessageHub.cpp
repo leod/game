@@ -60,8 +60,6 @@ void MessageHub::send(ENetPeer* peer, UntypedMessage const* message,
     BitStreamWriter stream; 
     write(stream, type.id); 
     type.ti->write(stream, message);
-    
-    std::cout << "sending " << stream.size() << std::endl;
 
     // Create enet packet and send off
     ENetPacket* packet = enet_packet_create(

@@ -66,6 +66,7 @@ struct Client {
     std::unique_ptr<MessageHub> messageHub;
 
     Tick tick;
+    bool startNextTick;
     std::queue<NetStateStore> tickStateQueue;
 
     Client(sf::Window& window, InputSource& input)
@@ -78,7 +79,8 @@ struct Client {
           host(nullptr),
           peer(nullptr),
           messageHub(makeMessageHub()),
-          tick(0) {
+          tick(0),
+          startNextTick(false) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
 
         netSystem.registerType(0, teapot);
@@ -133,10 +135,11 @@ struct Client {
 
                     std::cout << "Received state for tick " << tick << std::endl;
 
-                    NetStateStore store;
-                    netSystem.readRawStates(stream, store);
+                    tickStateQueue.emplace();
+                    netSystem.readRawStates(stream, tickStateQueue.back());
 
-                    tickStateQueue.push(store);
+                    if (startNextTick)
+                        startTick();
                 }
 
                 enet_packet_destroy(event.packet);
@@ -154,8 +157,12 @@ struct Client {
     }
 
     void startTick() {
-        if (tickStateQueue.empty())
+        if (tickStateQueue.empty()) {
+            // Start the tick as soon as it arrives, so we don't have to wait
+            // for Tasks to call startTick() again
+            startNextTick = true;
             return;
+        }
 
         auto const& nextState = tickStateQueue.front();
         netSystem.applyStates(nextState);
