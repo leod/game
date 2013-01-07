@@ -197,6 +197,8 @@ struct Client {
         tick = curState.tick();
         tickInterpolation = 0;
 
+        netSystem.applyStates(curState);
+
         std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": started tick " << curState.tick() << std::endl;
     }
 
@@ -204,13 +206,16 @@ struct Client {
         if (tick == 0)
             return;
 
-        tickInterpolation += (float)TICK_FREQUENCY / INTERPOLATION_FREQUENCY;
         if (tickInterpolation >= 1) {
             tickInterpolation = 1;
+            startNextTick = true;
             std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": end of tick" << std::endl;
             startTick();
+            std::cout << "end interpolation start" << std::endl;
         }
         netSystem.interpolateStates(curState, nextState, tickInterpolation);
+
+        tickInterpolation += (float)TICK_FREQUENCY / INTERPOLATION_FREQUENCY;
     }
 
     void update(Time delta) {
