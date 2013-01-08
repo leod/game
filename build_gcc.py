@@ -23,7 +23,7 @@ packages = [
                 'Texture', 'TextureManager',]),
     ('world', ['PhysicsNetState', 'PlayerInput', 'PlayerInputComponent',
                'PlayerInputSource', 'TickSystem',]),
-    ('util', ['BitStream',]),
+    ('util', ['Backtrace', 'BitStream',]),
 ]
 
 clientPackages = [

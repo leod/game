@@ -1,5 +1,7 @@
 #include "core/EntityRegistry.hpp"
 
+#include <algorithm>
+
 #include "core/Entity.hpp"
 #include "core/System.hpp"
 #include "core/Error.hpp"
@@ -65,6 +67,37 @@ Entity* EntityRegistry::add(ComponentList components) {
     }
 
     return entity;
+}
+
+void EntityRegistry::remove(Entity* entity) {
+    auto it = entities.find(entity->id);
+
+    ASSERT_MSG(it != entities.end(),
+               "Entity #" << entity->id << " not found in registry.");
+
+    for (auto& kv : entity->components) {
+        // Notify corresponding system
+        {
+            auto it = systems.find(kv.second->getFamilyId()); 
+            if (it != systems.end())
+                it->second->onUnregister(kv.second);
+        }
+
+        // Remove from family list
+        {
+            auto& family = families[kv.second->getFamilyId()];
+
+            // TODO: Use std::list or something else for the families?
+            //       Could even store links in the components.
+            auto it = std::find(family.begin(), family.end(), kv.second);
+            ASSERT(it != family.end());
+
+            family.erase(it);
+        }
+    }
+
+    entities.erase(it);
+    delete entity;
 }
 
 System* EntityRegistry::system(FamilyId familyId) {
