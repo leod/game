@@ -1,7 +1,6 @@
 # Binaries
 *.o
 *.exe
-*.dll
 *.a
 *.pyc
 
@@ -19,3 +18,4 @@ Release/
 lib/
 fabricate.py
 .deps
+crash.log
