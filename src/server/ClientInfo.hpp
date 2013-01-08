@@ -14,7 +14,12 @@ struct ClientInfo {
     ClientId id;
     ENetPeer* peer;
     std::string name;
-    PlayerInputComponent* inputComponent;
+    Entity* entity;
+    bool connected;
+
+    ClientInfo()
+        : id(0), peer(nullptr), name(""), entity(nullptr), connected(true) {
+    }
 };
 
 } // namespace game

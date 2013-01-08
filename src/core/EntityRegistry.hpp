@@ -63,6 +63,8 @@ struct EntityRegistry {
     // Creates a new entity from the given list of components and registers it.
     Entity* add(ComponentList);
 
+    void remove(Entity*);
+
     // Returns the system that is registered as being responsible for the
     // given type of component (= family).
     // For example, system(RenderSystem::staticGetFamilyId()) returns the

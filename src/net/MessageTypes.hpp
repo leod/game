@@ -16,10 +16,30 @@ struct CreateEntityMessage
               vec3>
 {};
 
-struct LoginMessage
-    : Message<LoginMessage,
-              ClientId> {
-};
+struct RemoveEntityMessage
+    : Message<RemoveEntityMessage,
+              NetEntityId>
+{};
+
+struct LoggedInMessage
+    : Message<LoggedInMessage,
+              ClientId>
+{};
+
+struct DisconnectMessage
+    : Message<DisconnectMessage>
+{};
+
+struct ClientConnectedMessage
+    : Message<ClientConnectedMessage,
+              ClientId,
+              std::string>
+{};
+
+struct ClientDisconnectedMessage
+    : Message<ClientDisconnectedMessage,
+              ClientId>
+{};
 
 MessageHub* makeMessageHub();
     

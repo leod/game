@@ -24,13 +24,16 @@ struct NetSystem : public SystemBase<NetComponent> {
     NetComponent* get(NetEntityId);
     NetComponent const* get(NetEntityId) const;
 
+    bool exists(NetEntityId) const;
+    void remove(NetEntityId);
+
     void writeRawStates(BitStreamWriter&, ClientId ignore = 0) const;
     void readRawStates(BitStreamReader&, NetStateStore&) const;
 
     void applyStates(NetStateStore const&);
     void interpolateStates(NetStateStore const&, NetStateStore const&, float);
 
-    // TODO: Ids Will be automated.
+    // TODO: Ids will be automated.
     template<typename Maker>
     void registerType(NetEntityTypeId typeId, Maker maker) {
         entityTypes[typeId] = maker;

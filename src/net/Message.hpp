@@ -37,11 +37,6 @@ struct Message {
     std::tuple<Types...> m;
 
     Message() {
-
-    }
-
-    Message(Types const&... data)
-        : m(data...) {
     }
 
     static T make(Types const&... data) {

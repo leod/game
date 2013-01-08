@@ -49,6 +49,9 @@ ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
 }
 
 ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
+    int* x = nullptr;
+    *x = 42;
+
     static vec3 colors[] = {
         vec3(1, 0, 0),
         vec3(0, 1, 0),
@@ -132,13 +135,20 @@ struct Client {
         (NetEntityTypeId type, NetEntityId id, ClientId owner, vec3 pos) {
             auto entity = netSystem.createEntity(type, id, owner, pos);      
 
-            ASSERT_MSG(myId > 0, "Should have received LoginMessage "
+            ASSERT_MSG(myId > 0, "Should have received LoggedInMessage "
                                  << "before CreateEntityMessage.");
             if (owner == myId)
                 playerEntity = entity; 
         });
 
-        messageHub->onMessage<LoginMessage>([&]
+        messageHub->onMessage<RemoveEntityMessage>([&]
+        (NetEntityId id) {
+            if (netSystem.exists(id)) {
+                entities.remove(netSystem.get(id)->getEntity());
+            }
+        });
+
+        messageHub->onMessage<LoggedInMessage>([&]
         (ClientId id) {
             ASSERT(id > 0);
             myId = id;
@@ -151,10 +161,12 @@ struct Client {
     }
 
     ~Client() {
-        if (host)
+        if (peer) {
+            messageHub->send<DisconnectMessage>(peer);
+            enet_host_flush(host);
+
             enet_host_destroy(host);
-        if (peer)
-            enet_peer_reset(peer);
+        }
     }
 
     void connect(ENetAddress const& address) {
@@ -330,6 +342,8 @@ struct Client {
 
 int main()
 {
+    LoadLibraryA("backtrace.dll");
+
     sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(true);
@@ -366,8 +380,12 @@ int main()
     Client client(window, input);
 
     {
+        std::cout << "Pls enter IP: ";
+        std::string host;
+        std::getline(std::cin, host);
+
         ENetAddress address;
-        enet_address_set_host(&address, "localhost");
+        enet_address_set_host(&address, host.c_str());
         address.port = 20000;
 
         client.connect(address);

@@ -1,6 +1,7 @@
 #include "net/NetSystem.hpp"
 
 #include <vector>
+#include <iostream>
 
 #include "core/Error.hpp"
 #include "core/Entity.hpp"
@@ -41,6 +42,18 @@ NetComponent const* NetSystem::get(NetEntityId id) const {
     ASSERT(componentIt->second->getNetId() == id);
 
     return componentIt->second;
+}
+
+bool NetSystem::exists(NetEntityId id) const {
+    return components.find(id) != components.end();
+}
+
+void NetSystem::remove(NetEntityId id) {
+    auto componentIt = components.find(id); 
+
+    ASSERT_MSG(componentIt != components.end(),
+               "Net entity " << id << " not found");
+    components.erase(componentIt);
 }
 
 void NetSystem::writeRawStates(BitStreamWriter& stream,
@@ -96,6 +109,9 @@ void NetSystem::interpolateStates(NetStateStore const& a,
     std::vector<uint8_t> buffer;
 
     for (size_t i = 0, j = 0; i < a.size(); ++i, ++j) {
+        if (j >= b.size())
+            break;
+
         auto entryA = a[i],
              entryB = b[j];
 

@@ -13,6 +13,7 @@ struct EntityRegistry;
 // An entity can have at most one component of each family.
 struct Entity {
     friend class Component;
+    friend class EntityRegistry;
 
     Entity(EntityId id, ComponentMap components, EntityRegistry* registry)
         : id(id), components(components), registry(registry) {
