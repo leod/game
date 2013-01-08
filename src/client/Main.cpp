@@ -128,11 +128,12 @@ struct Client {
         netSystem.registerType(0, makeTeapot);
         netSystem.registerType(1, makePlayer);
 
-        messageHub->onMessage<CreateEntity>([&]
+        messageHub->onMessage<CreateEntityMessage>([&]
         (NetEntityTypeId type, NetEntityId id, ClientId owner, vec3 pos) {
             auto entity = netSystem.createEntity(type, id, owner, pos);      
 
-            ASSERT(myId > 0);
+            ASSERT_MSG(myId > 0, "Should have received LoginMessage "
+                                 << "before CreateEntityMessage.");
             if (owner == myId)
                 playerEntity = entity; 
         });
