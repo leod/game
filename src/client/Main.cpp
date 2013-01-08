@@ -36,8 +36,6 @@
 #include "net/NetStateStore.hpp"
 
 using namespace game;
-using namespace std::placeholders;
-using std::bind;
 
 ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
     auto physics = new PhysicsComponent(position);
@@ -342,8 +340,6 @@ struct Client {
 
 int main()
 {
-    LoadLibraryA("backtrace.dll");
-
     sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(true);
