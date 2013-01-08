@@ -2,8 +2,8 @@
 
 namespace game {
 
-NetStateStore::NetStateStore() {
-
+NetStateStore::NetStateStore()
+    : tick_(0) {
 }
 
 NetStateStore::NetStateStore(Tick tick_)

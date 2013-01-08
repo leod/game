@@ -26,6 +26,7 @@
 #include "world/TickSystem.hpp"
 #include "world/CircularMotion.hpp"
 #include "world/PhysicsNetState.hpp"
+#include "world/MessageTypes.hpp"
 
 #include "net/Message.hpp"
 #include "net/MessageHub.hpp"
@@ -35,17 +36,40 @@
 #include "net/NetStateStore.hpp"
 
 using namespace game;
+using namespace std::placeholders;
+using std::bind;
 
-ComponentList teapot(NetEntityId id, vec3 position) {
+ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
     auto physics = new PhysicsComponent(position);
     return {
         physics,
         new RenderCube(physics, vec3(1, 0, 0)),
-        new NetComponent(0, id, { new PhysicsNetState(physics) })
+        new NetComponent(0, id, owner, { new PhysicsNetState(physics) })
     };
 }
 
-#define INTERPOLATION_FREQUENCY 60
+ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
+    static vec3 colors[] = {
+        vec3(1, 0, 0),
+        vec3(0, 1, 0),
+        vec3(0, 0, 1),
+        vec3(1, 0, 1),
+        vec3(0, 1, 1),
+        vec3(1, 1, 0),
+        vec3(0, 0, 0)
+    };
+
+    // Later: If I'm the owner, add input component or something.
+
+    auto physics = new PhysicsComponent(position);
+    return {
+        physics,
+        new RenderCube(physics, colors[owner]),
+        new NetComponent(1, id, owner, { new PhysicsNetState(physics) })
+    };
+}
+
+#define INTERPOLATION_FREQUENCY 100
 
 // I'll split Client and Server up as soon as I'll find out what they do.
 struct Client {
@@ -62,12 +86,13 @@ struct Client {
     NetSystem netSystem;
     EntityRegistry entities;
 
-    PlayerInputSource playerInput;
-    Entity* playerEnt;
+    PlayerInputSource playerInputSource;
+    Entity* playerEntity;
 
     ENetHost* host;
     ENetPeer* peer;
     std::unique_ptr<MessageHub> messageHub;
+    ClientId myId;
 
     Tick tick;
     bool startNextTick;
@@ -77,30 +102,51 @@ struct Client {
     float tickInterpolation;
     std::queue<NetStateStore> tickStateQueue;
 
+    PlayerInput playerInput;
+
     Client(sf::Window& window, InputSource& input)
         : window(window),
           input(input),
           renderSystem(window, textures, programs),
           entities({ &renderSystem, &tickSystem, &netSystem }),
-          playerInput(window, input),
-          playerEnt(nullptr),
+          playerInputSource(window, input),
+          playerEntity(nullptr),
           host(nullptr),
           peer(nullptr),
           messageHub(makeMessageHub()),
+          myId(0),
           tick(0),
           startNextTick(false),
           isFirstTick(true) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
+        tasks.add(TICK_FREQUENCY, [&] () { 
+            if (peer)
+                messageHub->send<PlayerInputMessage>(peer, playerInput);
+        });
         tasks.add(INTERPOLATION_FREQUENCY, [&] () { interpolate(); });
 
-        netSystem.registerType(0, teapot);
+        netSystem.registerType(0, makeTeapot);
+        netSystem.registerType(1, makePlayer);
 
-        messageHub->onMessage<CreateEntity>(
-                [&] (NetEntityTypeId type,
-                     NetEntityId id,
-                     vec3 pos) -> void {
-                    netSystem.createEntity(type, id, pos);      
-                });
+        messageHub->onMessage<CreateEntity>([&]
+        (NetEntityTypeId type, NetEntityId id, ClientId owner, vec3 pos) {
+            auto entity = netSystem.createEntity(type, id, owner, pos);      
+
+            ASSERT(myId > 0);
+            if (owner == myId)
+                playerEntity = entity; 
+        });
+
+        messageHub->onMessage<LoginMessage>([&]
+        (ClientId id) {
+            ASSERT(id > 0);
+            myId = id;
+        });
+
+        playerInputSource.onPlayerInput.connect([&]
+        (PlayerInput const& input) {
+            playerInput = input;
+        });
     }
 
     ~Client() {
@@ -143,7 +189,11 @@ struct Client {
                     Tick tick;
                     read(stream, tick);
 
-                    std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": received state for tick " << tick << std::endl;
+                    ASSERT(tick > 0);
+
+                    std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                              << ": received state for tick " << tick
+                              << std::endl;
 
                     tickStateQueue.emplace(tick);
                     netSystem.readRawStates(stream, tickStateQueue.back());
@@ -199,7 +249,8 @@ struct Client {
 
         netSystem.applyStates(curState);
 
-        std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": started tick " << curState.tick() << std::endl;
+        std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                  << ": started tick " << curState.tick() << std::endl;
     }
 
     void interpolate() {
@@ -209,7 +260,8 @@ struct Client {
         if (tickInterpolation >= 1) {
             tickInterpolation = 1;
             startNextTick = true;
-            std::cout << "@" << clock.getElapsedTime().asMilliseconds() << ": end of tick" << std::endl;
+            std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                      << ": end of tick" << std::endl;
             startTick();
             std::cout << "end interpolation start" << std::endl;
         }
@@ -225,8 +277,8 @@ struct Client {
 
     void render() {
         // For debugging
-        if (playerEnt) {
-            auto playerPhys = playerEnt->component<PhysicsComponent>();
+        if (playerEntity) {
+            auto playerPhys = playerEntity->component<PhysicsComponent>();
 
             vec3 cameraPosition = playerPhys->getPosition() +
                                   vec3(0, 8, -0.001);
@@ -277,7 +329,7 @@ struct Client {
 
 int main()
 {
-    sf::Window window(sf::VideoMode(1280, 1024), "OpenGL",
+    sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(true);
     //window.setMouseCursorVisible(false);

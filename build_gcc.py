@@ -21,8 +21,8 @@ packages = [
              'NetSystem',]),
     ('opengl', ['Buffer', 'Error', 'Program', 'ProgramManager', 'Shader',
                 'Texture', 'TextureManager',]),
-    ('world', ['PhysicsNetState', 'PlayerInputComponent', 'PlayerInputSource',
-               'TickSystem',]),
+    ('world', ['PhysicsNetState', 'PlayerInput', 'PlayerInputComponent',
+               'PlayerInputSource', 'TickSystem',]),
     ('util', ['BitStream',]),
 ]
 

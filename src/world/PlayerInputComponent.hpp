@@ -6,20 +6,18 @@
 
 namespace game {
 
-struct PlayerInputSource;
 struct PhysicsComponent;
 
 struct PlayerInputComponent : public TickComponent {
-    PlayerInputComponent(PlayerInputSource*, PhysicsComponent*);
+    PlayerInputComponent(PhysicsComponent*);
 
     void tick();
+    void onPlayerInput(PlayerInput const&);
 
 private:
     PhysicsComponent* physics;
 
     PlayerInput playerInput;
-
-    void onPlayerInput(PlayerInput const&);
 };
 
 }

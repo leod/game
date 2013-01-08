@@ -4,6 +4,8 @@
 
 namespace game {
 
+struct PhysicsComponent;
+
 struct PlayerInput {
     bool strafeLeft, strafeRight,
          walkForward, walkBackward;
@@ -16,5 +18,7 @@ struct PlayerInput {
           walkBackward() {
     }
 };
+
+void runPlayerInput(PhysicsComponent*, PlayerInput const&);
 
 } // namespace game

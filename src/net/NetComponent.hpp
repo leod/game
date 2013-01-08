@@ -4,27 +4,28 @@
 #include <vector>
 
 #include "core/Component.hpp"
+#include "net/Definitions.hpp"
 
 namespace game {
 
 struct NetState;
 
-typedef uint16_t NetEntityId;
-typedef uint16_t NetEntityTypeId;
-
 struct NetComponent : public ComponentFamily<NetComponent> {
-    NetComponent(NetEntityTypeId, NetEntityId, std::vector<NetState*>&&);
+    NetComponent(NetEntityTypeId, NetEntityId, ClientId,
+                 std::vector<NetState*>&&);
 
-    NetEntityId getNetId() const;
     NetEntityTypeId getNetTypeId() const;
+    NetEntityId getNetId() const;
+    ClientId getOwner() const;
 
     std::vector<NetState*> const& getStates() const;
 
 private:
     NetEntityTypeId netTypeId;
     NetEntityId netId;
+    ClientId owner;
 
     std::vector<NetState*> states; // TODO: Mem cleanup
 };
 
-} // namespace game
+} // namespace gam

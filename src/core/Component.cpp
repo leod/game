@@ -13,11 +13,11 @@ Component::~Component() {
 
 }
 
-Entity* Component::getOwner() {
+Entity* Component::getEntity() {
     return owner;
 }
 
-Entity const* Component::getOwner() const {
+Entity const* Component::getEntity() const {
     return owner;
 }
 
