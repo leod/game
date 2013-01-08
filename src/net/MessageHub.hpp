@@ -36,6 +36,12 @@ struct MessageHub {
         send(peer, message.toUntyped(), lookupType(typeid(Message)));
     }
 
+    template<typename Message, typename... Args>
+    void send(ENetPeer* peer, Args const&... args) const {
+        Message message = Message::make(args...);
+        send(peer, message.toUntyped(), lookupType(typeid(Message)));
+    }
+
     template<typename Message, typename F>
     void onMessage(F f) {
         auto type = lookupType(typeid(Message));

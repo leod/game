@@ -43,8 +43,12 @@ NetComponent const* NetSystem::get(NetEntityId id) const {
     return componentIt->second;
 }
 
-void NetSystem::writeRawStates(BitStreamWriter& stream) const {
+void NetSystem::writeRawStates(BitStreamWriter& stream,
+                               ClientId ignore) const {
     iterate([&] (NetComponent const* component) {
+        if (ignore != 0 && ignore == component->getOwner())
+            return;
+
         write(stream, component->getNetId());
 
         std::vector<uint8_t> buffer;
@@ -84,17 +88,19 @@ void NetSystem::interpolateStates(NetStateStore const& a,
                                   NetStateStore const& b,
                                   float t) {
     // We shall ignore this issue for now
-    ASSERT_MSG(a.size() == b.size() && a.dataSize() == b.dataSize(),
+    /*ASSERT_MSG(a.size() == b.size() && a.dataSize() == b.dataSize(),
                "Implement me: " << a.size() << ", " << b.size() << ", "
-                                << a.dataSize() << ", " << b.dataSize()); 
+                                << a.dataSize() << ", " << b.dataSize());*/
 
     // Buffer for the interpolation result
     std::vector<uint8_t> buffer;
 
-    for (size_t i = 0; i < a.size(); ++i) {
+    for (size_t i = 0, j = 0; i < a.size(); ++i, ++j) {
         auto entryA = a[i],
-             entryB = b[i];
-        ASSERT_MSG(entryA.id == entryB.id, "Implement me.");
+             entryB = b[j];
+
+        ASSERT(entryA.id == entryB.id);
+
         auto offsetA = entryA.offset,
              offsetB = entryB.offset;
 
@@ -130,13 +136,19 @@ void NetSystem::applyStates(NetStateStore const& store) {
     }
 }
 
-void NetSystem::registerType(NetEntityTypeId typeId, NetEntityMaker f) {
-    entityTypes[typeId] = f;
-}
-
 Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
-        vec3 pos) {
-    return getRegistry()->add(entityTypes[typeId](id, pos));
+        ClientId owner, vec3 pos) {
+    auto entity = getRegistry()->add(entityTypes[typeId](id, owner, pos));
+
+#ifndef NDEBUG
+    auto netComponent = entity->component<NetComponent>();
+    ASSERT_MSG(netComponent, "Entity " << id << " has no NetComponent.");
+    ASSERT(netComponent->getNetTypeId() == typeId);
+    ASSERT(netComponent->getNetId() == id);
+    ASSERT(netComponent->getOwner() == owner);
+#endif
+
+    return entity;
 }
 
 } // namespace game

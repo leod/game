@@ -14,7 +14,8 @@ namespace game {
 
 template<typename... Values>
 struct Signal {
-    void connect(std::function<void(Values...)> fn) {
+    template<typename F>
+    void connect(F fn) {
         fns.push_back(fn);
     }
 

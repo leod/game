@@ -18,8 +18,8 @@ struct Component {
 
     virtual FamilyId getFamilyId() const = 0;
 
-    Entity* getOwner();
-    Entity const* getOwner() const;
+    Entity* getEntity();
+    Entity const* getEntity() const;
     EntityRegistry* getRegistry();
     EntityRegistry const* getRegistry() const;
 

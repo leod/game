@@ -8,12 +8,13 @@
 
 namespace game {
 
+struct PlayerInputComponent;
+
 struct ClientInfo {
     ClientId id;
-
     ENetPeer* peer;
-
     std::string name;
+    PlayerInputComponent* inputComponent;
 };
 
 } // namespace game
