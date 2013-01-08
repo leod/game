@@ -8,8 +8,8 @@ namespace game {
 
 struct MessageHub;
 
-struct CreateEntity
-    : Message<CreateEntity,
+struct CreateEntityMessage
+    : Message<CreateEntityMessage,
               NetEntityTypeId,
               NetEntityId,
               ClientId,

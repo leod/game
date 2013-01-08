@@ -111,6 +111,12 @@ struct Server {
             messageHub->send(client->peer, message);
     }
 
+    template<typename Message, typename... Args>
+    void broadcast(Args const&... args) {
+        for (auto& client : clients)
+            messageHub->send<Message>(client->peer, args...);
+    }
+
     Entity* createEntity(ComponentList components) {
         Entity* entity = entities.add(components); 
 
@@ -122,10 +128,10 @@ struct Server {
         if (auto physics = entity->component<PhysicsComponent>())
             position = physics->getPosition(); 
 
-        broadcast(CreateEntity::make(netComponent->getNetTypeId(),
-                                     netComponent->getNetId(),
-                                     netComponent->getOwner(),
-                                     position));
+        broadcast<CreateEntityMessage>(netComponent->getNetTypeId(),
+                                       netComponent->getNetId(),
+                                       netComponent->getOwner(),
+                                       position);
 
         return entity;
     }
@@ -171,11 +177,11 @@ struct Server {
                             ->component<PhysicsComponent>())
                         position = physics->getPosition(); 
 
-                    messageHub->send(event.peer,
-                        CreateEntity::make(component->getNetTypeId(),
-                                           component->getNetId(),
-                                           component->getOwner(),
-                                           position));
+                    messageHub->send<CreateEntityMessage>(event.peer,
+                        component->getNetTypeId(),
+                        component->getNetId(),
+                        component->getOwner(),
+                        position);
                 });
 
                 break;

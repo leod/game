@@ -7,7 +7,7 @@
 namespace game {
 
 MessageHub* makeMessageHub() {
-    return MessageHub::make<CreateEntity,
+    return MessageHub::make<CreateEntityMessage,
                             LoginMessage,
                             PlayerInputMessage>();
 }
