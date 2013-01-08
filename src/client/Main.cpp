@@ -47,9 +47,6 @@ ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
 }
 
 ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
-    int* x = nullptr;
-    *x = 42;
-
     static vec3 colors[] = {
         vec3(1, 0, 0),
         vec3(0, 1, 0),

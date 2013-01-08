@@ -100,10 +100,7 @@ void NetSystem::readRawStates(BitStreamReader& stream,
 void NetSystem::interpolateStates(NetStateStore const& a,
                                   NetStateStore const& b,
                                   float t) {
-    // We shall ignore this issue for now
-    /*ASSERT_MSG(a.size() == b.size() && a.dataSize() == b.dataSize(),
-               "Implement me: " << a.size() << ", " << b.size() << ", "
-                                << a.dataSize() << ", " << b.dataSize());*/
+    // TODO: Work on the case that a and b contain a different set of entities.
 
     // Buffer for the interpolation result
     std::vector<uint8_t> buffer;
@@ -115,10 +112,21 @@ void NetSystem::interpolateStates(NetStateStore const& a,
         auto entryA = a[i],
              entryB = b[j];
 
-        ASSERT(entryA.id == entryB.id);
+        ASSERT(entryA.id == entryB.id); // TODO
 
         auto offsetA = entryA.offset,
              offsetB = entryB.offset;
+
+        if (!exists(entryA.id)) {
+            // As far as I can tell this can happen, if a CreateEntityMessage
+            // arrives after the first states it appears in.
+            // This happens because we send the states unreliably and the
+            // messages reliably.
+            std::cout << "NetSystem: Don't have #" << entryA.id
+                      << " in tick " << a.tick() << std::endl;
+            // TODO
+            continue;
+        }
 
         auto component = get(entryA.id);
 
