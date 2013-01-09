@@ -10,16 +10,20 @@
 #include "core/EntityRegistry.hpp"
 #include "core/Time.hpp"
 #include "core/Tasks.hpp"
+
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
 
-#include "opengl/TextureManager.hpp"
-#include "opengl/ProgramManager.hpp"
-#include "opengl/Error.hpp"
-#include "graphics/RenderSystem.hpp"
-#include "graphics/RenderCube.hpp"
-
 #include "physics/PhysicsComponent.hpp"
+
+#include "map/Map.hpp"
+
+#include "net/Message.hpp"
+#include "net/MessageHub.hpp"
+#include "net/MessageTypes.hpp"
+#include "net/NetSystem.hpp"
+#include "net/Definitions.hpp"
+#include "net/NetStateStore.hpp"
 
 #include "world/PlayerInputSource.hpp"
 #include "world/PlayerInputComponent.hpp"
@@ -28,12 +32,13 @@
 #include "world/PhysicsNetState.hpp"
 #include "world/MessageTypes.hpp"
 
-#include "net/Message.hpp"
-#include "net/MessageHub.hpp"
-#include "net/MessageTypes.hpp"
-#include "net/NetSystem.hpp"
-#include "net/Definitions.hpp"
-#include "net/NetStateStore.hpp"
+#include "opengl/TextureManager.hpp"
+#include "opengl/ProgramManager.hpp"
+#include "opengl/Error.hpp"
+
+#include "graphics/RenderSystem.hpp"
+#include "graphics/RenderCube.hpp"
+#include "graphics/MapRenderer.hpp"
 
 using namespace game;
 
@@ -100,6 +105,10 @@ struct Client {
     float tickInterpolation;
     std::queue<NetStateStore> tickStateQueue;
 
+    Map map;
+
+    MapRenderer mapRenderer;
+
     PlayerInput playerInput;
 
     Client(sf::Window& window, InputSource& input)
@@ -115,7 +124,8 @@ struct Client {
           myId(0),
           tick(0),
           startNextTick(false),
-          isFirstTick(true) {
+          isFirstTick(true),
+          mapRenderer(map, textures, programs) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
         tasks.add(TICK_FREQUENCY, [&] () { 
             if (peer)
@@ -199,9 +209,9 @@ struct Client {
 
                     ASSERT(tick > 0);
 
-                    std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                    /*std::cout << "@" << clock.getElapsedTime().asMilliseconds()
                               << ": received state for tick " << tick
-                              << std::endl;
+                              << std::endl;*/
 
                     tickStateQueue.emplace(tick);
                     netSystem.readRawStates(stream, tickStateQueue.back());
@@ -257,8 +267,8 @@ struct Client {
 
         netSystem.applyStates(curState);
 
-        std::cout << "@" << clock.getElapsedTime().asMilliseconds()
-                  << ": started tick " << curState.tick() << std::endl;
+        /*std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                  << ": started tick " << curState.tick() << std::endl;*/
     }
 
     void interpolate() {
@@ -268,10 +278,10 @@ struct Client {
         if (tickInterpolation >= 1) {
             tickInterpolation = 1;
             startNextTick = true;
-            std::cout << "@" << clock.getElapsedTime().asMilliseconds()
-                      << ": end of tick" << std::endl;
+            /*std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                      << ": end of tick" << std::endl;*/
             startTick();
-            std::cout << "end interpolation start" << std::endl;
+            //std::cout << "end interpolation start" << std::endl;
         }
         netSystem.interpolateStates(curState, nextState, tickInterpolation);
 
@@ -289,14 +299,14 @@ struct Client {
             auto playerPhys = playerEntity->component<PhysicsComponent>();
 
             vec3 cameraPosition = playerPhys->getPosition() +
-                                  vec3(0, 8, -0.001);
+                                  vec3(0, 13, -0.001);
             vec3 cameraTarget = playerPhys->getPosition();
 
             renderSystem.setCamera(cameraPosition, cameraTarget);
         }
         else
             renderSystem.setCamera(vec3(0, 8, -0.001), vec3(0, 0, 0));
-        
+
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.3, 0.3, 0.3, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -317,18 +327,20 @@ struct Client {
         glVertex3f(35, -1, -35);
         glEnd();
 
-        /*glBegin(GL_LINES);
+        glBegin(GL_LINES);
         glColor3f(1.0, 0.0, 0.0);
         glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(100.0, 0.0, 0.0);
+        glVertex3f(2.0, 0.0, 0.0);
         glColor3f(0.0, 1.0, 0.0);
         glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 100.0, 0.0);
+        glVertex3f(0.0, 2.0, 0.0);
         glColor3f(0.0, 0.0, 1.0);
         glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 100.0);
-        glEnd();*/
+        glVertex3f(0.0, 0.0, 2.0);
+        glEnd();
 
+        mapRenderer.render(renderSystem.getProjection(),
+                           renderSystem.getView());
         renderSystem.render();
 
         window.display();
@@ -374,8 +386,8 @@ int main()
 
     {
         std::cout << "Pls enter IP: ";
-        std::string host;
-        std::getline(std::cin, host);
+        std::string host = "localhost";
+        //std::getline(std::cin, host);
 
         ENetAddress address;
         enet_address_set_host(&address, host.c_str());

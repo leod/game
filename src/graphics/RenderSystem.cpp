@@ -30,15 +30,15 @@ void RenderSystem::setCamera(vec3 position, vec3 target) {
 }
 
 mat4 RenderSystem::getProjection() const {
-    auto projection = glm::perspectiveFov(90.0f,
-            (float)window.getSize().x,
-            (float)window.getSize().y,
+    auto projection = glm::perspective(45.0f,
+            (float)window.getSize().x / (float)window.getSize().y,
             0.1f, 1000.0f);
     return projection;
 }
 
 mat4 RenderSystem::getView() const {
-    auto camera = glm::lookAt(cameraPosition, cameraTarget, vec3(0, 1, 0));
+    auto camera = glm::lookAt(cameraPosition, cameraTarget, vec3(0, -1, 0));
+    //return glm::translate(mat4(), -cameraPosition);
     return camera;
 }
 

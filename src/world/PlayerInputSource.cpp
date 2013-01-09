@@ -103,7 +103,7 @@ void PlayerInputSource::onMouseButtonReleased(MouseButtonInput const& input) {
 void PlayerInputSource::onMouseMoved(MouseMoveInput const& input) {
     vec2 mouse = vec2(input.x, input.y);
     vec2 center = vec2(window.getSize().x / 2, window.getSize().y / 2);
-    playerInput.orientation = -glm::normalize(mouse - center);
+    playerInput.orientation = glm::normalize(mouse - center);
     onPlayerInput(playerInput);
 }
 

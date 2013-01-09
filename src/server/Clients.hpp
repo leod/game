@@ -22,6 +22,8 @@ struct ClientInfo {
     bool connected;
 
     ClientInfo(ClientId, ENetPeer*);
+
+    static ClientInfo* get(ENetPeer*);
 };
 
 struct Clients {

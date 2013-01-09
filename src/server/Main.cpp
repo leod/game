@@ -77,18 +77,14 @@ struct Server {
 
         messageHub->onMessageWithPeer<PlayerInputMessage>([&]
         (ENetPeer* peer, PlayerInput const& input) {
-                auto client = reinterpret_cast<ClientInfo*>(peer->data);
-                ASSERT(client);
-
+                auto client = ClientInfo::get(peer);
                 client->entity->component<PlayerInputComponent>()
                               ->onPlayerInput(input);
         });
 
         messageHub->onMessageWithPeer<DisconnectMessage>([&]
         (ENetPeer* peer) {
-                auto client = reinterpret_cast<ClientInfo*>(peer->data);
-                ASSERT(client);
-                
+                auto client = ClientInfo::get(peer);
                 handleDisconnect(client);
         });
     }
@@ -130,7 +126,6 @@ struct Server {
                     ASSERT(false);
 
                 enet_packet_destroy(event.packet);
-
                 break;
 
             case ENET_EVENT_TYPE_CONNECT:
@@ -205,7 +200,6 @@ struct Server {
             makePlayer(netSystem.makeNetEntityId(),
                        newClient->id,
                        vec3(0, 0, 0)));
-        event.peer->data = newClientPtr;
 
         // It's important that the new client is registered only after
         // the client's player entity was created. Otherwise, the client
@@ -214,7 +208,7 @@ struct Server {
 
         // Tell the client its id. This needs to happen before sending
         // the CreateEntityMessages, so that the client can identify what
-        // entities belong to him.
+        // entities belong to it.
         messageHub->send<LoggedInMessage>(event.peer, newClientPtr->id);
 
         // Send messages to create our net objects on the client-side

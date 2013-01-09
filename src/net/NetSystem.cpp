@@ -122,8 +122,8 @@ void NetSystem::interpolateStates(NetStateStore const& a,
             // arrives after the first states it appears in.
             // This happens because we send the states unreliably and the
             // messages reliably.
-            std::cout << "NetSystem: Don't have #" << entryA.id
-                      << " in tick " << a.tick() << std::endl;
+            std::cout << "NetSystem: Don't have net entity #" << entryA.id
+                      << " in tick #" << a.tick() << std::endl;
             // TODO
             continue;
         }
@@ -150,6 +150,12 @@ void NetSystem::applyStates(NetStateStore const& store) {
     for (size_t i = 0; i < store.size(); ++i) {
         auto entry = store[i];
         auto offset = entry.offset;
+
+        if (!exists(entry.id)) {
+            std::cout << "NetSystem: Don't have net entity #" << entry.id
+                      << " in tick #" << store.tick() << std::endl;
+            continue; // Entity was removed
+        }
         
         NetComponent const* component = get(entry.id);
         
