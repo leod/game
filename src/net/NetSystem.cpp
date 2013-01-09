@@ -162,7 +162,7 @@ void NetSystem::applyStates(NetStateStore const& store) {
 
 Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
         ClientId owner, vec3 pos) {
-    auto entity = getRegistry()->add(entityTypes[typeId](id, owner, pos));
+    auto entity = getEntities()->create(entityTypes[typeId](id, owner, pos));
 
 #ifndef NDEBUG
     auto netComponent = entity->component<NetComponent>();

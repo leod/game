@@ -5,55 +5,44 @@
 namespace game {
 
 typedef int EntityId;
-typedef std::map<FamilyId, Component*> ComponentMap;
+
+template<typename T>
+using ComponentListT = std::vector<T*>;
+typedef ComponentListT<Component> ComponentList;
 
 struct EntityRegistry;
 
-// An entity is an ID and a list of components.
+// An entity is an Id and a list of components.
 // An entity can have at most one component of each family.
 struct Entity {
     friend class Component;
     friend class EntityRegistry;
 
-    Entity(EntityId id, ComponentMap components, EntityRegistry* registry)
-        : id(id), components(components), registry(registry) {
-    }
+    ~Entity();
 
-    Component* component(FamilyId familyId) {
-        auto it = components.find(familyId);
-        return it != components.end() ? it->second : nullptr;
-    }
+    Component* component(FamilyId);
+    Component const* component(FamilyId) const;
 
     template<typename T> T* component() {
         return dynamic_cast<T*>(component(T::staticGetFamilyId()));
-    }
-
-    Component const* component(FamilyId familyId) const {
-        auto it = components.find(familyId);
-        return it != components.end() ? it->second : nullptr;
     }
 
     template<typename T> T const* component() const {
         return dynamic_cast<T*>(component(T::staticGetFamilyId()));
     }
 
-    EntityId getId() const {
-        return id;
-    }
-
-    EntityRegistry* getRegistry() {
-        return registry;
-    }
-
-    EntityRegistry const* getRegistry() const {
-        return registry;
-    }
+    EntityId getId() const;
+    EntityRegistry* getEntities();
+    EntityRegistry const* getEntities() const;
 
 private:
-    EntityId const id;
-    ComponentMap const components;
+    // Only EntityRegistry ever constructs Entities.
+    Entity(EntityId, ComponentList&&, EntityRegistry*);
 
-    EntityRegistry* registry;
+    EntityId const id;
+    ComponentList const components;
+
+    EntityRegistry* const entities;
 };
 
 } // namespace game
