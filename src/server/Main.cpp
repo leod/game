@@ -25,7 +25,8 @@
 #include "world/PlayerInputComponent.hpp"
 #include "physics/PhysicsComponent.hpp"
 
-#include "server/ClientInfo.hpp"
+#include "server/Clients.hpp"
+#include "server/ServerNetSystem.hpp"
 
 using namespace game;
 
@@ -53,23 +54,23 @@ struct Server {
 
     Tasks tasks;
 
-    NetSystem netSystem;
+    ENetHost* host;
+    std::unique_ptr<MessageHub> messageHub;
+    Clients clients;
+
+    ServerNetSystem netSystem;
     TickSystem tickSystem;
     EntityRegistry entities;
-
-    ENetHost* host;
-    std::vector<std::unique_ptr<ClientInfo>> clients;
-    std::unique_ptr<MessageHub> messageHub;
 
     Tick tick; // tmp
 
     Server()
-        : entities({ &netSystem, &tickSystem }),
-          host(nullptr),
-          clients(),
+        : host(nullptr),
           messageHub(makeMessageHub()),
-          tick(1),
-          netEntityCounter(0) {
+          clients(*messageHub.get()),
+          netSystem(clients),
+          entities({ &netSystem, &tickSystem }),
+          tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
 
         createTestWorld();
@@ -88,7 +89,7 @@ struct Server {
                 auto client = reinterpret_cast<ClientInfo*>(peer->data);
                 ASSERT(client);
                 
-                handleDisconnect(*client);
+                handleDisconnect(client);
         });
     }
 
@@ -98,9 +99,12 @@ struct Server {
     }
 
     void createTestWorld() {
-        entities.create(makeTeapot(makeNetEntityId(), vec3(0, 0, 0)));
-        entities.create(makeTeapot(makeNetEntityId(), vec3(-3, 0, 0)));
-        entities.create(makeTeapot(makeNetEntityId(), vec3(3, 0, 0)));
+        entities.create(
+                makeTeapot(netSystem.makeNetEntityId(), vec3(0, 0, 0)));
+        entities.create(
+                makeTeapot(netSystem.makeNetEntityId(), vec3(-3, 0, 0)));
+        entities.create(
+                makeTeapot(netSystem.makeNetEntityId(), vec3(3, 0, 0)));
     }
 
     void start() {
@@ -112,41 +116,6 @@ struct Server {
 
         if (host == nullptr)
             throw std::runtime_error("Failed to create host");
-    }
-
-    template<typename Message>
-    void broadcast(Message const& message) {
-        for (auto& client : clients) {
-            if (!client->connected) continue;
-            messageHub->send(client->peer, message);
-        }
-    }
-
-    template<typename Message, typename... Args>
-    void broadcast(Args const&... args) {
-        for (auto& client : clients) {
-            if (!client->connected) continue;
-            messageHub->send<Message>(client->peer, args...);
-        }
-    }
-
-    Entity* createEntity(ComponentList&& components) {
-        Entity* entity = entities.create(std::move(components)); 
-
-        auto netComponent = entity->component<NetComponent>();
-        ASSERT(netComponent);
-
-        // TODO: Hack.
-        vec3 position(0, 0, 0);
-        if (auto physics = entity->component<PhysicsComponent>())
-            position = physics->getPosition(); 
-
-        broadcast<CreateEntityMessage>(netComponent->getNetTypeId(),
-                                       netComponent->getNetId(),
-                                       netComponent->getOwner(),
-                                       position);
-
-        return entity;
     }
 
     void receive() {
@@ -173,14 +142,8 @@ struct Server {
                 std::cout << "Client " << (int)client->id << " disconnected"
                           << std::endl;
 
-                handleDisconnect(*client);
-
-                // Find client in clients vector and remove
-                auto it = clients.begin();
-                for (; it != clients.end(); ++it)
-                    if ((*it)->id == client->id) break;
-                ASSERT(it != clients.end());
-                clients.erase(it);
+                handleDisconnect(client);
+                clients.remove(client);
 
                 break;
             }
@@ -195,20 +158,7 @@ struct Server {
         receive();
 
         tickSystem.tick();
-
-        for (auto& client : clients) {
-            if (!client->connected)
-                continue;
-            
-            BitStreamWriter stream;
-            write(stream, tick);
-            netSystem.writeRawStates(stream);
-
-            sendState(*client.get(), stream);
-
-            std::cout << "@" << clock.getElapsedTime().asMilliseconds()
-                      << ": sending state " << tick << std::endl;
-        }
+        sendStates();
 
         ++tick;
     }
@@ -218,99 +168,77 @@ struct Server {
         tasks.run(delta);
     }
 
-    void sendState(ClientInfo& client, BitStreamWriter const& stream) {
+    void sendStates() const {
+        for (auto& client : clients) {
+            if (!client->connected)
+                continue;
+            
+            BitStreamWriter stream;
+            write(stream, tick);
+            netSystem.writeRawStates(stream);
+
+            sendState(client.get(), stream);
+
+            std::cout << "@" << clock.getElapsedTime().asMilliseconds()
+                      << ": sending state " << tick << std::endl;
+        }
+    }
+
+    void sendState(ClientInfo* client, BitStreamWriter const& stream) const {
         ENetPacket* packet = enet_packet_create(
                 reinterpret_cast<void const*>(stream.ptr()),
                 stream.size(),
                 0);
-        enet_peer_send(client.peer, 1, packet);
+        enet_peer_send(client->peer, 1, packet);
     }
 
     void handleConnect(ENetEvent const& event) {
-        std::unique_ptr<ClientInfo> newClient(new ClientInfo);
-        newClient->peer = event.peer;
-        newClient->id = makeClientId();
+        std::unique_ptr<ClientInfo> newClient(
+                new ClientInfo(clients.makeClientId(), event.peer));
+        ClientInfo* newClientPtr = newClient.get();
 
         std::cout << "Client " << (int)newClient->id << " connected"
                   << std::endl;
 
         // Create player entity for the client
-        newClient->entity =
-            createEntity(makePlayer(makeNetEntityId(), newClient->id,
-                                    vec3(0, 0, 0)));
+        newClient->entity = entities.create(
+            makePlayer(netSystem.makeNetEntityId(),
+                       newClient->id,
+                       vec3(0, 0, 0)));
+        event.peer->data = newClientPtr;
 
-        event.peer->data = reinterpret_cast<void*>(newClient.get());
-        clients.push_back(std::move(newClient)); // It's important that this
-                                                 // push happens *after* the
-                                                 // new entity was created
+        // It's important that the new client is registered only after
+        // the client's player entity was created. Otherwise, the client
+        // would be informed about its creation twice.
+        clients.add(std::move(newClient));
 
-        // Tell the client its id
-        messageHub->send<LoggedInMessage>(event.peer, clients.back()->id);
+        // Tell the client its id. This needs to happen before sending
+        // the CreateEntityMessages, so that the client can identify what
+        // entities belong to him.
+        messageHub->send<LoggedInMessage>(event.peer, newClientPtr->id);
 
         // Send messages to create our net objects on the client-side
-        netSystem.iterate([&] (NetComponent* component) {
-            // TODO: Hack.
-            vec3 position(0, 0, 0);
-            if (auto physics = component->getEntity()
-                    ->component<PhysicsComponent>())
-                position = physics->getPosition(); 
-
-            messageHub->send<CreateEntityMessage>(event.peer,
-                component->getNetTypeId(),
-                component->getNetId(),
-                component->getOwner(),
-                position);
-        });
+        netSystem.sendCreateEntityMessages(newClientPtr);
 
         // Tell everyone about the new client
-        // TODO: Move after login information...
-        broadcast<ClientConnectedMessage>(clients.back()->id, "test");
+        clients.broadcast<ClientConnectedMessage>(newClientPtr->id, "dummy");
     }
 
-    void handleDisconnect(ClientInfo& client) {
-        if (!client.connected)
+    void handleDisconnect(ClientInfo* client) {
+        if (!client->connected)
             return;
 
-        std::cout << "Client " << (int)client.id << " disconnected"
+        std::cout << "Client " << (int)client->id << " disconnected"
                   << std::endl;
 
-        broadcast<ClientDisconnectedMessage>(client.id);
+        clients.broadcast<ClientDisconnectedMessage>(client->id);
 
-        if (client.entity) {
-            auto netComponent = client.entity->component<NetComponent>();
-            ASSERT(netComponent);
-
-            broadcast<RemoveEntityMessage>(netComponent->getNetId());
-            entities.remove(client.entity);
-
-            client.entity = nullptr;
+        if (client->entity) {
+            entities.remove(client->entity);
+            client->entity = nullptr;
         }
 
-        client.connected = false;
-    }
-
-    // For now
-    NetEntityId netEntityCounter;
-    NetEntityId makeNetEntityId() {
-        return ++netEntityCounter;
-    }
-
-    ClientId makeClientId() const {
-        for (ClientId test = 1; test < MAX_CLIENT_ID; ++test) {
-            for (auto const& client : clients) {
-                if (client->id == test)
-                    goto continue_outer_loop; // Id already in use
-            }
-
-            // Id not in use
-            return test;
-
-continue_outer_loop:
-            ;
-        } 
-
-        // No id found
-        ASSERT_MSG(false, "Server accepted too many clients.");
+        client->connected = false;
     }
 };
 

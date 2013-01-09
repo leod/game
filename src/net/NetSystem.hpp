@@ -42,6 +42,8 @@ struct NetSystem : public SystemBase<NetComponent> {
     Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId, vec3);
 
 private:
+    // We keep a map of net entities separately from EntityRegistry,
+    // so that we can index by NetEntityId.
     std::map<NetEntityId, NetComponent*> components;
 
     std::map<NetEntityTypeId, NetEntityMaker> entityTypes;

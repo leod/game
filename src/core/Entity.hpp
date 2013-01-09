@@ -28,7 +28,7 @@ struct Entity {
     }
 
     template<typename T> T const* component() const {
-        return dynamic_cast<T*>(component(T::staticGetFamilyId()));
+        return dynamic_cast<T const*>(component(T::staticGetFamilyId()));
     }
 
     EntityId getId() const;
