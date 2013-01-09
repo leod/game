@@ -22,7 +22,7 @@ makeCreateEntityMessage(NetComponent const* component) {
 }
 
 ServerNetSystem::ServerNetSystem(Clients& clients)
-    : clients(clients) {
+    : clients(clients), netEntityCounter(0) {
 }
 
 void ServerNetSystem::onRegister(NetComponent* component) {
@@ -34,6 +34,7 @@ void ServerNetSystem::onRegister(NetComponent* component) {
 void ServerNetSystem::onUnregister(NetComponent* component) {
     NetSystem::onUnregister(component);
 
+    std::cout << "remove " << component->getNetId() << std::endl;
     clients.broadcast<RemoveEntityMessage>(component->getNetId());
 }
 

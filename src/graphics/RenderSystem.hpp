@@ -22,6 +22,7 @@ struct RenderSystem : public SystemBase<RenderComponent> {
 
     void render();
 
+    // These definitely don't belong here
     void setCamera(vec3 position, vec3 target);
 
     mat4 getProjection() const;

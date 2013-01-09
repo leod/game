@@ -7,6 +7,12 @@ namespace game {
 ClientInfo::ClientInfo(ClientId id, ENetPeer* peer)
     : id(id), peer(peer),
       name(), entity(nullptr), connected(true) {
+    peer->data = this;
+}
+
+ClientInfo* ClientInfo::get(ENetPeer* peer) {
+    ASSERT(peer->data);
+    return reinterpret_cast<ClientInfo*>(peer->data);
 }
 
 Clients::Clients(MessageHub& messageHub)

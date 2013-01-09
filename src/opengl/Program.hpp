@@ -57,7 +57,7 @@ struct Program {
     void setUniform(GLuint location, mat4 const&) const;
 
     template<typename T>
-    void setAttrib(GLuint location, Buffer<T> const& buffer) {
+    void setAttrib(GLuint location, Buffer<T> const& buffer) const {
         ASSERT(location < GL_MAX_VERTEX_ATTRIBS);
         ASSERT(detail::AttribInfos<T>::Size >= 1 &&
                detail::AttribInfos<T>::Size <= 4);
@@ -74,7 +74,7 @@ struct Program {
         glEnableVertexAttribArray(location);
     }
 
-    void unsetAttrib(GLuint location) {
+    void unsetAttrib(GLuint location) const {
         glDisableVertexAttribArray(location);
     }
 
