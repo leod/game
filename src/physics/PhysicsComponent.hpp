@@ -6,7 +6,7 @@
 namespace game {
 
 struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
-    PhysicsComponent(const vec3& position)
+    PhysicsComponent(vec3 const& position)
         : state(position) {
     }
 
