@@ -31,7 +31,7 @@ clientPackages = [
 ]
 
 serverPackages = [
-    ('server', ['Main',]),
+    ('server', ['Main', 'Clients', 'ServerNetSystem',]),
 ]
 
 def build():
