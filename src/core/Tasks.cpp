@@ -16,10 +16,6 @@ bool compareTaskPriority(TaskInfo const& a, TaskInfo const& b) {
     return a.sleepTime > b.sleepTime; 
 }
 
-void Tasks::add(float frequency, Task task) {
-    tasks.push_back(TaskInfo(seconds(1.0f / frequency), task));
-}
-
 void Tasks::run(Time delta) {
     if (tasks.empty())
         return;

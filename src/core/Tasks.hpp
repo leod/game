@@ -19,7 +19,11 @@ struct TaskInfo {
 };
 
 struct Tasks {
-    void add(float frequency, Task);
+    template<typename F>
+    void add(float frequency, F fn) {
+        tasks.push_back(TaskInfo(seconds(1.0f / frequency), fn));
+    }
+
     void run(Time delta); 
 
 private:
