@@ -98,9 +98,9 @@ struct Server {
     }
 
     void createTestWorld() {
-        entities.add(makeTeapot(makeNetEntityId(), vec3(0, 0, 0)));
-        entities.add(makeTeapot(makeNetEntityId(), vec3(-3, 0, 0)));
-        entities.add(makeTeapot(makeNetEntityId(), vec3(3, 0, 0)));
+        entities.create(makeTeapot(makeNetEntityId(), vec3(0, 0, 0)));
+        entities.create(makeTeapot(makeNetEntityId(), vec3(-3, 0, 0)));
+        entities.create(makeTeapot(makeNetEntityId(), vec3(3, 0, 0)));
     }
 
     void start() {
@@ -130,8 +130,8 @@ struct Server {
         }
     }
 
-    Entity* createEntity(ComponentList components) {
-        Entity* entity = entities.add(components); 
+    Entity* createEntity(ComponentList&& components) {
+        Entity* entity = entities.create(std::move(components)); 
 
         auto netComponent = entity->component<NetComponent>();
         ASSERT(netComponent);

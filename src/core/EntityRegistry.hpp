@@ -9,13 +9,6 @@ namespace game {
 
 struct System;
 
-template<typename T> using ComponentListT = std::vector<T*>;
-typedef ComponentListT<Component> ComponentList;
-typedef std::map<EntityId, Entity*> EntityMap;
-typedef std::vector<System*> SystemList;
-typedef std::map<FamilyId, System*> SystemMap;
-typedef std::map<FamilyId, ComponentList> FamilyMap;
-
 // Use boost::transform_iterator to create a custom component 
 // iterator that hides the ugly downcasting we have to do because
 // we lose type-information by only storing Component*s.
@@ -55,14 +48,15 @@ using ConstComponentItT =
 typedef ComponentItT<Component*> ComponentIt;
 
 struct EntityRegistry {
-    EntityRegistry(SystemList);
+    EntityRegistry(std::vector<System*> const&);
 
     Entity* get(EntityId);
     Entity const* get(EntityId) const;
 
-    // Creates a new entity from the given list of components and registers it.
-    Entity* add(ComponentList);
+    // Creates and registers an entity from the given list of components
+    Entity* create(ComponentList&&);
 
+    // Unregisters and deletes an entity
     void remove(Entity*);
 
     // Returns the system that is registered as being responsible for the
@@ -82,7 +76,7 @@ struct EntityRegistry {
 
     template<typename T>
     T const* system() const {
-        return dynamic_cast<T*>(system(T::staticGetFamilyId()));
+        return dynamic_cast<T const*>(system(T::staticGetFamilyId()));
     }
 
     // These methods return iterators that go over all components
@@ -128,14 +122,9 @@ struct EntityRegistry {
     }
 
 private:
-    // FamilyId -> System*
-    SystemMap systems;
-
-    // FamilyId -> ComponentList
-    FamilyMap families;
-
-    // EntityId -> Entity*
-    EntityMap entities;
+    std::map<FamilyId, System*> systems;
+    std::map<FamilyId, ComponentList> families;
+    std::map<EntityId, Entity*> entities;
 
     // Used to create unique EntityIds
     EntityId biggestId;

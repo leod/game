@@ -13,6 +13,9 @@ struct Entity;
 struct EntityRegistry;
 
 struct Component {
+    friend class EntityRegistry;
+    template<typename T> friend class ComponentFamily;
+
     Component();
     virtual ~Component();
 
@@ -20,17 +23,15 @@ struct Component {
 
     Entity* getEntity();
     Entity const* getEntity() const;
-    EntityRegistry* getRegistry();
-    EntityRegistry const* getRegistry() const;
+    EntityRegistry* getEntities();
+    EntityRegistry const* getEntities() const;
 
 private:
     Entity* owner;
 
     void setOwner(Entity* newOwner);
-    friend class EntityRegistry;
 
     static FamilyId globalFamilyCounter;
-    template<typename T> friend class ComponentFamily;
 };
 
 // ComponentFamily should be used as a baseclass for components

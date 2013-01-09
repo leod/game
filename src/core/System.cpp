@@ -3,7 +3,7 @@
 namespace game {
 
 System::System(FamilyId familyId)
-    : familyId(familyId), registry(nullptr) {
+    : familyId(familyId), entities(nullptr) {
 }
 
 System::~System() {
@@ -19,12 +19,12 @@ FamilyId System::getFamilyId() const {
     return familyId;
 }
 
-EntityRegistry* System::getRegistry() {
-    return registry;
+EntityRegistry* System::getEntities() {
+    return entities;
 }
 
-EntityRegistry const* System::getRegistry() const {
-    return registry;
+EntityRegistry const* System::getEntities() const {
+    return entities;
 }
 
 }

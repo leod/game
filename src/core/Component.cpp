@@ -21,12 +21,12 @@ Entity const* Component::getEntity() const {
     return owner;
 }
 
-EntityRegistry* Component::getRegistry() {
-    return owner->registry;
+EntityRegistry* Component::getEntities() {
+    return owner->entities;
 }
 
-EntityRegistry const* Component::getRegistry() const {
-    return owner->registry;
+EntityRegistry const* Component::getEntities() const {
+    return owner->entities;
 }
 
 void Component::setOwner(Entity* newOwner) {

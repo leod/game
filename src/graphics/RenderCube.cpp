@@ -23,7 +23,7 @@ RenderCube::RenderCube(PhysicsComponent const* physics, vec3 color)
 }
 
 void RenderCube::render() {
-    auto system = getRegistry()->system<RenderSystem>();
+    auto system = getEntities()->system<RenderSystem>();
     auto program = system->getPrograms().load("shaders/cube_vertex.glsl",
                                               "shaders/cube_fragment.glsl");
     auto model = mat4();
