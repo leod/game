@@ -39,6 +39,7 @@
 #include "graphics/RenderSystem.hpp"
 #include "graphics/RenderCube.hpp"
 #include "graphics/MapRenderer.hpp"
+#include "graphics/VisionSystem.hpp"
 
 using namespace game;
 
@@ -68,7 +69,8 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
     return {
         physics,
         new RenderCube(physics, colors[owner]),
-        new NetComponent(1, id, owner, { new PhysicsNetState(physics) })
+        new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
+        new VisionComponent(physics)
     };
 }
 
@@ -82,9 +84,12 @@ struct Client {
     InputSource& input;
     Tasks tasks;
 
+    Map map;
+
     TextureManager textures;
     ProgramManager programs;
     RenderSystem renderSystem;
+    VisionSystem visionSystem;
     TickSystem tickSystem;
     NetSystem netSystem;
     EntityRegistry entities;
@@ -105,8 +110,6 @@ struct Client {
     float tickInterpolation;
     std::queue<NetStateStore> tickStateQueue;
 
-    Map map;
-
     MapRenderer mapRenderer;
 
     PlayerInput playerInput;
@@ -115,7 +118,8 @@ struct Client {
         : window(window),
           input(input),
           renderSystem(window, textures, programs),
-          entities({ &renderSystem, &tickSystem, &netSystem }),
+          visionSystem(map, programs),
+          entities({ &renderSystem, &visionSystem, &tickSystem, &netSystem }),
           playerInputSource(window, input),
           playerEntity(nullptr),
           host(nullptr),
@@ -294,15 +298,27 @@ struct Client {
     }
 
     void render() {
+        vec3 playerPos;
+        vec3 playerOrient;
+        Intersection intersection;
+
         // For debugging
         if (playerEntity) {
             auto playerPhys = playerEntity->component<PhysicsComponent>();
 
             vec3 cameraPosition = playerPhys->getPosition() +
-                                  vec3(0, 13, -0.001);
+                                  vec3(0, 22, -0.001);
             vec3 cameraTarget = playerPhys->getPosition();
 
             renderSystem.setCamera(cameraPosition, cameraTarget);
+
+            Ray ray = { playerPhys->getPosition(),
+                playerPhys->getOrientation() };
+            intersection = rayMapIntersection(ray, map);
+            if (intersection)
+                std::cout << intersection.get().first << std::endl;
+            playerPos = playerPhys->getPosition();
+            playerOrient = playerPhys->getOrientation();
         }
         else
             renderSystem.setCamera(vec3(0, 8, -0.001), vec3(0, 0, 0));
@@ -337,11 +353,20 @@ struct Client {
         glColor3f(0.0, 0.0, 1.0);
         glVertex3f(0.0, 0.0, 0.0);
         glVertex3f(0.0, 0.0, 2.0);
+
+        if (intersection) {
+            glColor3f(1, 1, 1);
+            glVertex3f(playerPos.x, playerPos.y, playerPos.z);
+            vec3 target = playerPos + intersection.get().first * playerOrient;
+            glVertex3f(target.x, target.y, target.z);
+        }
         glEnd();
 
         mapRenderer.render(renderSystem.getProjection(),
                            renderSystem.getView());
         renderSystem.render();
+        /*visionSystem.renderVision(renderSystem.getProjection(),
+                                  renderSystem.getView());*/
 
         window.display();
     }

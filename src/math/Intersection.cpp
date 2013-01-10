@@ -1,5 +1,7 @@
 #include "math/Intersection.hpp"
 
+#include <iostream>
+
 #include <boost/none.hpp>
 
 using boost::none;
@@ -21,7 +23,7 @@ Intersection rayQuadIntersection(Ray const& ray, Quad const& quad) {
 
     vec3 p = ray.origin + r * ray.direction;
 
-    if (r >= 0 && abs(s) <= 1 && abs(t) <= 1)
+    if (r >= 0 && glm::abs(s) <= 1 && glm::abs(t) <= 1)
         return std::make_pair(r, p);
     else
         return none;

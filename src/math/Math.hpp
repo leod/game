@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 using glm::vec2;
 using glm::vec3;
