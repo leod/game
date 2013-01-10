@@ -365,8 +365,8 @@ struct Client {
         mapRenderer.render(renderSystem.getProjection(),
                            renderSystem.getView());
         renderSystem.render();
-        /*visionSystem.renderVision(renderSystem.getProjection(),
-                                  renderSystem.getView());*/
+        visionSystem.renderVision(renderSystem.getProjection(),
+                                  renderSystem.getView());
 
         window.display();
     }
@@ -376,7 +376,7 @@ int main()
 {
     sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
-    window.setVerticalSyncEnabled(true);
+    window.setVerticalSyncEnabled(false);
     //window.setMouseCursorVisible(false);
 
     // Now that we have an OpenGL context, we can initialize GLEW
