@@ -14,7 +14,8 @@ libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
 
 packages = [
     ('core', ['Component', 'Entity', 'EntityRegistry', 'System', 'Tasks',]),
-    ('graphics', ['MapRenderer', 'RenderCube', 'RenderSystem',]),
+    ('graphics', ['MapRenderer', 'RenderCube', 'RenderSystem',
+                  'VisionSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
     ('net', ['MessageHub', 'MessageTypes', 'NetComponent', 'NetStateStore',
