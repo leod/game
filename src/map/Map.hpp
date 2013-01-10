@@ -18,6 +18,10 @@ struct Map {
         vec3 groundCenter;
         float yRotation;
         vec3 scale;
+        
+        vec3 rotScale;
+
+        Block(vec3, float, vec3);
     };
 
     std::vector<Block> const& getBlocks() const;
