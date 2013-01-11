@@ -68,7 +68,7 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
     auto physics = new PhysicsComponent(position);
     return {
         physics,
-        new RenderCube(physics, colors[owner]),
+        new RenderCube(physics, colors[owner % 7]),
         new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
         new VisionComponent(physics)
     };
@@ -88,8 +88,8 @@ struct Client {
 
     TextureManager textures;
     ProgramManager programs;
-    RenderSystem renderSystem;
     VisionSystem visionSystem;
+    RenderSystem renderSystem;
     TickSystem tickSystem;
     NetSystem netSystem;
     EntityRegistry entities;
@@ -117,8 +117,8 @@ struct Client {
     Client(sf::Window& window, InputSource& input)
         : window(window),
           input(input),
-          renderSystem(window, textures, programs),
           visionSystem(map, programs),
+          renderSystem(window, textures, programs, visionSystem),
           entities({ &renderSystem, &visionSystem, &tickSystem, &netSystem }),
           playerInputSource(window, input),
           playerEntity(nullptr),
@@ -129,7 +129,7 @@ struct Client {
           tick(0),
           startNextTick(false),
           isFirstTick(true),
-          mapRenderer(map, textures, programs) {
+          mapRenderer(map, textures, programs, visionSystem) {
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
         tasks.add(TICK_FREQUENCY, [&] () { 
             if (peer)
@@ -264,7 +264,7 @@ struct Client {
 
             nextState = tickStateQueue.front();
             tickStateQueue.pop();
-        }
+        }   
 
         tick = curState.tick();
         tickInterpolation = 0;
@@ -344,7 +344,7 @@ struct Client {
         glEnd();
 
         glBegin(GL_LINES);
-        glColor3f(1.0, 0.0, 0.0);
+        /*glColor3f(1.0, 0.0, 0.0);
         glVertex3f(0.0, 0.0, 0.0);
         glVertex3f(2.0, 0.0, 0.0);
         glColor3f(0.0, 1.0, 0.0);
@@ -352,7 +352,7 @@ struct Client {
         glVertex3f(0.0, 2.0, 0.0);
         glColor3f(0.0, 0.0, 1.0);
         glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 2.0);
+        glVertex3f(0.0, 0.0, 2.0);*/
 
         if (intersection) {
             glColor3f(1, 1, 1);
@@ -362,11 +362,13 @@ struct Client {
         }
         glEnd();
 
+        visionSystem.renderVision(renderSystem.getProjection(),
+                                  renderSystem.getView());
+        //visionSystem.getTexture().saveToFile("vision.png");
+
         mapRenderer.render(renderSystem.getProjection(),
                            renderSystem.getView());
         renderSystem.render();
-        visionSystem.renderVision(renderSystem.getProjection(),
-                                  renderSystem.getView());
 
         window.display();
     }

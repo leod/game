@@ -1,5 +1,6 @@
 #include "opengl/Framebuffer.hpp"
 
+#include <iostream>
 #include <stdexcept>
 
 #include "core/Error.hpp"
@@ -23,8 +24,14 @@ Framebuffer::Framebuffer(Config config, ivec2 size)
 
     if (colorTexture) {
         glBindTexture(GL_TEXTURE_2D, colorTexture->getName());
+
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);  
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
@@ -72,8 +79,8 @@ Texture const& Framebuffer::getColorTexture() const {
     return *colorTexture.get();
 }
 
-void
-Framebuffer::renderIntoImpl(std::function<void()> const& f, bool clear) const {
+void Framebuffer::renderIntoImpl(std::function<void()> const& f,
+                                 Framebuffer::Clear clear) const {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, name);
     glPushAttrib(GL_VIEWPORT_BIT);
     glViewport(0, 0, size.x, size.y);

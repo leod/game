@@ -1,18 +1,17 @@
 #include "opengl/Texture.hpp"
 
+#include <iostream>
+
+#include <boost/scoped_array.hpp>
+
 #include <SFML/Graphics/Image.hpp>
+
+#include "core/Error.hpp"
 
 namespace game {
 
 Texture::Texture() {
     glGenTextures(1, &name);
-}
-
-Texture::Texture(Texture&& texture) {
-    name = texture.name;
-
-    // For debugging: invalidate the other texture
-    texture.name = -1;
 }
 
 Texture::Texture(std::string const& filename) {
@@ -43,6 +42,27 @@ GLuint Texture::getName() const {
 
 void Texture::bind() const {
     glBindTexture(GL_TEXTURE_2D, name);
+}
+
+void Texture::saveToFile(std::string const& filename) const {
+    glBindTexture(GL_TEXTURE_2D, name);
+    
+    GLint width, height;
+    GLint format;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT,
+            &format);
+    ASSERT(format == GL_RGBA);
+
+    boost::scoped_array<GLubyte> buffer(new GLubyte[width * height * 4]);
+    glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, buffer.get());
+
+    sf::Image image;
+    image.create(width, height, buffer.get());
+    image.saveToFile(filename);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 } // namespace game

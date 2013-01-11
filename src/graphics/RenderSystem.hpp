@@ -11,11 +11,14 @@ namespace game {
 
 struct TextureManager;
 struct ProgramManager;
+struct VisionSystem;
+struct Texture;
 
 struct RenderSystem : public SystemBase<RenderComponent> {
     RenderSystem(sf::Window const& window,
                  TextureManager& textures,
-                 ProgramManager& programs);
+                 ProgramManager& programs,
+                 VisionSystem& vision);
 
     TextureManager& getTextures();
     ProgramManager& getPrograms();
@@ -28,10 +31,13 @@ struct RenderSystem : public SystemBase<RenderComponent> {
     mat4 getProjection() const;
     mat4 getView() const;
 
+    Texture const& getVisionTexture() const;
+
 private:
     sf::Window const& window;
     TextureManager& textures;
     ProgramManager& programs;
+    VisionSystem& vision;
 
     vec3 cameraPosition, cameraTarget;
 };

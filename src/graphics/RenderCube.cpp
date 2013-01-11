@@ -7,6 +7,7 @@
 #include "math/Math.hpp"
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Error.hpp"
+#include "opengl/Texture.hpp"
 #include "graphics/RenderSystem.hpp"
 
 namespace game {
@@ -46,6 +47,10 @@ void RenderCube::render() {
                         model);
     program->setUniform(program->getUniformLocation("diffuse"),
                         color);
+
+    system->getVisionTexture().bind();
+    program->setUniform(program->getUniformLocation("vision"), 0);
+
     program->setAttrib(0, positions);
     program->setAttrib(1, normals);
 
@@ -70,9 +75,10 @@ void RenderCube::render() {
         ASSERT(start == rawIndices.size());
     }
 
-    program->unsetAttrib(program->getAttribLocation("position"));
-    program->unsetAttrib(program->getAttribLocation("normal"));
+    program->unsetAttrib(0);
+    program->unsetAttrib(1);
     program->unbind();
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 std::vector<vec3> rawPositions = std::vector<vec3> {
