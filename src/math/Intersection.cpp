@@ -9,6 +9,8 @@ using boost::none;
 namespace game {
 
 Intersection rayQuadIntersection(Ray const& ray, Quad const& quad) {
+    // TODO: This is as naive as it gets :D
+
     // ray(r) = quad(s, t)
     // ray.origin + r * ray.direction = quad.center + s * quad.u + t * quad.v
     // quad.center - ray.origin = r * ray.direction - s * quad.u - t * quad.v

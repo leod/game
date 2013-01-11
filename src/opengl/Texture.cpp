@@ -4,6 +4,17 @@
 
 namespace game {
 
+Texture::Texture() {
+    glGenTextures(1, &name);
+}
+
+Texture::Texture(Texture&& texture) {
+    name = texture.name;
+
+    // For debugging: invalidate the other texture
+    texture.name = -1;
+}
+
 Texture::Texture(std::string const& filename) {
     glGenTextures(1, &name);
     glBindTexture(GL_TEXTURE_2D, name);
@@ -28,6 +39,10 @@ Texture::~Texture() {
 
 GLuint Texture::getName() const {
     return name;
+}
+
+void Texture::bind() const {
+    glBindTexture(GL_TEXTURE_2D, name);
 }
 
 } // namespace game

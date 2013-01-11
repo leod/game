@@ -20,7 +20,7 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
     iterate([&] (VisionComponent* component) {
         auto position = component->getPosition();
 
-#define NUM_SAMPLES 360
+#define NUM_SAMPLES 100
 #define CUTOFF 13.0f
         vec3 directions[NUM_SAMPLES];
         float distances[NUM_SAMPLES]; 
