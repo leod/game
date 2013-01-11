@@ -23,7 +23,7 @@ struct Framebuffer {
 
     template<typename F>
     void renderInto(F f, bool clear = true) const {
-        renderIntoImpl(f); 
+        renderIntoImpl(f, clear); 
     }
 
 private:
