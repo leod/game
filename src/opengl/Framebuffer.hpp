@@ -16,13 +16,18 @@ struct Framebuffer {
         DEPTH = 2
     };
 
+    enum Clear : bool {
+        NO_CLEAR = false,
+        CLEAR = true
+    };
+
     Framebuffer(Config config, ivec2 size);
     ~Framebuffer();
 
     Texture const& getColorTexture() const;
 
     template<typename F>
-    void renderInto(F f, bool clear = true) const {
+    void renderInto(F f, Clear clear = NO_CLEAR) const {
         renderIntoImpl(f, clear); 
     }
 
@@ -35,7 +40,7 @@ private:
 
     std::unique_ptr<Texture> colorTexture;
 
-    void renderIntoImpl(std::function<void()> const&, bool) const;
+    void renderIntoImpl(std::function<void()> const&, Clear) const;
 };
 
 } // namespace game
