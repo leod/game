@@ -102,7 +102,8 @@ void NetSystem::interpolateStates(NetStateStore const& a,
                                   float t) {
     // TODO: Work on the case that a and b contain a different set of entities.
 
-    // Buffer for the interpolation result
+    // Buffer for the interpolation result.
+    // Kept outside of the for loop so the memory may be reused.
     std::vector<uint8_t> buffer;
 
     for (size_t i = 0, j = 0; i < a.size(); ++i, ++j) {

@@ -19,7 +19,7 @@ float smple(vec2 c) {
 }
 
 void main() {
-    float alpha = clamp(texture(vision, coord).r + 0.5, 0, 1);
+    float alpha = clamp(texture(vision, coord).r + 0.3, 0, 1);
     fragColor = color * alpha;
 }
 

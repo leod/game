@@ -15,17 +15,18 @@ VisionSystem::VisionSystem(Map const& map, ProgramManager& programs)
     : map(map),
       program(programs.load("shaders/vision_vertex.glsl",
                             "shaders/vision_fragment.glsl")),
-      framebuffer(Framebuffer::COLOR, ivec2(512, 512)) {
+      framebuffer(Framebuffer::COLOR, ivec2(1280, 1024)) {
 }
 
 void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
     iterate([&] (VisionComponent* component) {
         auto position = component->getPosition();
 
-#define NUM_SAMPLES 150
+#define NUM_SAMPLES 300
 #define CUTOFF 30.0f
         vec3 directions[NUM_SAMPLES];
         float distances[NUM_SAMPLES]; 
+        float deltaY[NUM_SAMPLES];
 
         for (int i = 0; i < NUM_SAMPLES; ++i) {
             float angle = 
@@ -36,7 +37,12 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
             //std::cout << directions[i] << std::endl;
 
             Ray ray = { position, directions[i] };
-            Intersection intersection = rayMapIntersection(ray, map);
+            Map::Block const* block;
+            Intersection intersection = rayMapIntersection(ray, map, block);
+            float blockTopY = block->groundCenter.y + block->scale.y;
+
+            deltaY[i] = intersection ? blockTopY - intersection.get().second.y
+                : 0.0f; 
 
             distances[i] = (
                 intersection ? glm::min(intersection.get().first, CUTOFF)
@@ -45,18 +51,19 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
         }
 
         glClearColor(0.0, 0.0, 0.0, 1.0);
-        framebuffer.renderInto([&position, &distances, &directions] () {
+        framebuffer.renderInto(
+        [&position, &distances, &directions, &deltaY] () {
             glBegin(GL_TRIANGLE_FAN);
             glColor3f(1.0, 1.0, 1.0);
             glVertex3f(position.x, position.y, position.z);
 
             for (int i = 0; i < NUM_SAMPLES; ++i) {
                 vec3 target = position + distances[i] * directions[i];
-                glVertex3f(target.x, target.y, target.z);
+                glVertex3f(target.x, target.y + deltaY[i], target.z);
             }
 
             vec3 target = position + distances[0] * directions[0];
-            glVertex3f(target.x, target.y, target.z);
+            glVertex3f(target.x, target.y + deltaY[0], target.z);
 
             glEnd();
         }, Framebuffer::CLEAR);

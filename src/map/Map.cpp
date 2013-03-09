@@ -21,7 +21,7 @@ Map::Map()
     : blocks({
               { vec3(-7, 0, 0), 0, vec3(1, 2, 7) },
               { vec3(7, 0, 0), 0, vec3(1, 2, 7) },
-              { vec3(0, 0, -15), 0, vec3(15, 3, 1) }//,
+              { vec3(0, 0, -15), 0, vec3(15, 1, 1) }//,
               //{ vec3(-5, 0, -8), 90, vec3(5, 1, 1) },
               //{ vec3(6, 0, -9), 90, vec3(5, 1, 1) }
              }) {
@@ -42,7 +42,7 @@ rayBlockIntersection(Ray const& ray, Map::Block const& block) {
     };
 
     auto c = block.groundCenter;
-    auto s = block.rotScale;
+    auto s = block.scale;
 
     // Bottom quad
     check(rayQuadIntersection(ray, { c,
@@ -71,16 +71,22 @@ rayBlockIntersection(Ray const& ray, Map::Block const& block) {
     return intersection;
 }
 
-Intersection rayMapIntersection(Ray const& ray, Map const& map) {
+Intersection rayMapIntersection(Ray const& ray, Map const& map,
+        Map::Block const*& out) {
     Intersection closest;
+    Map::Block const* closestBlock = nullptr;
 
     for (auto& block : map.getBlocks()) {
         auto intersection = rayBlockIntersection(ray, block);
         if (!closest || (intersection &&
-                intersection.get().first < closest.get().first))
+                intersection.get().first < closest.get().first)) {
             closest = intersection;
+            closestBlock = &block;
+        }
     } 
 
+    if (closestBlock)
+        out = closestBlock;
     return closest;
 }
 
