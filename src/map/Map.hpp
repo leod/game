@@ -30,6 +30,7 @@ private:
     std::vector<Block> blocks;
 };
 
-Intersection rayMapIntersection(Ray const&, Map const&);
+Intersection rayMapIntersection(Ray const&, Map const&,
+        Map::Block const *& out);
 
 } // namespace game

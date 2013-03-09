@@ -13,7 +13,8 @@ libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
         'opengl32', 'ws2_32', 'winmm']
 
 packages = [
-    ('core', ['Component', 'Entity', 'EntityRegistry', 'System', 'Tasks',]),
+    ('core', ['Component', 'Entity', 'EntityRegistry', 'Log', 'System',
+              'Tasks',]),
     ('graphics', ['MapRenderer', 'RenderCube', 'RenderSystem',
                   'VisionSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',

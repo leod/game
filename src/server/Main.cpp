@@ -10,6 +10,7 @@
 #include "core/EntityRegistry.hpp"
 #include "core/Tasks.hpp"
 #include "core/Error.hpp"
+#include "core/Log.hpp"
 #include "core/Time.hpp"
 #include "input/ClockTimeSource.hpp"
 #include "net/NetSystem.hpp"
@@ -174,8 +175,7 @@ struct Server {
 
             sendState(client.get(), stream);
 
-            std::cout << "@" << clock.getElapsedTime().asMilliseconds()
-                      << ": sending state " << tick << std::endl;
+            TRACE(server) << "Sending state for tick #" << tick;
         }
     }
 
@@ -191,9 +191,8 @@ struct Server {
         std::unique_ptr<ClientInfo> newClient(
                 new ClientInfo(clients.makeClientId(), event.peer));
         ClientInfo* newClientPtr = newClient.get();
-
-        std::cout << "Client " << (int)newClient->id << " connected"
-                  << std::endl;
+        
+        INFO(server) << "Client " << (int)newClient->id << " connected";
 
         // Create player entity for the client
         newClient->entity = entities.create(
@@ -222,8 +221,7 @@ struct Server {
         if (!client->connected)
             return;
 
-        std::cout << "Client " << (int)client->id << " disconnected"
-                  << std::endl;
+        INFO(server) << "Client " << *client << " disconnected";
 
         clients.broadcast<ClientDisconnectedMessage>(client->id);
 
@@ -237,6 +235,9 @@ struct Server {
 };
 
 int main() {
+    Log::addSink(new ConsoleLogSink);
+    Log::addSink(new FileLogSink("server.log"));
+
     try {
         enet_initialize();
 

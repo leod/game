@@ -1,5 +1,6 @@
 #include "opengl/ProgramManager.hpp"
 
+#include "core/Log.hpp"
 #include "core/Error.hpp"
 
 namespace game {
@@ -28,6 +29,8 @@ Program* ProgramManager::load(std::string const& vertexFilename,
 }
 
 Shader* ProgramManager::loadShader(GLint type, std::string const& filename) {
+    INFO(opengl) << "Loading shader \"" << filename << "\"";
+
     auto shaderIt = shaders.find(filename);
     if (shaderIt != shaders.end()) {
         ASSERT_MSG(shaderIt->second->getType() == type,

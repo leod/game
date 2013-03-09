@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <ostream>
 
 #include <enet/enet.h>
 
@@ -25,6 +26,8 @@ struct ClientInfo {
 
     static ClientInfo* get(ENetPeer*);
 };
+
+std::ostream& operator<<(std::ostream&, ClientInfo const&);
 
 struct Clients {
     typedef std::vector<std::unique_ptr<ClientInfo>> ClientList;

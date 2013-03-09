@@ -6,13 +6,18 @@ namespace game {
 
 ClientInfo::ClientInfo(ClientId id, ENetPeer* peer)
     : id(id), peer(peer),
-      name(), entity(nullptr), connected(true) {
+      name(""), entity(nullptr), connected(true) {
     peer->data = this;
 }
 
 ClientInfo* ClientInfo::get(ENetPeer* peer) {
     ASSERT(peer->data);
     return reinterpret_cast<ClientInfo*>(peer->data);
+}
+
+std::ostream& operator<<(std::ostream& os, ClientInfo const& client) {
+    os << client.name << " (#" << (int)client.id << ")";
+    return os;
 }
 
 Clients::Clients(MessageHub& messageHub)

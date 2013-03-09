@@ -1,5 +1,6 @@
 #include "server/ServerNetSystem.hpp"
 
+#include "core/Log.hpp"
 #include "net/MessageTypes.hpp"
 #include "physics/PhysicsComponent.hpp"
 
@@ -28,13 +29,14 @@ ServerNetSystem::ServerNetSystem(Clients& clients)
 void ServerNetSystem::onRegister(NetComponent* component) {
     NetSystem::onRegister(component);
 
+    TRACE(server) << "Creating net entity #" << component->getNetId();
     clients.broadcast(makeCreateEntityMessage(component));
 }
 
 void ServerNetSystem::onUnregister(NetComponent* component) {
     NetSystem::onUnregister(component);
 
-    std::cout << "remove " << component->getNetId() << std::endl;
+    TRACE(server) << "Removing net entity #" << component->getNetId();
     clients.broadcast<RemoveEntityMessage>(component->getNetId());
 }
 
@@ -44,6 +46,8 @@ NetEntityId ServerNetSystem::makeNetEntityId() {
 
 void
 ServerNetSystem::sendCreateEntityMessages(ClientInfo* const client) const {
+    INFO(server) << "Replicating entities to client " << *client;
+
     iterate([&] (NetComponent const* component) {
         clients.getMessageHub().send(client->peer,
                                      makeCreateEntityMessage(component));

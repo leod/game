@@ -10,6 +10,7 @@
 #include "core/EntityRegistry.hpp"
 #include "core/Time.hpp"
 #include "core/Tasks.hpp"
+#include "core/Log.hpp"
 
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
@@ -159,6 +160,8 @@ struct Client {
 
         messageHub->onMessage<LoggedInMessage>([&]
         (ClientId id) {
+            INFO(client) << "Logged into server";
+
             ASSERT(id > 0);
             myId = id;
         });
@@ -178,7 +181,13 @@ struct Client {
         }
     }
 
-    void connect(ENetAddress const& address) {
+    void connect(std::string const& hostName, enet_uint16 port) {
+        INFO(client) << "Connecting to " << host << ":" << port;
+
+        ENetAddress address;
+        enet_address_set_host(&address, hostName.c_str());
+        address.port = port;
+
         host = enet_host_create(nullptr, 1, 2, 0, 0);
         if (host == nullptr)
             throw std::runtime_error("Failed to create ENet client host");
@@ -229,7 +238,7 @@ struct Client {
                 break;
 
             case ENET_EVENT_TYPE_DISCONNECT:
-                std::cout << "Client disconnected" << std::endl;
+                INFO(client) << "Lost connection to server";
                 break;
 
             default:
@@ -264,15 +273,17 @@ struct Client {
 
             nextState = tickStateQueue.front();
             tickStateQueue.pop();
-        }   
+        }
+
+        // Now we have new curState and nextStates, so we can
+        // load the new state from curState.
+
+        TRACE(client) << "Starting tick #" << curState.tick();
 
         tick = curState.tick();
         tickInterpolation = 0;
 
         netSystem.applyStates(curState);
-
-        /*std::cout << "@" << clock.getElapsedTime().asMilliseconds()
-                  << ": started tick " << curState.tick() << std::endl;*/
     }
 
     void interpolate() {
@@ -307,14 +318,14 @@ struct Client {
             auto playerPhys = playerEntity->component<PhysicsComponent>();
 
             vec3 cameraPosition = playerPhys->getPosition() +
-                                  vec3(0, 22, -0.001);
+                                  vec3(0, 15, -0.001);
             vec3 cameraTarget = playerPhys->getPosition();
 
             renderSystem.setCamera(cameraPosition, cameraTarget);
 
             Ray ray = { playerPhys->getPosition(),
                 playerPhys->getOrientation() };
-            intersection = rayMapIntersection(ray, map);
+            //intersection = rayMapIntersection(ray, map);
             if (intersection)
                 std::cout << intersection.get().first << std::endl;
             playerPos = playerPhys->getPosition();
@@ -376,6 +387,9 @@ struct Client {
 
 int main()
 {
+    Log::addSink(new ConsoleLogSink());
+    Log::addSink(new FileLogSink("client.log"));
+
     sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(false);
@@ -385,9 +399,9 @@ int main()
     {
         auto err = glewInit();
         if (err != GLEW_OK) {
-            std::cerr << "Failed to initialize GLEW: "
-                      << glewGetErrorString(err) << "."
-                      << std::endl;
+            WARN(opengl) << "Failed to initialize GLEW: "
+                         << glewGetErrorString(err) << ".";
+ 
             return 1;
         }
     }
@@ -416,11 +430,7 @@ int main()
         std::string host = "localhost";
         //std::getline(std::cin, host);
 
-        ENetAddress address;
-        enet_address_set_host(&address, host.c_str());
-        address.port = 20000;
-
-        client.connect(address);
+        client.connect(host, 20000);
     }
 
     while (running) {
