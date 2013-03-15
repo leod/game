@@ -9,18 +9,18 @@ struct BitStreamWriter;
 
 typedef void UntypedState;
 
-typedef void (*NetStateWriter)(BitStreamWriter&, UntypedState const* in);
-typedef void (*NetStateReader)(BitStreamReader&, UntypedState* out);
-typedef void (*NetStateInterpolator)(UntypedState const* a,
-                                     UntypedState const* b,
-                                     float t, UntypedState* out);
+typedef void (*NetStateWrite)(BitStreamWriter&, UntypedState const* in);
+typedef void (*NetStateRead)(BitStreamReader&, UntypedState* out);
+typedef void (*NetStateInterpolate)(UntypedState const* a,
+                                    UntypedState const* b,
+                                    float t, UntypedState* out);
 
 struct NetStateType {
     size_t size;
 
-    NetStateWriter write;
-    NetStateReader read;
-    NetStateInterpolator interpolate;
+    NetStateWrite write;
+    NetStateRead read;
+    NetStateInterpolate interpolate;
 };
 
 template<typename T>
@@ -30,9 +30,9 @@ NetStateType makeNetStateType(void (*write)(BitStreamWriter&, T const*),
                                                   float, T*)) {
     NetStateType type = {
         sizeof(T),
-        reinterpret_cast<NetStateWriter>(write),
-        reinterpret_cast<NetStateReader>(read),
-        reinterpret_cast<NetStateInterpolator>(interpolate)
+        reinterpret_cast<NetStateWrite>(write),
+        reinterpret_cast<NetStateRead>(read),
+        reinterpret_cast<NetStateInterpolate>(interpolate)
     };
 
     return type;

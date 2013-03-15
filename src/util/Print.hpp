@@ -2,10 +2,19 @@
 
 #include <iostream>
 #include <tuple>
+#include <functional>
 
 #include "math/Math.hpp"
+#include "util/Tuple.hpp"
 
 namespace game {
+
+template<typename Ch, typename Traits, typename... Args>
+std::ostream& operator<<(std::basic_ostream<Ch, Traits>& os,
+        vec2 const& v) {
+    return os << "vec2(" << v.x << ", "
+                         << v.y << ")";
+}
 
 template<typename Ch, typename Traits, typename... Args>
 std::ostream& operator<<(std::basic_ostream<Ch, Traits>& os,
@@ -15,31 +24,31 @@ std::ostream& operator<<(std::basic_ostream<Ch, Traits>& os,
                          << v.z << ")";
 }
 
-// Adopted from <http://stackoverflow.com/a/6245777>.
 
-template<std::size_t> struct IntCounterT {
-}; 
-
-template<typename Ch, typename Tr, typename Tuple, std::size_t I>
-void printTuple(std::basic_ostream<Ch, Tr>& os, Tuple const& t,
-        IntCounterT<I>){
-  printTuple(os, t, IntCounterT<I-1>());
-  os << ", " << std::get<I>(t);
+template<std::size_t N, typename... Types>
+typename std::enable_if<(N == 0)>::type
+printTuple(std::ostream&, std::tuple<Types...> const&) {
 }
 
-template<typename Ch, typename Tr, typename Tuple>
-void printTuple(std::basic_ostream<Ch, Tr>& os, Tuple const& t,
-        IntCounterT<0>){
-  os << std::get<0>(t);
+template<std::size_t N, typename... Types>
+typename std::enable_if<(N == 1)>::type
+printTuple(std::ostream& os, std::tuple<Types...> const& m) {
+    os << std::get<0>(m);
 }
 
-template<typename Ch, typename Traits, typename... Args>
-std::ostream& operator<<(std::basic_ostream<Ch, Traits>& os,
-        std::tuple<Args...> const& t)
+template<std::size_t N, typename... Types>
+typename std::enable_if<(N >= 2)>::type
+printTuple(std::ostream& os, std::tuple<Types...> const& m) {
+    printTuple<N - 1>(os, m);
+    os << ", " << std::get<N - 1>(m);
+}
+
+template<typename... Args>
+std::ostream& operator<<(std::ostream& os, std::tuple<Args...> const& m)
 {
-  os << "(";
-  printTuple(os, t, IntCounterT<sizeof...(Args) - 1>());
-  return os << ")";
+    os << "(";
+    printTuple<(sizeof...(Args))>(os, m);
+    return os << ")";
 }
 
 } // namespace game

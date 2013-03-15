@@ -28,4 +28,4 @@ private:
     std::vector<NetState*> states; // TODO: Mem cleanup
 };
 
-} // namespace gam
+} // namespace game

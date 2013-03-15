@@ -12,6 +12,8 @@
 namespace game {
 
 void NetSystem::onRegister(NetComponent* component) {
+    TRACE(net) << "Creating net entity #" << component->getNetId();
+
     ASSERT_MSG(components.find(component->getNetId()) == components.end(),
                "NetEntityId " << component->getNetId() <<
                " is being used more than once");
@@ -20,6 +22,8 @@ void NetSystem::onRegister(NetComponent* component) {
 }
 
 void NetSystem::onUnregister(NetComponent* component) {
+    TRACE(net) << "Removing net entity #" << component->getNetId();
+
     size_t numErased = components.erase(component->getNetId());
     ASSERT(numErased == 1);
 }

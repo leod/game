@@ -42,5 +42,20 @@ Entity::Entity(EntityId id, ComponentList&& components,
     : id(id), components(components), entities(entities) {
 }
 
+std::ostream& operator<<(std::ostream& os, Entity const* entity) {
+    if (entity) {
+        os << "Entity#" << entity->getId() << "{";
+
+        for (auto component : entity->components) {
+            os << component;
+            os << ":" << component->getFamilyId();
+            os << ",";
+        }
+        os << "}";
+    }
+    else os << "nullptr";
+
+    return os;
+}
 
 } // namespace game

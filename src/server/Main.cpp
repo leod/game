@@ -49,7 +49,6 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
     };
 }
 
-// I'll split Client and Server up as soon as I'll find out what they do.
 struct Server {
     sf::Clock clock; // tmp
 
@@ -67,7 +66,7 @@ struct Server {
 
     Server()
         : host(nullptr),
-          messageHub(makeMessageHub()),
+          messageHub(new MessageHub),
           clients(*messageHub.get()),
           netSystem(clients),
           entities({ &netSystem, &tickSystem }),
@@ -77,16 +76,27 @@ struct Server {
         createTestWorld();
 
         messageHub->onMessageWithPeer<PlayerInputMessage>([&]
-        (ENetPeer* peer, PlayerInput const& input) {
-                auto client = ClientInfo::get(peer);
-                client->entity->component<PlayerInputComponent>()
-                              ->onPlayerInput(input);
+        (ENetPeer* peer, PlayerInput const& playerInput) {
+            auto client = ClientInfo::get(peer);
+            auto entity = client->entity;
+            if (entity) {
+                auto input = entity->component<PlayerInputComponent>();
+                ASSERT(input);
+                input->onPlayerInput(playerInput);
+
+#ifdef USE_PREDICTION
+                auto physics = entity->component<PhysicsComponent>();
+                ASSERT(physics);
+                vec3 newPosition = physics->getPosition();
+                messageHub->send<PlayerPositionMessage>(peer, newPosition);
+#endif
+            }
         });
 
         messageHub->onMessageWithPeer<DisconnectMessage>([&]
         (ENetPeer* peer) {
-                auto client = ClientInfo::get(peer);
-                handleDisconnect(client);
+            auto client = ClientInfo::get(peer);
+            handleDisconnect(client);
         });
     }
 
@@ -135,8 +145,6 @@ struct Server {
 
             case ENET_EVENT_TYPE_DISCONNECT: {
                 auto client = reinterpret_cast<ClientInfo*>(event.peer->data);
-                std::cout << "Client " << (int)client->id << " disconnected"
-                          << std::endl;
 
                 handleDisconnect(client);
                 clients.remove(client);
@@ -171,11 +179,15 @@ struct Server {
             
             BitStreamWriter stream;
             write(stream, tick);
+#ifdef USE_PREDICTION
+            netSystem.writeRawStates(stream, client->id);
+#else
             netSystem.writeRawStates(stream);
+#endif
 
             sendState(client.get(), stream);
 
-            TRACE(server) << "Sending state for tick #" << tick;
+            //TRACE(server) << "Sending state for tick #" << tick;
         }
     }
 
@@ -238,6 +250,8 @@ int main() {
     Log::addSink(new ConsoleLogSink);
     Log::addSink(new FileLogSink("server.log"));
 
+    initializeMessageTypes();
+
     try {
         enet_initialize();
 
@@ -251,7 +265,7 @@ int main() {
             server.update(deltaTime);
             deltaTime = time.nextDelta();            
 
-            sf::sleep(sf::milliseconds(5));
+            sf::sleep(sf::milliseconds(0));
         }
     } catch(std::exception& exception) {
         std::cerr << exception.what() << std::endl;

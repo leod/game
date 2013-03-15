@@ -148,10 +148,19 @@ void Log::addSink(LogSink* sink) {
 }
 
 void Log::write(LogMessage const& message) {
+    if (severityFilters.find(message.getLogger()) != severityFilters.end() &&
+        severityFilters[message.getLogger()] > message.getSeverity())
+        return;
+
     for (auto& sink : sinks)
         sink->write(message);
 }
 
+void Log::setSeverityFilter(std::string const& logger, LogSeverity severity) {
+    severityFilters[logger] = severity; 
+}
+
 std::vector<std::unique_ptr<LogSink>> Log::sinks;
+std::map<std::string, LogSeverity> Log::severityFilters;
 
 } // namespace game

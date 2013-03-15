@@ -8,39 +8,14 @@ namespace game {
 
 struct MessageHub;
 
-struct CreateEntityMessage
-    : Message<CreateEntityMessage,
-              NetEntityTypeId,
-              NetEntityId,
-              ClientId,
-              vec3>
-{};
+DEFINE_MESSAGE(CreateEntityMessage,
+               NetEntityTypeId, NetEntityId, ClientId, vec3);
+DEFINE_MESSAGE(RemoveEntityMessage, NetEntityId);
+DEFINE_MESSAGE(LoggedInMessage, ClientId);
+DEFINE_EMPTY_MESSAGE(DisconnectMessage);
+DEFINE_MESSAGE(ClientConnectedMessage, ClientId, std::string);
+DEFINE_MESSAGE(ClientDisconnectedMessage, ClientId);
 
-struct RemoveEntityMessage
-    : Message<RemoveEntityMessage,
-              NetEntityId>
-{};
-
-struct LoggedInMessage
-    : Message<LoggedInMessage,
-              ClientId>
-{};
-
-struct DisconnectMessage
-    : Message<DisconnectMessage>
-{};
-
-struct ClientConnectedMessage
-    : Message<ClientConnectedMessage,
-              ClientId,
-              std::string>
-{};
-
-struct ClientDisconnectedMessage
-    : Message<ClientDisconnectedMessage,
-              ClientId>
-{};
-
-MessageHub* makeMessageHub();
+void initializeMessageTypes();
     
 } // namespace game  

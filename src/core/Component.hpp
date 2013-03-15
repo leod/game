@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <vector>
 #include <map>
 
@@ -26,12 +27,17 @@ struct Component {
     EntityRegistry* getEntities();
     EntityRegistry const* getEntities() const;
 
+protected:
+    virtual void print(std::ostream&) const;
+
 private:
     Entity* owner;
 
     void setOwner(Entity* newOwner);
 
     static FamilyId globalFamilyCounter;
+
+    friend std::ostream& operator<<(std::ostream&, Component const*);
 };
 
 // ComponentFamily should be used as a baseclass for components

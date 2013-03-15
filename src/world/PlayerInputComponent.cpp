@@ -1,7 +1,5 @@
 #include "world/PlayerInputComponent.hpp"
 
-#include <functional>
-
 #include "math/Math.hpp"
 #include "physics/PhysicsComponent.hpp"
 #include "world/PlayerInput.hpp"
@@ -9,16 +7,12 @@
 
 namespace game {
 
-PlayerInputComponent::PlayerInputComponent( PhysicsComponent* physics)
+PlayerInputComponent::PlayerInputComponent(PhysicsComponent* physics)
     : physics(physics) {
 }
 
-void PlayerInputComponent::tick() {
-    runPlayerInput(physics, playerInput);
-}
-
 void PlayerInputComponent::onPlayerInput(PlayerInput const& input) {
-    playerInput = input;
+    runPlayerInput(physics, input);
 }
 
 } // namespace game

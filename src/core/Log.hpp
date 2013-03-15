@@ -4,11 +4,15 @@
 #include <sstream>
 #include <vector>
 #include <memory>
+#include <map>
 #include <fstream>
+
+#include "util/Print.hpp"
 
 #define STRINGIFY(a) #a
 
-#define LOG(sev, logger) ::game::LogMessageBuilder(sev, STRINGIFY(logger), __FILE__, __LINE__)
+#define LOG(sev, logger) ::game::LogMessageBuilder(sev, STRINGIFY(logger), \
+                                                   __FILE__, __LINE__)
 #define TRACE(logger) LOG(::game::SEVERITY_TRACE, logger)
 #define INFO(logger) LOG(::game::SEVERITY_INFO, logger)
 #define WARN(logger) LOG(::game::SEVERITY_WARN, logger)
@@ -80,8 +84,11 @@ struct Log {
 
     static void write(LogMessage const&);
 
+    static void setSeverityFilter(std::string const& logger, LogSeverity);
+
 private:
     static std::vector<std::unique_ptr<LogSink>> sinks;
+    static std::map<std::string, LogSeverity> severityFilters;
 };
     
 } // namespace game
