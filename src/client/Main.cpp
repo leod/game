@@ -28,6 +28,7 @@
 
 #include "world/PlayerInputSource.hpp"
 #include "world/PlayerInputComponent.hpp"
+#include "world/LocalPlayerInputComponent.hpp"
 #include "world/TickSystem.hpp"
 #include "world/CircularMotion.hpp"
 #include "world/PhysicsNetState.hpp"
@@ -44,40 +45,15 @@
 
 using namespace game;
 
-ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
-    auto physics = new PhysicsComponent(position);
-    return {
-        physics,
-        new RenderCube(physics, vec3(1, 0, 0)),
-        new NetComponent(0, id, owner, { new PhysicsNetState(physics) })
-    };
-}
-
-ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
-    static vec3 colors[] = {
-        vec3(1, 0, 0),
-        vec3(0, 1, 0),
-        vec3(0, 0, 1),
-        vec3(1, 0, 1),
-        vec3(0, 1, 1),
-        vec3(1, 1, 0),
-        vec3(0, 0, 0)
-    };
-
-    // Later: If I'm the owner, add input component or something.
-
-    auto physics = new PhysicsComponent(position);
-    return {
-        physics,
-        new RenderCube(physics, colors[owner % 7]),
-        new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
-        new VisionComponent(physics)
-    };
-}
+ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position);
+ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position);
 
 #define INTERPOLATION_FREQUENCY 100
 
 // I'll split Client and Server up as soon as I'll find out what they do.
+struct Client;
+Client* client = nullptr; // obvious hack
+
 struct Client {
     sf::Clock clock; // tmp
 
@@ -125,17 +101,32 @@ struct Client {
           playerEntity(nullptr),
           host(nullptr),
           peer(nullptr),
-          messageHub(makeMessageHub()),
+          messageHub(new MessageHub),
           myId(0),
           tick(0),
           startNextTick(false),
           isFirstTick(true),
           mapRenderer(map, textures, programs, visionSystem) {
+        ::client = this; // obvious hack
+
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
         tasks.add(TICK_FREQUENCY, [&] () { 
-            if (peer)
-                messageHub->send<PlayerInputMessage>(peer, playerInput);
+            if (!playerEntity || !peer)
+                return;
+
+            messageHub->send<PlayerInputMessage>(peer, playerInput);
+            enet_host_flush(host);
+
+            // Prediction
+#ifdef USE_PREDICTION
+            auto input =
+                playerEntity->component<LocalPlayerInputComponent>();
+            if (input) {
+                input->onPlayerInput(playerInput);
+            }
+#endif
         });
+
         tasks.add(INTERPOLATION_FREQUENCY, [&] () { interpolate(); });
 
         netSystem.registerType(0, makeTeapot);
@@ -147,8 +138,11 @@ struct Client {
 
             ASSERT_MSG(myId > 0, "Should have received LoggedInMessage "
                                  << "before CreateEntityMessage.");
-            if (owner == myId)
+            if (owner == myId) {
                 playerEntity = entity; 
+
+                INFO(client) << "Created player entity: " << playerEntity;
+            }
         });
 
         messageHub->onMessage<RemoveEntityMessage>([&]
@@ -160,10 +154,24 @@ struct Client {
 
         messageHub->onMessage<LoggedInMessage>([&]
         (ClientId id) {
-            INFO(client) << "Logged into server";
+            INFO(client) << "Logged into server with id " << (int)id;
 
             ASSERT(id > 0);
             myId = id;
+        });
+
+        messageHub->onMessage<PlayerPositionMessage>([&]
+        (vec3 position) {
+            // Prediction correction
+#ifdef USE_PREDICTION
+            if (playerEntity) {
+                auto input =
+                    playerEntity->component<LocalPlayerInputComponent>();
+                if (input) {
+                    input->onCorrection(position);
+                }
+            }
+#endif
         });
 
         playerInputSource.onPlayerInput.connect([&]
@@ -222,10 +230,6 @@ struct Client {
 
                     ASSERT(tick > 0);
 
-                    /*std::cout << "@" << clock.getElapsedTime().asMilliseconds()
-                              << ": received state for tick " << tick
-                              << std::endl;*/
-
                     tickStateQueue.emplace(tick);
                     netSystem.readRawStates(stream, tickStateQueue.back());
 
@@ -278,12 +282,13 @@ struct Client {
         // Now we have new curState and nextStates, so we can
         // load the new state from curState.
 
-        TRACE(client) << "Starting tick #" << curState.tick();
+        //TRACE(client) << "@" << clock.getElapsedTime().asMilliseconds()
+                      //<< ": Starting tick #" << curState.tick();
 
         tick = curState.tick();
         tickInterpolation = 0;
 
-        netSystem.applyStates(curState);
+        //netSystem.applyStates(curState);
     }
 
     void interpolate() {
@@ -385,10 +390,50 @@ struct Client {
     }
 };
 
+ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
+    auto physics = new PhysicsComponent(position);
+    return {
+        physics,
+        new RenderCube(physics, vec3(1, 0, 0)),
+        new NetComponent(0, id, owner, { new PhysicsNetState(physics) })
+    };
+}
+
+ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
+    static vec3 colors[] = {
+        vec3(1, 0, 0),
+        vec3(0, 1, 0),
+        vec3(0, 0, 1),
+        vec3(1, 0, 1),
+        vec3(0, 1, 1),
+        vec3(1, 1, 0),
+        vec3(0, 0, 0)
+    };
+
+    auto physics = new PhysicsComponent(position);
+
+    auto components = ComponentList {
+        physics,
+        new RenderCube(physics, colors[owner % 7]),
+        new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
+        new VisionComponent(physics)
+    };
+
+#ifdef USE_PREDICTION
+    if (client && owner == client->myId)
+        components.push_back(new LocalPlayerInputComponent(physics));
+#endif
+
+    return components;
+}
+
 int main()
 {
     Log::addSink(new ConsoleLogSink());
     Log::addSink(new FileLogSink("client.log"));
+    Log::setSeverityFilter("net", SEVERITY_INFO);
+
+    initializeMessageTypes();
 
     sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
@@ -426,7 +471,7 @@ int main()
     Client client(window, input);
 
     {
-        std::cout << "Pls enter IP: ";
+        //std::cout << "Please enter IP of server to connect to: ";
         std::string host = "localhost";
         //std::getline(std::cin, host);
 

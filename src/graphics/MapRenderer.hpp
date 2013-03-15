@@ -10,6 +10,7 @@ struct TextureManager;
 struct ProgramManager;
 struct VisionSystem;
 struct Program;
+struct Texture;
 
 struct MapRenderer {
     MapRenderer(Map const&, TextureManager&, ProgramManager&, VisionSystem&);
@@ -22,6 +23,8 @@ private:
     Program* program;
 
     VisionSystem& vision;
+
+    Texture* floor;
 
     Buffer<vec3> cubePositions;
     Buffer<vec3> cubeNormals;

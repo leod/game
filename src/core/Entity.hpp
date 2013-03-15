@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "core/Component.hpp"
 
 namespace game {
@@ -43,6 +45,10 @@ private:
     ComponentList const components;
 
     EntityRegistry* const entities;
+
+    friend std::ostream& operator<<(std::ostream&, Entity const*);
 };
+
+std::ostream& operator<<(std::ostream&, Entity const*);
 
 } // namespace game

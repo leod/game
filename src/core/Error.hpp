@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include "core/Log.hpp"
+
 #ifdef WIN32
 // Force crash to allow the backtrace to work
 #define ASSERT_FORCE_CRASH { int* x = nullptr; *x = 42; }
@@ -16,9 +18,12 @@
 #    define ASSERT_MSG(condition, message) \
      do { \
          if (!(condition)) { \
-             std::cerr << "Assertion `" #condition "` failed in " << __FILE__ \
-                       << ", line " << __LINE__ \
+             std::cerr << "Assertion `" #condition "` failed in " \
+                       << __FILE__ << ", line " << __LINE__ \
                        << ": " << message << std::endl; \
+             WARN(core) << "Assertion `" #condition "` failed in " \
+                        << __FILE__ << ", line " << __LINE__ \
+                        << ": " << message; \
              ASSERT_FORCE_CRASH; \
              std::exit(EXIT_FAILURE); \
          } \

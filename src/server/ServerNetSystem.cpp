@@ -29,14 +29,12 @@ ServerNetSystem::ServerNetSystem(Clients& clients)
 void ServerNetSystem::onRegister(NetComponent* component) {
     NetSystem::onRegister(component);
 
-    TRACE(server) << "Creating net entity #" << component->getNetId();
     clients.broadcast(makeCreateEntityMessage(component));
 }
 
 void ServerNetSystem::onUnregister(NetComponent* component) {
     NetSystem::onUnregister(component);
 
-    TRACE(server) << "Removing net entity #" << component->getNetId();
     clients.broadcast<RemoveEntityMessage>(component->getNetId());
 }
 
@@ -53,6 +51,5 @@ ServerNetSystem::sendCreateEntityMessages(ClientInfo* const client) const {
                                      makeCreateEntityMessage(component));
     });
 }
-
 
 } // namespace game

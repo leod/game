@@ -8,16 +8,14 @@ namespace game {
 
 struct PhysicsComponent;
 
-struct PlayerInputComponent : public TickComponent {
+struct PlayerInputComponent : public ComponentBase<PlayerInputComponent> {
     PlayerInputComponent(PhysicsComponent*);
 
-    void tick();
     void onPlayerInput(PlayerInput const&);
 
 private:
     PhysicsComponent* physics;
-
-    PlayerInput playerInput;
 };
 
 }
+

@@ -39,7 +39,7 @@ struct NetSystem : public SystemBase<NetComponent> {
         entityTypes[typeId] = maker;
     }
 
-    Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId, vec3);
+    Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId, vec3 pos);
 
 private:
     // We keep a map of net entities separately from EntityRegistry,

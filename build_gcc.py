@@ -19,14 +19,14 @@ packages = [
                   'VisionSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
-    ('net', ['MessageHub', 'MessageTypes', 'NetComponent', 'NetStateStore',
-             'NetSystem',]),
+    ('net', ['MessageHub', 'MessageType', 'MessageTypes', 'NetComponent',
+             'NetStateStore', 'NetSystem',]),
     ('map', ['Map',]),
     ('math', ['Intersection',]),
     ('opengl', ['Buffer', 'Framebuffer', 'Error', 'Program', 'ProgramManager',
                 'Shader', 'Texture', 'TextureManager',]),
-    ('world', ['PhysicsNetState', 'PlayerInput', 'PlayerInputComponent',
-               'PlayerInputSource', 'TickSystem',]),
+    ('world', ['LocalPlayerInputComponent', 'PhysicsNetState', 'PlayerInput',
+               'PlayerInputComponent', 'PlayerInputSource', 'TickSystem',]),
     ('util', ['Backtrace', 'BitStream',]),
 ]
 

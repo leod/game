@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "math/Math.hpp"
 
 namespace game {
@@ -11,13 +13,13 @@ struct PlayerInput {
          walkForward, walkBackward;
     vec2 orientation;
 
-    PlayerInput()
-        : strafeLeft(),
-          strafeRight(),
-          walkForward(),
-          walkBackward() {
-    }
+    PlayerInput();
+    PlayerInput(bool strafeLeft, bool strafeRight,
+                bool walkForward, bool walkBackward,
+                vec2 orientation);
 };
+
+std::ostream& operator<<(std::ostream&, PlayerInput const&);
 
 void runPlayerInput(PhysicsComponent*, PlayerInput const&);
 

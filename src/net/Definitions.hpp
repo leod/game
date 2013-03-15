@@ -4,15 +4,17 @@
 
 namespace game {
 
-// Valid ClientIds are 1...255
-typedef uint8_t ClientId;
+#define USE_PREDICTION
+
+// Valid ClientIds are != 0
+typedef uint16_t ClientId;
 
 enum {
     MAX_CLIENT_ID = 255
 };
 
 
-// Valid Ticks are 1...2^32-1
+// Valid Ticks are != 0
 typedef uint32_t Tick;
 
 enum {

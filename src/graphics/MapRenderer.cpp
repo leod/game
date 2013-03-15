@@ -10,7 +10,7 @@
 namespace game {
 
 MapRenderer::MapRenderer(Map const& map,
-                         TextureManager&,
+                         TextureManager& textures,
                          ProgramManager& programs,
                          VisionSystem& vision)
     : map(map),
@@ -47,7 +47,7 @@ MapRenderer::MapRenderer(Map const& map,
           vec3( 0.5,  0.5,  0.5),
           vec3( 0.5,  0.5, -0.5),
           vec3(-0.5,  0.5, -0.5) }),
-    cubeNormals(GL_ARRAY_BUFFER,
+      cubeNormals(GL_ARRAY_BUFFER,
         { vec3(0, 0, 1),
           vec3(0, 0, 1),
           vec3(0, 0, 1),
@@ -76,12 +76,11 @@ MapRenderer::MapRenderer(Map const& map,
           vec3(0, 0, 1),
           vec3(0, 0, 1),
           vec3(0, 0, 1),
-          vec3(0, 0, 1) }) {
+          vec3(0, 0, 1) }),
+      floor(textures.load("textures/moss.png")) {
 }
 
 void MapRenderer::render(mat4 const& projection, mat4 const& view) {
-    glDisable(GL_CULL_FACE);
-
     program->bind();
     program->setUniform(program->getUniformLocation("projection"),
                         projection);

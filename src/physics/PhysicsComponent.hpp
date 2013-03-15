@@ -18,6 +18,10 @@ struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
         return state.orientation;
     }
 
+    void setPosition(vec3 const& position) {
+        state.position = position;
+    }
+
     PhysicsState const& getState() const {
         return state;
     }
