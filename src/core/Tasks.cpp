@@ -25,7 +25,7 @@ void Tasks::run(Time delta) {
     do {
         ASSERT(!tasks.empty());
 
-        // Task is the task with the lowest sleepTime
+        // tasks.front() is the task with the lowest sleepTime
         TaskInfo task = tasks.front();
 
         std::pop_heap(tasks.begin(), tasks.end(), compareTaskPriority);

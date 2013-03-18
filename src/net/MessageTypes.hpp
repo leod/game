@@ -8,8 +8,10 @@ namespace game {
 
 struct MessageHub;
 
+typedef std::vector<uint8_t> InitialState;
 DEFINE_MESSAGE(CreateEntityMessage,
-               NetEntityTypeId, NetEntityId, ClientId, vec3);
+               NetEntityTypeId, NetEntityId, ClientId, InitialState);
+
 DEFINE_MESSAGE(RemoveEntityMessage, NetEntityId);
 DEFINE_MESSAGE(LoggedInMessage, ClientId);
 DEFINE_EMPTY_MESSAGE(DisconnectMessage);

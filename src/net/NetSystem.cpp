@@ -60,6 +60,35 @@ void NetSystem::remove(NetEntityId id) {
     components.erase(componentIt);
 }
 
+void NetSystem::storeStateInArray(NetComponent const* component,
+                                  std::vector<uint8_t>& out) const {
+    {
+        size_t size = 0;
+        for (auto state : component->getStates())
+            size += state->type().size;
+        out.resize(size);
+    }
+
+    size_t index = 0;
+    for (auto state : component->getStates()) {
+        state->load(&out[index]);
+        index += state->type().size;
+    }
+}
+
+void NetSystem::loadStateFromArray(NetComponent* component,
+                                   std::vector<uint8_t> const& in) const {
+    size_t index = 0;
+    for (auto state : component->getStates()) {
+        ASSERT(index < in.size());
+
+        state->store(&in[index]);
+        index += state->type().size;
+    }
+
+    ASSERT(index == in.size());
+}
+
 void NetSystem::writeRawStates(BitStreamWriter& stream,
                                ClientId ignore) const {
     iterate([&] (NetComponent const* component) {
@@ -104,34 +133,46 @@ void NetSystem::readRawStates(BitStreamReader& stream,
 void NetSystem::interpolateStates(NetStateStore const& a,
                                   NetStateStore const& b,
                                   float t) {
-    // TODO: Work on the case that a and b contain a different set of entities.
-
     // Buffer for the interpolation result.
     // Kept outside of the for loop so the memory may be reused.
     std::vector<uint8_t> buffer;
 
-    for (size_t i = 0, j = 0; i < a.size(); ++i, ++j) {
-        if (j >= b.size())
-            break;
-
+    size_t i = 0, j = 0;
+    while (i < a.size() && j < b.size()) {
         auto entryA = a[i],
              entryB = b[j];
 
-        ASSERT(entryA.id == entryB.id); // TODO
+        // Note that
+        //     a[k].id < a[k+1].id
 
-        auto offsetA = entryA.offset,
-             offsetB = entryB.offset;
+        // Skip ahead if a and b are not at the same net object
+        if (entryA.id < entryB.id) {
+            i++;
+            continue;    
+        } else if (entryA.id > entryB.id) {
+            j++;
+            continue;
+        } else {
+            i++;
+            j++;
+        }
+
+        ASSERT(entryA.id == entryB.id);
+        ASSERT(entryA.size == entryB.size);
 
         if (!exists(entryA.id)) {
-            // As far as I can tell this can happen, if a CreateEntityMessage
+            // As far as I can tell this can happen if a CreateEntityMessage
             // arrives after the first states it appears in.
             // This happens because we send the states unreliably and the
             // messages reliably.
-            std::cout << "NetSystem: Don't have net entity #" << entryA.id
-                      << " in tick #" << a.tick() << std::endl;
+            INFO(net) << "Don't have net entity #" << entryA.id
+                      << " in tick #" << a.tick();
             // TODO
             continue;
         }
+
+        auto offsetA = entryA.offset,
+             offsetB = entryB.offset;
 
         auto component = get(entryA.id);
 
@@ -172,16 +213,22 @@ void NetSystem::applyStates(NetStateStore const& store) {
 }
 
 Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
-        ClientId owner, vec3 pos) {
-    auto entity = getEntities()->create(entityTypes[typeId](id, owner, pos));
+        ClientId owner, InitialState const& state) {
+    auto maker = entityTypes.find(typeId);
+    ASSERT(maker != entityTypes.end());
+
+    auto entity = getEntities()->create(maker->second(id, owner));
+
+    auto netComponent = entity->component<NetComponent>();
 
 #ifndef NDEBUG
-    auto netComponent = entity->component<NetComponent>();
     ASSERT_MSG(netComponent, "Entity " << id << " has no NetComponent.");
     ASSERT(netComponent->getNetTypeId() == typeId);
     ASSERT(netComponent->getNetId() == id);
     ASSERT(netComponent->getOwner() == owner);
 #endif
+
+    loadStateFromArray(netComponent, state);
 
     return entity;
 }

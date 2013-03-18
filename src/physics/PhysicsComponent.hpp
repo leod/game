@@ -6,8 +6,16 @@
 namespace game {
 
 struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
+    PhysicsComponent()
+        : state(vec3(0, 0, 0)) {
+    }
+
     PhysicsComponent(vec3 const& position)
         : state(position) {
+    }
+
+    PhysicsComponent(vec3 const& position, vec3 const& orientation)
+        : state(position, orientation) {
     }
 
     vec3 const& getPosition() const {
@@ -20,6 +28,10 @@ struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
 
     void setPosition(vec3 const& position) {
         state.position = position;
+    }
+
+    void setOrientation(vec3 const& orientation) {
+        state.orientation = orientation;
     }
 
     PhysicsState const& getState() const {

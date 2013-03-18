@@ -35,6 +35,8 @@
 #include "world/CircularMotion.hpp"
 #include "world/PhysicsNetState.hpp"
 #include "world/MessageTypes.hpp"
+#include "world/ProjectileComponent.hpp"
+#include "world/PlayerComponent.hpp"
 
 #include "opengl/TextureManager.hpp"
 #include "opengl/ProgramManager.hpp"
@@ -47,8 +49,9 @@
 
 using namespace game;
 
-ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position);
-ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position);
+ComponentList makeTeapot(NetEntityId, ClientId);
+ComponentList makePlayer(NetEntityId, ClientId);
+ComponentList makeProjectile(NetEntityId, ClientId);
 
 #define INTERPOLATION_FREQUENCY 100
 
@@ -139,10 +142,12 @@ struct Client : public ENetReceiver {
 
         netSystem.registerType(0, makeTeapot);
         netSystem.registerType(1, makePlayer);
+        netSystem.registerType(2, makeProjectile);
 
         messageHub->onMessage<CreateEntityMessage>([&]
-        (NetEntityTypeId type, NetEntityId id, ClientId owner, vec3 pos) {
-            auto entity = netSystem.createEntity(type, id, owner, pos);      
+        (NetEntityTypeId type, NetEntityId id, ClientId owner,
+         InitialState const& state) {
+            auto entity = netSystem.createEntity(type, id, owner, state);
 
             ASSERT_MSG(myId > 0, "Should have received LoggedInMessage "
                                  << "before CreateEntityMessage.");
@@ -158,6 +163,8 @@ struct Client : public ENetReceiver {
             if (netSystem.exists(id)) {
                 entities.remove(netSystem.get(id)->getEntity());
             }
+            else
+                WARN(client) << "Cannot delete net obj #" << id;
         });
 
         messageHub->onMessage<LoggedInMessage>([&]
@@ -361,8 +368,8 @@ protected:
     }
 };
 
-ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
-    auto physics = new PhysicsComponent(position);
+ComponentList makeTeapot(NetEntityId id, ClientId owner) {
+    auto physics = new PhysicsComponent();
     return {
         physics,
         new RenderCube(physics, vec3(1, 0, 0)),
@@ -370,7 +377,7 @@ ComponentList makeTeapot(NetEntityId id, ClientId owner, vec3 position) {
     };
 }
 
-ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
+ComponentList makePlayer(NetEntityId id, ClientId owner) {
     static vec3 colors[] = {
         vec3(1, 0, 0),
         vec3(0, 1, 0),
@@ -381,12 +388,13 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
         vec3(0, 0, 0)
     };
 
-    auto physics = new PhysicsComponent(position);
+    auto physics = new PhysicsComponent();
 
     auto components = ComponentList {
         physics,
         new RenderCube(physics, colors[owner % 7]),
         new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
+        new PlayerComponent(nullptr)
     };
 
     if (client && owner == client->myId) {
@@ -397,6 +405,17 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
     }
 
     return components;
+}
+
+ComponentList makeProjectile(NetEntityId id, ClientId owner) {
+    auto physics = new PhysicsComponent();
+
+    return {
+        physics,
+        new RenderCube(physics, vec3(1, 1, 1)),
+        new NetComponent(2, id, owner, { new PhysicsNetState(physics) }),
+        new ProjectileComponent(physics, ProjectileComponent::GLOBAL)
+    };
 }
 
 int main()

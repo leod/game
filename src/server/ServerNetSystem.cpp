@@ -9,17 +9,15 @@
 namespace game {
 
 static CreateEntityMessage
-makeCreateEntityMessage(NetComponent const* component) {
-    // TODO: Hack. I think I'll just send the complete state with the create
-    //       message.
-    vec3 position(0, 0, 0);
-    if (auto physics = component->getEntity()->component<PhysicsComponent>())
-        position = physics->getPosition(); 
+makeCreateEntityMessage(NetSystem const* netSystem,
+                        NetComponent const* component) {
+    std::vector<uint8_t> initialState;
+    netSystem->storeStateInArray(component, initialState);
 
     return CreateEntityMessage::make(component->getNetTypeId(),
                                      component->getNetId(),
                                      component->getOwner(),
-                                     position);
+                                     initialState);
 }
 
 ServerNetSystem::ServerNetSystem(Clients& clients)
@@ -29,7 +27,7 @@ ServerNetSystem::ServerNetSystem(Clients& clients)
 void ServerNetSystem::onRegister(NetComponent* component) {
     NetSystem::onRegister(component);
 
-    clients.broadcast(makeCreateEntityMessage(component));
+    clients.broadcast(makeCreateEntityMessage(this, component));
 }
 
 void ServerNetSystem::onUnregister(NetComponent* component) {
@@ -48,7 +46,7 @@ ServerNetSystem::sendCreateEntityMessages(ClientInfo* const client) const {
 
     iterate([&] (NetComponent const* component) {
         clients.getMessageHub().send(client->peer,
-                                     makeCreateEntityMessage(component));
+                                     makeCreateEntityMessage(this, component));
     });
 }
 
