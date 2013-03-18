@@ -66,8 +66,7 @@ GLuint Program::getAttribLocation(char const* identifier) const {
 
     if (location >= GL_MAX_VERTEX_ATTRIBS)
         std::runtime_error(
-                std::string("Location ") +
-                identifier +
+                std::string("Location ") + identifier +
                 " not found in program");
                            
     return location;

@@ -5,6 +5,7 @@
 namespace game {
 
 #define USE_PREDICTION
+#define SIMULATE_LAG 200
 
 // Valid ClientIds are != 0
 typedef uint16_t ClientId;
@@ -28,6 +29,5 @@ enum {
 
 typedef uint16_t NetEntityId;
 typedef uint16_t NetEntityTypeId;
-
 
 } // namespace game

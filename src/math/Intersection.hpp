@@ -17,6 +17,10 @@ struct Quad {
     vec3 center;
     vec3 u;
     vec3 v;
+
+    vec3 n() const {
+        return glm::normalize(glm::cross(u, v));
+    }
 };
 
 typedef boost::optional<std::pair<float, vec3>> Intersection;

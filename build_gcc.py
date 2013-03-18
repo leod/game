@@ -2,7 +2,7 @@ import os
 from fabricate import *
 
 target = 'game'
-cflags = '-Wall -Wextra -pedantic -g -std=c++11 -O2'.split()
+cflags = '-Wall -Wextra -pedantic -g -std=c++11'.split()
 
 src_dir = 'src'
 include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
@@ -19,12 +19,13 @@ packages = [
                   'VisionSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
-    ('net', ['MessageHub', 'MessageType', 'MessageTypes', 'NetComponent',
-             'NetStateStore', 'NetSystem',]),
+    ('net', ['ENetReceiver', 'MessageHub', 'MessageType', 'MessageTypes',
+             'NetComponent', 'NetStateStore', 'NetSystem',]),
     ('map', ['Map',]),
     ('math', ['Intersection',]),
     ('opengl', ['Buffer', 'Framebuffer', 'Error', 'Program', 'ProgramManager',
                 'Shader', 'Texture', 'TextureManager',]),
+    ('physics', ['PhysicsSystem',]),
     ('world', ['LocalPlayerInputComponent', 'PhysicsNetState', 'PlayerInput',
                'PlayerInputComponent', 'PlayerInputSource', 'TickSystem',]),
     ('util', ['Backtrace', 'BitStream',]),

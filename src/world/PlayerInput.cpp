@@ -2,6 +2,7 @@
 
 #include "util/Print.hpp"
 #include "physics/PhysicsComponent.hpp"
+#include "physics/PhysicsSystem.hpp"
 
 namespace game {
 
@@ -9,16 +10,18 @@ PlayerInput::PlayerInput()
     : strafeLeft(),
       strafeRight(),
       walkForward(),
-      walkBackward() {
+      walkBackward(),
+      shoot() {
 }
 
 PlayerInput::PlayerInput(bool strafeLeft, bool strafeRight,
                          bool walkForward, bool walkBackward,
-                         vec2 orientation)
+                         bool shoot, vec2 orientation)
     : strafeLeft(strafeLeft),
       strafeRight(strafeRight),
       walkForward(walkForward),
       walkBackward(walkBackward),
+      shoot(shoot),
       orientation(orientation) {
 }
 
@@ -28,27 +31,34 @@ std::ostream& operator<<(std::ostream& os, PlayerInput const& input) {
        << ", " << input.strafeRight
        << ", " << input.walkForward
        << ", " << input.walkBackward
+       << ", " << input.shoot
        << ", " << input.orientation
        << ")";
     return os;
 }
 
 void runPlayerInput(PhysicsComponent* physics, PlayerInput const& input) {
-    PhysicsState state = physics->getState();
+    auto system = physics->getEntities()->system<PhysicsSystem>();
 
-    state.orientation.x = input.orientation.x;
-    state.orientation.z = input.orientation.y;
-    state.orientation.y = 0;
+    vec3 delta = vec3(0, 0, 0);
+    vec3 orientation = vec3(input.orientation.x, 0, input.orientation.y);
 
     if (input.walkForward)
-        state.position += 0.3f * state.orientation;
+        delta += 0.3f * orientation;
     else if (input.walkBackward)
-        state.position -= 0.3f * state.orientation;
-    if (input.strafeLeft)
-        state.position -= 0.3f * glm::cross(state.orientation, vec3(0, 1, 0));
+        delta -= 0.3f * orientation;
     if (input.strafeRight)
-        state.position += 0.3f * glm::cross(state.orientation, vec3(0, 1, 0));
+        delta += 0.2f * glm::cross(orientation, vec3(0, 1, 0));
+    else if (input.strafeLeft)
+        delta -= 0.2f * glm::cross(orientation, vec3(0, 1, 0));
 
+    if (glm::length(delta) > 0.3f)
+        delta *= (0.3f / glm::length(delta));
+
+    system->moveOne(physics, delta);
+
+    PhysicsState state = physics->getState();
+    state.orientation = orientation;
     physics->setState(state);
 }
  

@@ -1,6 +1,7 @@
 #include "opengl/Texture.hpp"
 
 #include <iostream>
+#include <stdexcept>
 
 #include <boost/scoped_array.hpp>
 
@@ -15,21 +16,29 @@ Texture::Texture() {
 }
 
 Texture::Texture(std::string const& filename) {
-    glGenTextures(1, &name);
-    glBindTexture(GL_TEXTURE_2D, name);
-
     sf::Image image;
-    image.loadFromFile(filename);
+    if (!image.loadFromFile(filename))
+        throw std::runtime_error("Failed to load texture " + filename);
 
-    glTexImage2D(GL_TEXTURE_2D,
+    glGenTextures(1, &name);
+    bind();
+    /*glTexImage2D(GL_TEXTURE_2D,
                  0, // LOD
-                 GL_RGBA8,
+                 GL_RGBA,
                  image.getSize().x,
                  image.getSize().y,
                  0, // border
                  GL_RGBA, // TODO: We shouldn't always use RGBA for textures.
                  GL_UNSIGNED_BYTE,
-                 image.getPixelsPtr());
+                 image.getPixelsPtr());*/
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR_MIPMAP_LINEAR);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 4, image.getSize().x, image.getSize().y,
+                      GL_RGBA, GL_UNSIGNED_BYTE, image.getPixelsPtr()); 
 }
 
 Texture::~Texture() {

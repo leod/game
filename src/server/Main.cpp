@@ -19,12 +19,15 @@
 #include "net/Definitions.hpp"
 #include "net/NetState.hpp"
 #include "net/NetComponent.hpp"
+#include "net/ENetReceiver.hpp"
+#include "map/Map.hpp"
 #include "world/TickSystem.hpp"
 #include "world/PhysicsNetState.hpp"
 #include "world/CircularMotion.hpp"
 #include "world/MessageTypes.hpp"
 #include "world/PlayerInputComponent.hpp"
 #include "physics/PhysicsComponent.hpp"
+#include "physics/PhysicsSystem.hpp"
 
 #include "server/Clients.hpp"
 #include "server/ServerNetSystem.hpp"
@@ -49,15 +52,17 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
     };
 }
 
-struct Server {
+struct Server : public ENetReceiver {
     sf::Clock clock; // tmp
 
     Tasks tasks;
 
-    ENetHost* host;
     std::unique_ptr<MessageHub> messageHub;
     Clients clients;
 
+    Map map;
+
+    PhysicsSystem physicsSystem;
     ServerNetSystem netSystem;
     TickSystem tickSystem;
     EntityRegistry entities;
@@ -65,11 +70,12 @@ struct Server {
     Tick tick; // tmp
 
     Server()
-        : host(nullptr),
+        : ENetReceiver(),
           messageHub(new MessageHub),
           clients(*messageHub.get()),
+          physicsSystem(map),
           netSystem(clients),
-          entities({ &netSystem, &tickSystem }),
+          entities({ &physicsSystem, &netSystem, &tickSystem }),
           tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
 
@@ -125,39 +131,6 @@ struct Server {
             throw std::runtime_error("Failed to create host");
     }
 
-    void receive() {
-        ENetEvent event;
-
-        while (enet_host_service(host, &event, 0) > 0) {
-            switch (event.type) {
-            case ENET_EVENT_TYPE_RECEIVE:
-                if (event.channelID == CHANNEL_MESSAGES)
-                    messageHub->dispatch(event.peer, event.packet);
-                else
-                    ASSERT(false);
-
-                enet_packet_destroy(event.packet);
-                break;
-
-            case ENET_EVENT_TYPE_CONNECT:
-                handleConnect(event);
-                break;
-
-            case ENET_EVENT_TYPE_DISCONNECT: {
-                auto client = reinterpret_cast<ClientInfo*>(event.peer->data);
-
-                handleDisconnect(client);
-                clients.remove(client);
-
-                break;
-            }
-
-            default:
-                ASSERT(false);
-            }
-        }
-    }
-
     void runTick() {
         receive();
 
@@ -199,9 +172,27 @@ struct Server {
         enet_peer_send(client->peer, 1, packet);
     }
 
-    void handleConnect(ENetEvent const& event) {
+    void handleDisconnect(ClientInfo* client) {
+        if (!client->connected)
+            return;
+
+        INFO(server) << "Client " << *client << " disconnected";
+
+        clients.broadcast<ClientDisconnectedMessage>(client->id);
+
+        if (client->entity) {
+            entities.remove(client->entity);
+            client->entity = nullptr;
+        }
+
+        client->connected = false;
+    }
+
+protected:
+    // Implement ENetReceiver
+    void onConnect(ENetPeer* peer) {
         std::unique_ptr<ClientInfo> newClient(
-                new ClientInfo(clients.makeClientId(), event.peer));
+                new ClientInfo(clients.makeClientId(), peer));
         ClientInfo* newClientPtr = newClient.get();
         
         INFO(server) << "Client " << (int)newClient->id << " connected";
@@ -220,7 +211,7 @@ struct Server {
         // Tell the client its id. This needs to happen before sending
         // the CreateEntityMessages, so that the client can identify what
         // entities belong to it.
-        messageHub->send<LoggedInMessage>(event.peer, newClientPtr->id);
+        messageHub->send<LoggedInMessage>(peer, newClientPtr->id);
 
         // Send messages to create our net objects on the client-side
         netSystem.sendCreateEntityMessages(newClientPtr);
@@ -229,20 +220,17 @@ struct Server {
         clients.broadcast<ClientConnectedMessage>(newClientPtr->id, "dummy");
     }
 
-    void handleDisconnect(ClientInfo* client) {
-        if (!client->connected)
-            return;
+    void onDisconnect(ENetPeer* peer) {
+        auto client = reinterpret_cast<ClientInfo*>(peer->data);
+        handleDisconnect(client);
+        clients.remove(client);
+    }
 
-        INFO(server) << "Client " << *client << " disconnected";
-
-        clients.broadcast<ClientDisconnectedMessage>(client->id);
-
-        if (client->entity) {
-            entities.remove(client->entity);
-            client->entity = nullptr;
-        }
-
-        client->connected = false;
+    void onPacket(int channelID, ENetPeer* peer, ENetPacket* packet) {
+        if (channelID == CHANNEL_MESSAGES)
+            messageHub->dispatch(peer, packet);
+        else
+            ASSERT(false);
     }
 };
 

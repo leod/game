@@ -95,9 +95,27 @@ void PlayerInputSource::onKeyReleased(KeyInput const& input) {
 }
 
 void PlayerInputSource::onMouseButtonPressed(MouseButtonInput const& input) {
+    switch (input.button) {
+    case MouseButton::Left:
+        playerInput.shoot = true;
+
+        onPlayerInput(playerInput);
+        break;
+    default:
+        break;
+    }
 }
 
 void PlayerInputSource::onMouseButtonReleased(MouseButtonInput const& input) {
+    switch (input.button) {
+    case MouseButton::Left:
+        playerInput.shoot = false;
+
+        onPlayerInput(playerInput);
+        break;
+    default:
+        break;
+    }
 }
 
 void PlayerInputSource::onMouseMoved(MouseMoveInput const& input) {

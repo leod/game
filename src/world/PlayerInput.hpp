@@ -11,12 +11,13 @@ struct PhysicsComponent;
 struct PlayerInput {
     bool strafeLeft, strafeRight,
          walkForward, walkBackward;
+    bool shoot;
     vec2 orientation;
 
     PlayerInput();
     PlayerInput(bool strafeLeft, bool strafeRight,
                 bool walkForward, bool walkBackward,
-                vec2 orientation);
+                bool shoot, vec2 orientation);
 };
 
 std::ostream& operator<<(std::ostream&, PlayerInput const&);

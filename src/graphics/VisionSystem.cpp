@@ -9,6 +9,8 @@
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Program.hpp"
 
+//#define ENABLE
+
 namespace game {
 
 VisionSystem::VisionSystem(Map const& map, ProgramManager& programs)
@@ -19,6 +21,7 @@ VisionSystem::VisionSystem(Map const& map, ProgramManager& programs)
 }
 
 void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
+#ifdef ENABLE
     iterate([&] (VisionComponent* component) {
         auto position = component->getPosition();
 
@@ -37,9 +40,10 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
             //std::cout << directions[i] << std::endl;
 
             Ray ray = { position, directions[i] };
-            Map::Block const* block;
-            Intersection intersection = rayMapIntersection(ray, map, block);
-            float blockTopY = block->groundCenter.y + block->scale.y;
+            Map::Block block;
+            Intersection intersection =
+                rayMapIntersection(ray, map, &block, nullptr);
+            float blockTopY = block.groundCenter.y + block.scale.y;
 
             deltaY[i] = intersection ? blockTopY - intersection.get().second.y
                 : 0.0f; 
@@ -68,6 +72,10 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
             glEnd();
         }, Framebuffer::CLEAR);
     });
+#else
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    framebuffer.renderInto([] () {}, Framebuffer::CLEAR);
+#endif
 }
 
 Texture const& VisionSystem::getTexture() const {
