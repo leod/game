@@ -71,12 +71,16 @@ struct EntityRegistry {
 
     template<typename T>
     T* system() {
-        return dynamic_cast<T*>(system(T::staticGetFamilyId()));
+        auto s = dynamic_cast<T*>(system(T::staticGetFamilyId()));
+        ASSERT(s);
+        return s;
     }
 
     template<typename T>
     T const* system() const {
-        return dynamic_cast<T const*>(system(T::staticGetFamilyId()));
+        auto s = dynamic_cast<T const*>(system(T::staticGetFamilyId()));
+        ASSERT(s);
+        return s;
     }
 
     // These methods return iterators that go over all components

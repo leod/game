@@ -14,7 +14,8 @@ smooth out vec2 coord;
 
 void main() {
     vec3 normalWorldSpace = normalize(mat3(model) * normal);
-    float cosAngle = clamp(dot(normalWorldSpace, normalize(vec3(1, -1, -0.3))), 0, 1);
+    float cosAngle = clamp(dot(normalWorldSpace, normalize(vec3(1, -1, -0.3))),
+                           0, 1);
 
     color = vec4(clamp(cosAngle + 0.5, 0, 1) * diffuse, 1.0);
     //color = vec4(diffuse, 1.0);

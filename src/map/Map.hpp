@@ -31,6 +31,6 @@ private:
 };
 
 Intersection rayMapIntersection(Ray const&, Map const&,
-        Map::Block const *& out);
+        Map::Block* outBlock = nullptr, Quad* outQuad = nullptr);
 
 } // namespace game

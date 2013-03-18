@@ -15,6 +15,7 @@
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
 
+#include "physics/PhysicsSystem.hpp"
 #include "physics/PhysicsComponent.hpp"
 
 #include "map/Map.hpp"
@@ -25,6 +26,7 @@
 #include "net/NetSystem.hpp"
 #include "net/Definitions.hpp"
 #include "net/NetStateStore.hpp"
+#include "net/ENetReceiver.hpp"
 
 #include "world/PlayerInputSource.hpp"
 #include "world/PlayerInputComponent.hpp"
@@ -54,7 +56,7 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position);
 struct Client;
 Client* client = nullptr; // obvious hack
 
-struct Client {
+struct Client : public ENetReceiver {
     sf::Clock clock; // tmp
 
     sf::Window& window;
@@ -65,6 +67,8 @@ struct Client {
 
     TextureManager textures;
     ProgramManager programs;
+
+    PhysicsSystem physicsSystem;
     VisionSystem visionSystem;
     RenderSystem renderSystem;
     TickSystem tickSystem;
@@ -74,7 +78,6 @@ struct Client {
     PlayerInputSource playerInputSource;
     Entity* playerEntity;
 
-    ENetHost* host;
     ENetPeer* peer;
     std::unique_ptr<MessageHub> messageHub;
     ClientId myId;
@@ -92,14 +95,19 @@ struct Client {
     PlayerInput playerInput;
 
     Client(sf::Window& window, InputSource& input)
-        : window(window),
+        : ENetReceiver(),
+          window(window),
           input(input),
+          physicsSystem(map),
           visionSystem(map, programs),
           renderSystem(window, textures, programs, visionSystem),
-          entities({ &renderSystem, &visionSystem, &tickSystem, &netSystem }),
+          entities({ &physicsSystem,
+                     &renderSystem,
+                     &visionSystem,
+                     &tickSystem,
+                     &netSystem }),
           playerInputSource(window, input),
           playerEntity(nullptr),
-          host(nullptr),
           peer(nullptr),
           messageHub(new MessageHub),
           myId(0),
@@ -214,43 +222,6 @@ struct Client {
             throw std::runtime_error("Failed to connect to host");
     }
 
-    void receive() {
-        ENetEvent event;
-
-        while (enet_host_service(host, &event, 0) > 0) {
-            switch (event.type) {
-            case ENET_EVENT_TYPE_RECEIVE:
-                if (event.channelID == CHANNEL_MESSAGES)
-                    messageHub->dispatch(event.peer, event.packet);
-                else {
-                    BitStreamReader stream(event.packet->data,
-                                           event.packet->dataLength);
-                    Tick tick;
-                    read(stream, tick);
-
-                    ASSERT(tick > 0);
-
-                    tickStateQueue.emplace(tick);
-                    netSystem.readRawStates(stream, tickStateQueue.back());
-
-                    if (startNextTick)
-                        startTick();
-                }
-
-                enet_packet_destroy(event.packet);
-
-                break;
-
-            case ENET_EVENT_TYPE_DISCONNECT:
-                INFO(client) << "Lost connection to server";
-                break;
-
-            default:
-                ASSERT(false);
-            }
-        }
-    }
-
     void startTick() {
         if (tickStateQueue.size() < 1) {
             // Start the tick as soon as it arrives, so we don't have to wait
@@ -314,11 +285,6 @@ struct Client {
     }
 
     void render() {
-        vec3 playerPos;
-        vec3 playerOrient;
-        Intersection intersection;
-
-        // For debugging
         if (playerEntity) {
             auto playerPhys = playerEntity->component<PhysicsComponent>();
 
@@ -327,20 +293,12 @@ struct Client {
             vec3 cameraTarget = playerPhys->getPosition();
 
             renderSystem.setCamera(cameraPosition, cameraTarget);
-
-            Ray ray = { playerPhys->getPosition(),
-                playerPhys->getOrientation() };
-            //intersection = rayMapIntersection(ray, map);
-            if (intersection)
-                std::cout << intersection.get().first << std::endl;
-            playerPos = playerPhys->getPosition();
-            playerOrient = playerPhys->getOrientation();
         }
         else
             renderSystem.setCamera(vec3(0, 8, -0.001), vec3(0, 0, 0));
 
         glEnable(GL_DEPTH_TEST);
-        glClearColor(0.3, 0.3, 0.3, 0.0);
+        glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glMatrixMode(GL_MODELVIEW);
@@ -348,19 +306,8 @@ struct Client {
         glMatrixMode(GL_PROJECTION);
         glLoadMatrixf(glm::value_ptr(renderSystem.getProjection()));
 
-        glBegin(GL_QUADS);
-        glColor3f(0.7, 0.7, 0.7);
-        glVertex3f(-35, -1, -35);
-        glColor3f(0.1, 0.1, 0.1);
-        glVertex3f(-35, -1, 35);
-        glColor3f(0.9, 0.9, 0.9);
-        glVertex3f(35, -1, 35);
-        glColor3f(0.5, 0.5, 0.5);
-        glVertex3f(35, -1, -35);
-        glEnd();
-
-        glBegin(GL_LINES);
-        /*glColor3f(1.0, 0.0, 0.0);
+        /*glBegin(GL_LINES);
+        glColor3f(1.0, 0.0, 0.0);
         glVertex3f(0.0, 0.0, 0.0);
         glVertex3f(2.0, 0.0, 0.0);
         glColor3f(0.0, 1.0, 0.0);
@@ -368,15 +315,8 @@ struct Client {
         glVertex3f(0.0, 2.0, 0.0);
         glColor3f(0.0, 0.0, 1.0);
         glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 2.0);*/
-
-        if (intersection) {
-            glColor3f(1, 1, 1);
-            glVertex3f(playerPos.x, playerPos.y, playerPos.z);
-            vec3 target = playerPos + intersection.get().first * playerOrient;
-            glVertex3f(target.x, target.y, target.z);
-        }
-        glEnd();
+        glVertex3f(0.0, 0.0, 2.0);
+        glEnd();*/
 
         visionSystem.renderVision(renderSystem.getProjection(),
                                   renderSystem.getView());
@@ -387,6 +327,37 @@ struct Client {
         renderSystem.render();
 
         window.display();
+
+        checkGLError();
+    }
+
+protected:
+    // Implement ENetReceiver
+    void onPacket(int channelID, ENetPeer* peer, ENetPacket* packet) {
+        if (channelID == CHANNEL_MESSAGES)
+            messageHub->dispatch(peer, packet);
+        else {
+            BitStreamReader stream(packet->data,
+                                   packet->dataLength);
+            Tick tick;
+            read(stream, tick);
+
+            ASSERT(tick > 0);
+
+            tickStateQueue.emplace(tick);
+            netSystem.readRawStates(stream, tickStateQueue.back());
+
+            if (startNextTick)
+                startTick();
+        }
+    }
+
+    void onConnect(ENetPeer*) {
+        INFO(client) << "Connected";
+    }
+
+    void onDisconnect(ENetPeer*) {
+        INFO(client) << "Lost connection to server";
     }
 };
 
@@ -416,13 +387,14 @@ ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
         physics,
         new RenderCube(physics, colors[owner % 7]),
         new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
-        new VisionComponent(physics)
     };
 
+    if (client && owner == client->myId) {
+        components.push_back(new VisionComponent(physics));
 #ifdef USE_PREDICTION
-    if (client && owner == client->myId)
         components.push_back(new LocalPlayerInputComponent(physics));
 #endif
+    }
 
     return components;
 }

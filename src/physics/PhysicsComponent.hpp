@@ -34,6 +34,8 @@ private:
     friend class PhysicsSystem;
 
     PhysicsState state;
+
+    float radius; // tmp
 };
 
 } // namespace game

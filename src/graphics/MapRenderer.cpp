@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 #include "opengl/ProgramManager.hpp"
+#include "opengl/TextureManager.hpp"
 #include "opengl/Program.hpp"
 #include "map/Map.hpp"
 #include "graphics/VisionSystem.hpp"
@@ -77,11 +78,34 @@ MapRenderer::MapRenderer(Map const& map,
           vec3(0, 0, 1),
           vec3(0, 0, 1),
           vec3(0, 0, 1) }),
-      floor(textures.load("textures/moss.png")) {
+      floor(textures.load("textures/checker.png")) {
 }
 
 void MapRenderer::render(mat4 const& projection, mat4 const& view) {
+    floor->bind(); {
+        float t = 5.0f;
+
+        glEnable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+        glColor3f(1, 1, 1);
+
+        glTexCoord2f(0, 0);
+        glVertex3f(-35, 0, -35);
+
+        glTexCoord2f(t, 0);
+        glVertex3f(35, 0, -35);
+
+        glTexCoord2f(t, t);
+        glVertex3f(35, 0, 35);
+
+        glTexCoord2f(0, t);
+        glVertex3f(-35, 0, 35);
+
+        glEnd();
+    }
+
     program->bind();
+
     program->setUniform(program->getUniformLocation("projection"),
                         projection);
     program->setUniform(program->getUniformLocation("view"),
@@ -105,7 +129,8 @@ void MapRenderer::render(mat4 const& projection, mat4 const& view) {
         glDrawArrays(GL_QUADS, 0, 24);
     }
 
-    {
+    // Floor hack
+    if(0){
         program->setUniform(program->getUniformLocation("diffuse"),
                             vec3(0.7, 0.7, 0.7));
         mat4 model = glm::translate(mat4(), vec3(0, 0, 0));

@@ -24,10 +24,9 @@ private:
 
     VisionSystem& vision;
 
-    Texture* floor;
-
     Buffer<vec3> cubePositions;
     Buffer<vec3> cubeNormals;
+    Texture* floor;
 };
 
 } // namespace game
