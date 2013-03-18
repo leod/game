@@ -26,6 +26,9 @@
 #include "world/CircularMotion.hpp"
 #include "world/MessageTypes.hpp"
 #include "world/PlayerInputComponent.hpp"
+#include "world/ProjectileComponent.hpp"
+#include "world/ProjectileSystem.hpp"
+#include "world/PlayerComponent.hpp"
 #include "physics/PhysicsComponent.hpp"
 #include "physics/PhysicsSystem.hpp"
 
@@ -34,8 +37,8 @@
 
 using namespace game;
 
-ComponentList makeTeapot(NetEntityId id, vec3 position) {
-    auto physics = new PhysicsComponent(position);
+ComponentList makeTeapot(NetEntityId id, vec3 position, vec3 orientation) {
+    auto physics = new PhysicsComponent(position, orientation);
     return {
         physics,
         new NetComponent(0, id, 0, { new PhysicsNetState(physics) }),
@@ -43,12 +46,25 @@ ComponentList makeTeapot(NetEntityId id, vec3 position) {
     };
 }
 
-ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position) {
-    auto physics = new PhysicsComponent(position);
+ComponentList makePlayer(NetEntityId id, ClientId owner, vec3 position,
+                         vec3 orientation) {
+    auto physics = new PhysicsComponent(position, orientation);
     return {
         physics,
         new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
         new PlayerInputComponent(physics),
+        new PlayerComponent(nullptr)
+    };
+}
+
+ComponentList makeProjectile(NetEntityId id, ClientId owner, vec3 position,
+                             vec3 orientation) {
+    auto physics = new PhysicsComponent(position, orientation);
+
+    return {
+        physics,
+        new NetComponent(2, id, owner, { new PhysicsNetState(physics) }),
+        new ProjectileComponent(physics, ProjectileComponent::GLOBAL)
     };
 }
 
@@ -65,6 +81,7 @@ struct Server : public ENetReceiver {
     PhysicsSystem physicsSystem;
     ServerNetSystem netSystem;
     TickSystem tickSystem;
+    ProjectileSystem projectileSystem;
     EntityRegistry entities;
 
     Tick tick; // tmp
@@ -75,7 +92,11 @@ struct Server : public ENetReceiver {
           clients(*messageHub.get()),
           physicsSystem(map),
           netSystem(clients),
-          entities({ &physicsSystem, &netSystem, &tickSystem }),
+          projectileSystem(map),
+          entities({ &physicsSystem,
+                     &netSystem,
+                     &tickSystem,
+                     &projectileSystem }),
           tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
 
@@ -87,12 +108,24 @@ struct Server : public ENetReceiver {
             auto entity = client->entity;
             if (entity) {
                 auto input = entity->component<PlayerInputComponent>();
+                auto physics = entity->component<PhysicsComponent>();
                 ASSERT(input);
+                ASSERT(physics);
+
                 input->onPlayerInput(playerInput);
 
+                if (playerInput.shoot) {
+                    auto components =
+                        makeProjectile(netSystem.makeNetEntityId(),
+                                       0,
+                                       physics->getPosition(),
+                                       vec3(playerInput.orientation.x,
+                                            0,
+                                            playerInput.orientation.y));
+                    entities.create(std::move(components));
+                }
+
 #ifdef USE_PREDICTION
-                auto physics = entity->component<PhysicsComponent>();
-                ASSERT(physics);
                 vec3 newPosition = physics->getPosition();
                 messageHub->send<PlayerPositionMessage>(peer, newPosition);
 #endif
@@ -113,11 +146,14 @@ struct Server : public ENetReceiver {
 
     void createTestWorld() {
         entities.create(
-                makeTeapot(netSystem.makeNetEntityId(), vec3(0, 0, 0)));
+                makeTeapot(netSystem.makeNetEntityId(), vec3(0, 0, 0),
+                           vec3(0, 0, 0)));
         entities.create(
-                makeTeapot(netSystem.makeNetEntityId(), vec3(-3, 0, 0)));
+                makeTeapot(netSystem.makeNetEntityId(), vec3(-3, 0, 0),
+                           vec3(0, 0, 0)));
         entities.create(
-                makeTeapot(netSystem.makeNetEntityId(), vec3(3, 0, 0)));
+                makeTeapot(netSystem.makeNetEntityId(), vec3(3, 0, 0),
+                           vec3(0, 0, 0)));
     }
 
     void start() {
@@ -135,6 +171,7 @@ struct Server : public ENetReceiver {
         receive();
 
         tickSystem.tick();
+        projectileSystem.tick(ProjectileComponent::GLOBAL);
         sendStates();
 
         ++tick;
@@ -201,6 +238,7 @@ protected:
         newClient->entity = entities.create(
             makePlayer(netSystem.makeNetEntityId(),
                        newClient->id,
+                       vec3(0, 0, 0),
                        vec3(0, 0, 0)));
 
         // It's important that the new client is registered only after

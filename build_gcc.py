@@ -27,7 +27,8 @@ packages = [
                 'Shader', 'Texture', 'TextureManager',]),
     ('physics', ['PhysicsSystem',]),
     ('world', ['LocalPlayerInputComponent', 'PhysicsNetState', 'PlayerInput',
-               'PlayerInputComponent', 'PlayerInputSource', 'TickSystem',]),
+               'PlayerInputComponent', 'PlayerInputSource', 'ProjectileSystem',
+               'TickSystem',]),
     ('util', ['Backtrace', 'BitStream',]),
 ]
 

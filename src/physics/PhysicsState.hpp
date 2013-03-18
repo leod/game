@@ -11,6 +11,10 @@ struct PhysicsState {
     PhysicsState(vec3 const& position)
         : position(position), orientation(0, 0, 0) {
     }
+
+    PhysicsState(vec3 const& position, vec3 const& orientation)
+        : position(position), orientation(orientation) {
+    }
 };
 
 } // namespace game

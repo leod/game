@@ -15,6 +15,9 @@ Tick NetStateStore::tick() const {
 }
 
 uint8_t* NetStateStore::allocate(NetEntityId id, size_t size) {
+    // Check that ids are ascending in entries
+    ASSERT(entries.empty() || entries.back().id < id);
+
     size_t oldSize = buffer.size();
     buffer.resize(oldSize + size); 
 

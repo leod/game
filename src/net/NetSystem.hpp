@@ -6,6 +6,7 @@
 #include "core/EntityRegistry.hpp"
 #include "math/Math.hpp"
 #include "net/NetComponent.hpp"
+#include "net/MessageTypes.hpp"
 
 namespace game {
 
@@ -13,7 +14,7 @@ struct BitStreamWriter;
 struct BitStreamReader;
 struct NetStateStore;
 
-typedef std::function<ComponentList(NetEntityId, ClientId, vec3)>
+typedef std::function<ComponentList(NetEntityId, ClientId)>
     NetEntityMaker;
 
 struct NetSystem : public SystemBase<NetComponent> {
@@ -27,6 +28,11 @@ struct NetSystem : public SystemBase<NetComponent> {
     bool exists(NetEntityId) const;
     void remove(NetEntityId);
 
+    void storeStateInArray(NetComponent const*, std::vector<uint8_t>& out)
+        const;
+    void loadStateFromArray(NetComponent*, std::vector<uint8_t> const& in)
+        const;
+
     void writeRawStates(BitStreamWriter&, ClientId ignore = 0) const;
     void readRawStates(BitStreamReader&, NetStateStore&) const;
 
@@ -39,7 +45,8 @@ struct NetSystem : public SystemBase<NetComponent> {
         entityTypes[typeId] = maker;
     }
 
-    Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId, vec3 pos);
+    Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId,
+                         InitialState const&);
 
 private:
     // We keep a map of net entities separately from EntityRegistry,

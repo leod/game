@@ -3,27 +3,26 @@
 #include <iostream>
 #include <tuple>
 #include <functional>
+#include <cstdint>
+#include <vector>
 
 #include "math/Math.hpp"
 #include "util/Tuple.hpp"
 
 namespace game {
 
-template<typename Ch, typename Traits, typename... Args>
-std::ostream& operator<<(std::basic_ostream<Ch, Traits>& os,
-        vec2 const& v) {
+template<typename... Args>
+std::ostream& operator<<(std::ostream& os, vec2 const& v) {
     return os << "vec2(" << v.x << ", "
                          << v.y << ")";
 }
 
-template<typename Ch, typename Traits, typename... Args>
-std::ostream& operator<<(std::basic_ostream<Ch, Traits>& os,
-        vec3 const& v) {
+template<typename... Args>
+std::ostream& operator<<(std::ostream& os, vec3 const& v) {
     return os << "vec3(" << v.x << ", "
                          << v.y << ", "
                          << v.z << ")";
 }
-
 
 template<std::size_t N, typename... Types>
 typename std::enable_if<(N == 0)>::type
@@ -44,11 +43,15 @@ printTuple(std::ostream& os, std::tuple<Types...> const& m) {
 }
 
 template<typename... Args>
-std::ostream& operator<<(std::ostream& os, std::tuple<Args...> const& m)
-{
+std::ostream& operator<<(std::ostream& os, std::tuple<Args...> const& m) {
     os << "(";
     printTuple<(sizeof...(Args))>(os, m);
     return os << ")";
+}
+
+inline
+std::ostream& operator<<(std::ostream& os, std::vector<uint8_t> const&) {
+    return os << "<data>";
 }
 
 } // namespace game
