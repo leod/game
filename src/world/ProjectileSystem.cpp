@@ -16,10 +16,16 @@ void ProjectileSystem::tick(bool localOnly) {
         if (localOnly && !projectile->isLocal())
             return;
 
+        projectile->lifetime++;
+        if (projectile->lifetime == 100) {
+            deleteMe.push_back(projectile);
+            return;
+        }
+
         auto physics = projectile->getPhysics();
         Ray ray = { physics->getPosition(), physics->getOrientation() };
 
-        float velocity = 3; // TODO
+        float velocity = 0.1; // TODO
         
         auto intersection = rayMapIntersection(ray, map);
 

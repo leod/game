@@ -13,7 +13,7 @@ struct ProjectileComponent : ComponentFamily<ProjectileComponent> {
     };
 
     ProjectileComponent(PhysicsComponent* physics, bool isLocal_)
-        : physics(physics), isLocal_(isLocal_) {
+        : physics(physics), isLocal_(isLocal_), lifetime(0) {
     }
 
     bool isLocal() {
@@ -27,6 +27,10 @@ struct ProjectileComponent : ComponentFamily<ProjectileComponent> {
 private:
     PhysicsComponent* physics;
     bool isLocal_;
+
+    int lifetime;
+
+    friend struct ProjectileSystem;
 };
 
 } // namespace game
