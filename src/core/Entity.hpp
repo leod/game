@@ -17,8 +17,8 @@ struct EntityRegistry;
 // An entity is an Id and a list of components.
 // An entity can have at most one component of each family.
 struct Entity {
-    friend class Component;
-    friend class EntityRegistry;
+    friend struct Component;
+    friend struct EntityRegistry;
 
     ~Entity();
 

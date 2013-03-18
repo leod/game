@@ -14,8 +14,8 @@ struct Entity;
 struct EntityRegistry;
 
 struct Component {
-    friend class EntityRegistry;
-    template<typename T> friend class ComponentFamily;
+    friend struct EntityRegistry;
+    template<typename T> friend struct ComponentFamily;
 
     Component();
     virtual ~Component();
