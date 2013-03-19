@@ -1,6 +1,7 @@
 #include "server/Clients.hpp"
 
 #include "core/Error.hpp"
+#include "core/Event.hpp"
 
 namespace game {
 
@@ -20,27 +21,32 @@ std::ostream& operator<<(std::ostream& os, ClientInfo const& client) {
     return os;
 }
 
-Clients::Clients(MessageHub& messageHub)
-    : messageHub(messageHub) {
+Clients::Clients(EventHub& eventHub)
+    : eventHub(eventHub) {
 }
 
-MessageHub& Clients::getMessageHub() {
-    return messageHub;
-}
+ClientInfo* Clients::add(ENetPeer* peer) {
+    auto clientId = makeClientId();
 
-MessageHub const& Clients::getMessageHub() const {
-    return messageHub;
-}
-
-void Clients::add(std::unique_ptr<ClientInfo>&& client) {
 #ifndef NDEBUG
     // Assert that the id of the new client is unique
     for (auto& c : clients)
-        ASSERT_MSG(client->id != c->id,
-                   "Client id " << c->id << " already in use by " << c->name);
+        ASSERT_MSG(clientId != c->id,
+                   "Client id " << clientId <<
+                   " already in use by " << c->name);
 #endif
 
-    clients.push_back(std::move(client)); 
+    clients.push_back(std::unique_ptr<ClientInfo>(
+            new ClientInfo(clientId, peer))); 
+    return clients.back().get();
+}
+
+ClientInfo* Clients::get(ClientId id) {
+    for (auto& c : clients)
+        if (c->id == id)
+            return c.get();
+
+    ASSERT_MSG(false, "Client #" << id << " not found");
 }
 
 void Clients::remove(ClientInfo* client) {

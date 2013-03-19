@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <list>
 #include <functional>
 
 using namespace std::placeholders;
@@ -19,13 +19,22 @@ struct Signal {
         fns.push_back(fn);
     }
 
-    void operator()(Values... values) {
-        for (auto fn : fns)
+    template<typename C>
+    void connect(C* object, void(C::*f)(Values...)) {
+        auto wrapper = [=] (Values... values) {
+            (object->*f)(values...);
+        };
+
+        connect(wrapper);
+    }
+
+    void operator()(Values... values) const {
+        for (auto const& fn : fns)
             fn(values...); 
     }
 
 private:
-    std::vector<std::function<void(Values...)>> fns;
+    std::list<std::function<void(Values...)>> fns;
 };
 
 } // namespace game

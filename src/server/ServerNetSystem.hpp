@@ -4,13 +4,14 @@
 
 namespace game {
 
+struct EventHub;
 struct Clients;
 struct ClientInfo;
 
 // Adds to NetSystem by adding code to broadcast to all clients
 // messages to create and remove entities.
 struct ServerNetSystem : NetSystem {
-    ServerNetSystem(Clients&);
+    ServerNetSystem(EventHub&, Clients&);
 
     // Override NetSystem
     void onRegister(NetComponent*); 
@@ -18,7 +19,7 @@ struct ServerNetSystem : NetSystem {
 
     NetEntityId makeNetEntityId();
 
-    void sendCreateEntityMessages(ClientInfo* const) const;
+    void sendCreateEntityOrders(ClientInfo* const) const;
 
 private:
     Clients& clients;

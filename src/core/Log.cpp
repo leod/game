@@ -78,7 +78,7 @@ void ConsoleLogSink::write(LogMessage const& message) {
 #define RESET_COLOR
 #endif
 
-    auto severityColor = [&message, &console] () {
+    auto severityColor = [&] () {
         switch (message.getSeverity()) {
         case SEVERITY_TRACE:
             SET_COLOR(FOREGROUND_BLUE);

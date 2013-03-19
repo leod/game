@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <memory>
 
-#include <SFML/Window.hpp> // tmp
 #include <SFML/System.hpp>
 #include <enet/enet.h>
 
@@ -12,10 +11,10 @@
 #include "core/Error.hpp"
 #include "core/Log.hpp"
 #include "core/Time.hpp"
+#include "core/Event.hpp"
+
 #include "input/ClockTimeSource.hpp"
 #include "net/NetSystem.hpp"
-#include "net/MessageHub.hpp"
-#include "net/MessageTypes.hpp"
 #include "net/Definitions.hpp"
 #include "net/NetState.hpp"
 #include "net/NetComponent.hpp"
@@ -24,7 +23,7 @@
 #include "world/TickSystem.hpp"
 #include "world/PhysicsNetState.hpp"
 #include "world/CircularMotion.hpp"
-#include "world/MessageTypes.hpp"
+#include "world/EventTypes.hpp"
 #include "world/PlayerInputComponent.hpp"
 #include "world/ProjectileComponent.hpp"
 #include "world/ProjectileSystem.hpp"
@@ -69,11 +68,11 @@ ComponentList makeProjectile(NetEntityId id, ClientId owner, vec3 position,
 }
 
 struct Server : public ENetReceiver {
-    sf::Clock clock; // tmp
+    sf::Clock clock;
 
     Tasks tasks;
+    EventHub eventHub;
 
-    std::unique_ptr<MessageHub> messageHub;
     Clients clients;
 
     Map map;
@@ -84,14 +83,13 @@ struct Server : public ENetReceiver {
     ProjectileSystem projectileSystem;
     EntityRegistry entities;
 
-    Tick tick; // tmp
+    Tick tick;
 
     Server()
         : ENetReceiver(),
-          messageHub(new MessageHub),
-          clients(*messageHub.get()),
+          clients(eventHub),
           physicsSystem(map),
-          netSystem(clients),
+          netSystem(eventHub, clients),
           projectileSystem(map),
           entities({ &physicsSystem,
                      &netSystem,
@@ -100,48 +98,49 @@ struct Server : public ENetReceiver {
           tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
 
+        eventHub.subscribe<PlayerInputWish>(this, &Server::onPlayerInputWish);
+        eventHub.subscribe<DisconnectWish>(this, &Server::onDisconnectWish);
+
         createTestWorld();
-
-        messageHub->onMessageWithPeer<PlayerInputMessage>([&]
-        (ENetPeer* peer, PlayerInput const& playerInput) {
-            auto client = ClientInfo::get(peer);
-            auto entity = client->entity;
-            if (entity) {
-                auto input = entity->component<PlayerInputComponent>();
-                auto physics = entity->component<PhysicsComponent>();
-                ASSERT(input);
-                ASSERT(physics);
-
-                input->onPlayerInput(playerInput);
-
-                if (playerInput.shoot) {
-                    auto components =
-                        makeProjectile(netSystem.makeNetEntityId(),
-                                       0,
-                                       physics->getPosition(),
-                                       vec3(playerInput.orientation.x,
-                                            0,
-                                            playerInput.orientation.y));
-                    entities.create(std::move(components));
-                }
-
-#ifdef USE_PREDICTION
-                vec3 newPosition = physics->getPosition();
-                messageHub->send<PlayerPositionMessage>(peer, newPosition);
-#endif
-            }
-        });
-
-        messageHub->onMessageWithPeer<DisconnectMessage>([&]
-        (ENetPeer* peer) {
-            auto client = ClientInfo::get(peer);
-            handleDisconnect(client);
-        });
     }
 
     ~Server() {
         if (host)
             enet_host_destroy(host);
+    }
+
+    void onPlayerInputWish(ClientId clientId, PlayerInput const& playerInput) {
+        auto client = clients.get(clientId);
+
+        auto entity = client->entity;
+        if (entity) {
+            auto input = entity->component<PlayerInputComponent>();
+            auto physics = entity->component<PhysicsComponent>();
+            ASSERT(input);
+            ASSERT(physics);
+
+            input->onPlayerInput(playerInput);
+
+            if (playerInput.shoot) {
+                auto components =
+                    makeProjectile(netSystem.makeNetEntityId(),
+                                   0,
+                                   physics->getPosition(),
+                                   vec3(playerInput.orientation.x,
+                                        0,
+                                        playerInput.orientation.y));
+                entities.create(std::move(components));
+            }
+
+#ifdef USE_PREDICTION
+            vec3 newPosition = physics->getPosition();
+            sendEvent<PlayerPositionOrder>(client->peer, newPosition);
+#endif
+        }
+    }
+
+    void onDisconnectWish(ClientId clientId) {
+        handleDisconnect(clients.get(clientId));
     }
 
     void createTestWorld() {
@@ -215,7 +214,7 @@ struct Server : public ENetReceiver {
 
         INFO(server) << "Client " << *client << " disconnected";
 
-        clients.broadcast<ClientDisconnectedMessage>(client->id);
+        clients.broadcast<ClientDisconnectedOrder>(client->id);
 
         if (client->entity) {
             entities.remove(client->entity);
@@ -228,12 +227,15 @@ struct Server : public ENetReceiver {
 protected:
     // Implement ENetReceiver
     void onConnect(ENetPeer* peer) {
-        std::unique_ptr<ClientInfo> newClient(
-                new ClientInfo(clients.makeClientId(), peer));
-        ClientInfo* newClientPtr = newClient.get();
-        
+        auto newClient = clients.add(peer);
+
         INFO(server) << "Client " << (int)newClient->id << " connected";
 
+        // Tell the client its id. This needs to happen before sending
+        // the CreateEntityMessages, so that the client can identify what
+        // entities belong to it.
+        sendEvent<LoggedInOrder>(peer, newClient->id);
+        
         // Create player entity for the client
         newClient->entity = entities.create(
             makePlayer(netSystem.makeNetEntityId(),
@@ -241,21 +243,11 @@ protected:
                        vec3(0, 0, 0),
                        vec3(0, 0, 0)));
 
-        // It's important that the new client is registered only after
-        // the client's player entity was created. Otherwise, the client
-        // would be informed about its creation twice.
-        clients.add(std::move(newClient));
-
-        // Tell the client its id. This needs to happen before sending
-        // the CreateEntityMessages, so that the client can identify what
-        // entities belong to it.
-        messageHub->send<LoggedInMessage>(peer, newClientPtr->id);
-
-        // Send messages to create our net objects on the client-side
-        netSystem.sendCreateEntityMessages(newClientPtr);
+        // Send messages to create our net objects on the client side
+        netSystem.sendCreateEntityOrders(newClient);
 
         // Tell everyone about the new client
-        clients.broadcast<ClientConnectedMessage>(newClientPtr->id, "dummy");
+        clients.broadcast<ClientConnectedOrder>(newClient->id, "dummy");
     }
 
     void onDisconnect(ENetPeer* peer) {
@@ -266,7 +258,7 @@ protected:
 
     void onPacket(int channelId, ENetPeer* peer, ENetPacket* packet) {
         if (channelId == CHANNEL_MESSAGES)
-            messageHub->dispatch(peer, packet);
+            emitEventFromPacket(eventHub, packet, ClientInfo::get(peer)->id);
         else
             ASSERT(false);
     }
@@ -276,7 +268,7 @@ int main() {
     Log::addSink(new ConsoleLogSink);
     Log::addSink(new FileLogSink("server.log"));
 
-    initializeMessageTypes();
+    initializeEventTypes();
 
     try {
         enet_initialize();
