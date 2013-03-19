@@ -29,11 +29,11 @@ EntityId Entity::getId() const {
     return id;
 }
 
-EntityManager* Entity::getEntities() {
+EntityManager* Entity::getManager() {
     return entities;
 }
 
-EntityManager const* Entity::getEntities() const {
+EntityManager const* Entity::getManager() const {
     return entities;
 }
 

@@ -37,7 +37,7 @@ void ProjectileSystem::tick(bool localOnly) {
     });
 
     for (auto projectile : deleteMe)
-        getEntities()->remove(projectile->getEntity());
+        getManager()->remove(projectile->getEntity());
 }
 
 } // namespace game

@@ -21,11 +21,11 @@ Entity const* Component::getEntity() const {
     return owner;
 }
 
-EntityManager* Component::getEntities() {
+EntityManager* Component::getManager() {
     return owner->entities;
 }
 
-EntityManager const* Component::getEntities() const {
+EntityManager const* Component::getManager() const {
     return owner->entities;
 }
 

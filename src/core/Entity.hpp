@@ -34,8 +34,8 @@ struct Entity {
     }
 
     EntityId getId() const;
-    EntityManager* getEntities();
-    EntityManager const* getEntities() const;
+    EntityManager* getManager();
+    EntityManager const* getManager() const;
 
 private:
     // Only EntityManager ever constructs Entities.
