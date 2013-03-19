@@ -1,4 +1,4 @@
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 
 #include <algorithm>
 
@@ -8,7 +8,7 @@
 
 namespace game {
 
-EntityRegistry::EntityRegistry(std::vector<System*> const& systems)
+EntityManager::EntityManager(std::vector<System*> const& systems)
     : biggestId() {
     for (auto s : systems) {
         // TODO: See if this limitation makes sense.
@@ -23,11 +23,11 @@ EntityRegistry::EntityRegistry(std::vector<System*> const& systems)
     } 
 }
 
-Entity* EntityRegistry::get(EntityId id) {
+Entity* EntityManager::get(EntityId id) {
     return entities[id];
 }
 
-Entity const* EntityRegistry::get(EntityId id) const {
+Entity const* EntityManager::get(EntityId id) const {
     auto it = entities.find(id);
 
     ASSERT_MSG(it != entities.end(), "Entity #" << id << " not found.");
@@ -35,7 +35,7 @@ Entity const* EntityRegistry::get(EntityId id) const {
     return it->second;
 }
 
-Entity* EntityRegistry::create(ComponentList&& components) {
+Entity* EntityManager::create(ComponentList&& components) {
     // Create and register new entity
     EntityId id = ++biggestId;
     Entity* entity = new Entity(id, std::move(components), this);
@@ -58,7 +58,7 @@ Entity* EntityRegistry::create(ComponentList&& components) {
     return entity;
 }
 
-void EntityRegistry::remove(Entity* entity) {
+void EntityManager::remove(Entity* entity) {
     auto it = entities.find(entity->id);
 
     ASSERT_MSG(it != entities.end(),
@@ -89,11 +89,11 @@ void EntityRegistry::remove(Entity* entity) {
     delete entity;
 }
 
-System* EntityRegistry::system(FamilyId familyId) {
+System* EntityManager::system(FamilyId familyId) {
     return systems[familyId];
 }
 
-System const* EntityRegistry::system(FamilyId familyId) const {
+System const* EntityManager::system(FamilyId familyId) const {
     return systems.find(familyId)->second;
 }
 

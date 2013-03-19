@@ -2,7 +2,7 @@
 
 #include <SFML/Window.hpp>
 
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 #include "core/System.hpp"
 #include "math/Math.hpp"
 #include "graphics/RenderComponent.hpp"

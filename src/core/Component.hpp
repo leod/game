@@ -11,10 +11,10 @@ namespace game {
 typedef int FamilyId;
 
 struct Entity;
-struct EntityRegistry;
+struct EntityManager;
 
 struct Component {
-    friend struct EntityRegistry;
+    friend struct EntityManager;
     template<typename T> friend struct ComponentFamily;
 
     Component();
@@ -24,8 +24,8 @@ struct Component {
 
     Entity* getEntity();
     Entity const* getEntity() const;
-    EntityRegistry* getEntities();
-    EntityRegistry const* getEntities() const;
+    EntityManager* getEntities();
+    EntityManager const* getEntities() const;
 
 protected:
     virtual void print(std::ostream&) const;

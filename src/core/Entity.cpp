@@ -29,16 +29,16 @@ EntityId Entity::getId() const {
     return id;
 }
 
-EntityRegistry* Entity::getEntities() {
+EntityManager* Entity::getEntities() {
     return entities;
 }
 
-EntityRegistry const* Entity::getEntities() const {
+EntityManager const* Entity::getEntities() const {
     return entities;
 }
 
 Entity::Entity(EntityId id, ComponentList&& components,
-               EntityRegistry* entities)
+               EntityManager* entities)
     : id(id), components(components), entities(entities) {
 }
 

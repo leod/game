@@ -6,7 +6,7 @@
 #include <SFML/System.hpp>
 #include <enet/enet.h>
 
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 #include "core/Tasks.hpp"
 #include "core/Error.hpp"
 #include "core/Log.hpp"
@@ -81,7 +81,7 @@ struct Server : public ENetReceiver {
     ServerNetSystem netSystem;
     TickSystem tickSystem;
     ProjectileSystem projectileSystem;
-    EntityRegistry entities;
+    EntityManager entities;
 
     Tick tick;
 

@@ -12,13 +12,13 @@ template<typename T>
 using ComponentListT = std::vector<T*>;
 typedef ComponentListT<Component> ComponentList;
 
-struct EntityRegistry;
+struct EntityManager;
 
 // An entity is an Id and a list of components.
 // An entity can have at most one component of each family.
 struct Entity {
     friend struct Component;
-    friend struct EntityRegistry;
+    friend struct EntityManager;
 
     ~Entity();
 
@@ -34,17 +34,17 @@ struct Entity {
     }
 
     EntityId getId() const;
-    EntityRegistry* getEntities();
-    EntityRegistry const* getEntities() const;
+    EntityManager* getEntities();
+    EntityManager const* getEntities() const;
 
 private:
-    // Only EntityRegistry ever constructs Entities.
-    Entity(EntityId, ComponentList&&, EntityRegistry*);
+    // Only EntityManager ever constructs Entities.
+    Entity(EntityId, ComponentList&&, EntityManager*);
 
     EntityId const id;
     ComponentList const components;
 
-    EntityRegistry* const entities;
+    EntityManager* const entities;
 
     friend std::ostream& operator<<(std::ostream&, Entity const*);
 };
