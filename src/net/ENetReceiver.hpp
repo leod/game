@@ -19,13 +19,13 @@ protected:
 
     virtual void onConnect(ENetPeer*);
     virtual void onDisconnect(ENetPeer*);
-    virtual void onPacket(int channelID, ENetPeer*, ENetPacket*);
+    virtual void onPacket(int channelId, ENetPeer*, ENetPacket*);
 
 #ifdef SIMULATE_LAG
     struct DelayedPacket {
         Time time;
 
-        int channelID;
+        int channelId;
         ENetPeer* peer;
         ENetPacket* packet;
     };

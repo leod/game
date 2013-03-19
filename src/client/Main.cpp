@@ -340,8 +340,8 @@ struct Client : public ENetReceiver {
 
 protected:
     // Implement ENetReceiver
-    void onPacket(int channelID, ENetPeer* peer, ENetPacket* packet) {
-        if (channelID == CHANNEL_MESSAGES)
+    void onPacket(int channelId, ENetPeer* peer, ENetPacket* packet) {
+        if (channelId == CHANNEL_MESSAGES || channelId == CHANNEL_TIME)
             messageHub->dispatch(peer, packet);
         else {
             BitStreamReader stream(packet->data,

@@ -264,8 +264,8 @@ protected:
         clients.remove(client);
     }
 
-    void onPacket(int channelID, ENetPeer* peer, ENetPacket* packet) {
-        if (channelID == CHANNEL_MESSAGES)
+    void onPacket(int channelId, ENetPeer* peer, ENetPacket* packet) {
+        if (channelId == CHANNEL_MESSAGES)
             messageHub->dispatch(peer, packet);
         else
             ASSERT(false);

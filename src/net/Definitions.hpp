@@ -18,9 +18,10 @@ enum {
 // Valid Ticks are != 0
 typedef uint32_t Tick;
 
-enum {
+enum NetChannel {
     CHANNEL_MESSAGES = 0,
-    CHANNEL_STATES = 1
+    CHANNEL_STATES = 1,
+    CHANNEL_TIME = 2
 };
 
 enum {

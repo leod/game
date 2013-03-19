@@ -115,6 +115,11 @@ void NetSystem::readRawStates(BitStreamReader& stream,
         NetEntityId netId;
         read(stream, netId);
 
+        if (!exists(netId)) {
+            INFO(net) << "Don't have net entity #" << netId << " (reading)";
+            continue;
+        }
+
         NetComponent const* component = get(netId);
 
         size_t requiredSize = 0;
@@ -166,7 +171,7 @@ void NetSystem::interpolateStates(NetStateStore const& a,
             // This happens because we send the states unreliably and the
             // messages reliably.
             INFO(net) << "Don't have net entity #" << entryA.id
-                      << " in tick #" << a.tick();
+                      << " in tick #" << a.tick() << " (interpolating)";
             // TODO
             continue;
         }
