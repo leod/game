@@ -13,7 +13,7 @@ void ENetReceiver::receive() {
     while (delayedPackets.size() > 0 && clock.getElapsedTime() >=
            delayedPackets.front().time) {
         auto dp = delayedPackets.front();
-        onPacket(dp.channelID, dp.peer, dp.packet);
+        onPacket(dp.channelId, dp.peer, dp.packet);
         enet_packet_destroy(dp.packet);
         delayedPackets.pop();
     }

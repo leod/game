@@ -13,12 +13,12 @@
 #define DEFINE_MESSAGE(_name, ...) \
     struct _name \
         : public Message<_name, __VA_ARGS__> { \
-        static const char* name() { return #_name; } \
+        static char const* name() { return #_name; } \
     }
 #define DEFINE_EMPTY_MESSAGE(_name) \
     struct _name \
         : public Message<_name> { \
-        static const char* name() { return #_name; } \
+        static char const* name() { return #_name; } \
     }
 
 namespace game {
