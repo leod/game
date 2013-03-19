@@ -11,7 +11,7 @@
 namespace game {
 
 struct System {
-    friend class EntityManager;
+    friend struct EntityManager;
 
     System(FamilyId);
     virtual ~System();
@@ -20,8 +20,8 @@ struct System {
     virtual void onUnregister(Component*);
 
     FamilyId getFamilyId() const;
-    EntityManager* getEntities();
-    EntityManager const* getEntities() const;
+    EntityManager* getManager();
+    EntityManager const* getManager() const;
 
 private:
     FamilyId const familyId;
@@ -57,7 +57,7 @@ template<typename T> struct SystemBase : public System {
     }
 
     void iterate(std::function<void(T*)> const& f) {
-        EntityManager* registry = getEntities();
+        EntityManager* registry = getManager();
         auto it = registry->familyBegin<T>();
         auto end = registry->familyEnd<T>();
 
@@ -65,7 +65,7 @@ template<typename T> struct SystemBase : public System {
     }
 
     void iterate(std::function<void(T const*)> const& f) const {
-        EntityManager const* registry = getEntities();
+        EntityManager const* registry = getManager();
         auto it = registry->familyBegin<T>();
         auto end = registry->familyEnd<T>();
 

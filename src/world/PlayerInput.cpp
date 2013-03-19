@@ -38,7 +38,7 @@ std::ostream& operator<<(std::ostream& os, PlayerInput const& input) {
 }
 
 void runPlayerInput(PhysicsComponent* physics, PlayerInput const& input) {
-    auto system = physics->getEntities()->system<PhysicsSystem>();
+    auto system = physics->getManager()->system<PhysicsSystem>();
 
     vec3 delta = vec3(0, 0, 0);
     vec3 orientation = vec3(input.orientation.x, 0, input.orientation.y);

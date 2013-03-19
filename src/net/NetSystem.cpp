@@ -222,7 +222,7 @@ Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
     auto maker = entityTypes.find(typeId);
     ASSERT(maker != entityTypes.end());
 
-    auto entity = getEntities()->create(maker->second(id, owner));
+    auto entity = getManager()->create(maker->second(id, owner));
 
     auto netComponent = entity->component<NetComponent>();
 

@@ -43,7 +43,7 @@ struct PhysicsComponent : public ComponentFamily<PhysicsComponent> {
     }
 
 private:
-    friend class PhysicsSystem;
+    friend struct PhysicsSystem;
 
     PhysicsState state;
 

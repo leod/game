@@ -19,11 +19,11 @@ FamilyId System::getFamilyId() const {
     return familyId;
 }
 
-EntityManager* System::getEntities() {
+EntityManager* System::getManager() {
     return entities;
 }
 
-EntityManager const* System::getEntities() const {
+EntityManager const* System::getManager() const {
     return entities;
 }
 

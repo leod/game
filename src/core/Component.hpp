@@ -24,8 +24,8 @@ struct Component {
 
     Entity* getEntity();
     Entity const* getEntity() const;
-    EntityManager* getEntities();
-    EntityManager const* getEntities() const;
+    EntityManager* getManager();
+    EntityManager const* getManager() const;
 
 protected:
     virtual void print(std::ostream&) const;
