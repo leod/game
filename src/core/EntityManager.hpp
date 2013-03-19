@@ -47,8 +47,8 @@ using ConstComponentItT =
                               T const*>;
 typedef ComponentItT<Component*> ComponentIt;
 
-struct EntityRegistry {
-    EntityRegistry(std::vector<System*> const&);
+struct EntityManager {
+    EntityManager(std::vector<System*> const&);
 
     Entity* get(EntityId);
     Entity const* get(EntityId) const;
@@ -63,7 +63,7 @@ struct EntityRegistry {
     // given type of component (= family).
     // For example, system(RenderSystem::staticGetFamilyId()) returns the
     // SystemBase<RenderComponent> instance that was passed to the constructor
-    // of the EntityRegistry (or nullptr, if none was given).
+    // of the EntityManager (or nullptr, if none was given).
     //
     // The template functions can be used to hide some of the ugly clutter.
     System* system(FamilyId);

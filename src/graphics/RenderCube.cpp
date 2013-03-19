@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 
 #include "core/Error.hpp"
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 #include "math/Math.hpp"
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Error.hpp"

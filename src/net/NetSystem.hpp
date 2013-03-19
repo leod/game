@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "core/System.hpp"
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 #include "math/Math.hpp"
 #include "net/NetComponent.hpp"
 #include "net/EventTypes.hpp"
@@ -49,7 +49,7 @@ struct NetSystem : public SystemBase<NetComponent> {
                          InitialState const&);
 
 private:
-    // We keep a map of net entities separately from EntityRegistry,
+    // We keep a map of net entities separately from EntityManager,
     // so that we can index by NetEntityId.
     std::map<NetEntityId, NetComponent*> components;
 

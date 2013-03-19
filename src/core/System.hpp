@@ -6,12 +6,12 @@
 
 #include "core/Error.hpp"
 #include "core/Component.hpp"
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 
 namespace game {
 
 struct System {
-    friend class EntityRegistry;
+    friend class EntityManager;
 
     System(FamilyId);
     virtual ~System();
@@ -20,13 +20,13 @@ struct System {
     virtual void onUnregister(Component*);
 
     FamilyId getFamilyId() const;
-    EntityRegistry* getEntities();
-    EntityRegistry const* getEntities() const;
+    EntityManager* getEntities();
+    EntityManager const* getEntities() const;
 
 private:
     FamilyId const familyId;
 
-    EntityRegistry* entities;
+    EntityManager* entities;
 };
 
 template<typename T> struct SystemBase : public System {
@@ -57,7 +57,7 @@ template<typename T> struct SystemBase : public System {
     }
 
     void iterate(std::function<void(T*)> const& f) {
-        EntityRegistry* registry = getEntities();
+        EntityManager* registry = getEntities();
         auto it = registry->familyBegin<T>();
         auto end = registry->familyEnd<T>();
 
@@ -65,7 +65,7 @@ template<typename T> struct SystemBase : public System {
     }
 
     void iterate(std::function<void(T const*)> const& f) const {
-        EntityRegistry const* registry = getEntities();
+        EntityManager const* registry = getEntities();
         auto it = registry->familyBegin<T>();
         auto end = registry->familyEnd<T>();
 

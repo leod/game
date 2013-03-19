@@ -7,7 +7,7 @@
 #include <GL/glew.h>
 
 #include "core/Component.hpp"
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 #include "core/Time.hpp"
 #include "core/Tasks.hpp"
 #include "core/Log.hpp"
@@ -73,7 +73,7 @@ struct Client : public ENetReceiver {
     RenderSystem renderSystem;
     TickSystem tickSystem;
     NetSystem netSystem;
-    EntityRegistry entities;
+    EntityManager entities;
 
     PlayerInputSource playerInputSource;
     Entity* playerEntity;

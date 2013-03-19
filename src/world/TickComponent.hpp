@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Component.hpp"
-#include "core/EntityRegistry.hpp"
+#include "core/EntityManager.hpp"
 
 namespace game {
 
