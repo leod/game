@@ -6,7 +6,7 @@
 #include "core/EntityRegistry.hpp"
 #include "math/Math.hpp"
 #include "net/NetComponent.hpp"
-#include "net/MessageTypes.hpp"
+#include "net/EventTypes.hpp"
 
 namespace game {
 

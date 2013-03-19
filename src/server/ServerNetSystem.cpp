@@ -1,39 +1,39 @@
 #include "server/ServerNetSystem.hpp"
 
 #include "core/Log.hpp"
-#include "net/MessageTypes.hpp"
+#include "net/EventTypes.hpp"
 #include "physics/PhysicsComponent.hpp"
 
 #include "server/Clients.hpp"
 
 namespace game {
 
-static CreateEntityMessage
-makeCreateEntityMessage(NetSystem const* netSystem,
-                        NetComponent const* component) {
+static CreateEntityOrder
+makeCreateEntityOrder(NetSystem const* netSystem,
+                      NetComponent const* component) {
     std::vector<uint8_t> initialState;
     netSystem->storeStateInArray(component, initialState);
 
-    return CreateEntityMessage::make(component->getNetTypeId(),
-                                     component->getNetId(),
-                                     component->getOwner(),
-                                     initialState);
+    return CreateEntityOrder::make(component->getNetTypeId(),
+                                   component->getNetId(),
+                                   component->getOwner(),
+                                   initialState);
 }
 
-ServerNetSystem::ServerNetSystem(Clients& clients)
+ServerNetSystem::ServerNetSystem(EventHub&, Clients& clients)
     : clients(clients), netEntityCounter(0) {
 }
 
 void ServerNetSystem::onRegister(NetComponent* component) {
     NetSystem::onRegister(component);
 
-    clients.broadcast(makeCreateEntityMessage(this, component));
+    clients.broadcast(makeCreateEntityOrder(this, component));
 }
 
 void ServerNetSystem::onUnregister(NetComponent* component) {
     NetSystem::onUnregister(component);
 
-    clients.broadcast<RemoveEntityMessage>(component->getNetId());
+    clients.broadcast<RemoveEntityOrder>(component->getNetId());
 }
 
 NetEntityId ServerNetSystem::makeNetEntityId() {
@@ -41,12 +41,14 @@ NetEntityId ServerNetSystem::makeNetEntityId() {
 }
 
 void
-ServerNetSystem::sendCreateEntityMessages(ClientInfo* const client) const {
+ServerNetSystem::sendCreateEntityOrders(ClientInfo* const client) const {
     INFO(server) << "Replicating entities to client " << *client;
 
     iterate([&] (NetComponent const* component) {
-        clients.getMessageHub().send(client->peer,
-                                     makeCreateEntityMessage(this, component));
+        if (component->getOwner() == client->id)
+            return;
+
+        sendEvent(client->peer, makeCreateEntityOrder(this, component));
     });
 }
 

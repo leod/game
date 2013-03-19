@@ -8,11 +8,12 @@
 #include <enet/enet.h>
 
 #include "net/Definitions.hpp"
-#include "net/MessageHub.hpp"
+#include "net/Event.hpp"
 
 namespace game {
 
 struct Entity;
+struct EventHub;
 
 struct ClientInfo {
     ClientId const id;
@@ -32,12 +33,10 @@ std::ostream& operator<<(std::ostream&, ClientInfo const&);
 struct Clients {
     typedef std::vector<std::unique_ptr<ClientInfo>> ClientList;
 
-    Clients(MessageHub&);
+    Clients(EventHub&);
 
-    MessageHub& getMessageHub();
-    MessageHub const& getMessageHub() const;
-
-    void add(std::unique_ptr<ClientInfo>&&);
+    ClientInfo* add(ENetPeer*);
+    ClientInfo* get(ClientId);
     void remove(ClientInfo*);
 
     typename ClientList::iterator begin();
@@ -45,31 +44,32 @@ struct Clients {
     typename ClientList::const_iterator begin() const;
     typename ClientList::const_iterator end() const;
 
-    // Find an id that is unique among those clients already registered.
-    // Note that two subsequent calls will return the same id, unless you
-    // add a new client inbetween.
-    ClientId makeClientId() const;
-
     // Send a message to all clients
-    template<typename Message>
-    void broadcast(Message const& message) const {
+    template<typename E>
+    void broadcast(E const& event) const {
         for (auto& client : clients) {
             if (!client->connected) continue;
-            messageHub.send(client->peer, message);
+            sendEvent(client->peer, event);
         }
     }
 
-    template<typename Message, typename... Args>
+    template<typename E, typename... Args>
     void broadcast(Args const&... args) const {
         for (auto& client : clients) {
             if (!client->connected) continue;
-            messageHub.send<Message>(client->peer, args...);
+            sendEvent<E>(client->peer, args...);
         }
     }
 
 private:
-    MessageHub& messageHub;
+    EventHub& eventHub;
     ClientList clients;
+    
+    // Find an id that is unique among those clients already registered.
+    // Note that two subsequent calls will return the same id, unless a
+    // new client is added inbetween.
+    ClientId makeClientId() const;
+
 };
 
 } // namespace game

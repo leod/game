@@ -20,11 +20,7 @@
 
 #include "map/Map.hpp"
 
-#include "net/Message.hpp"
-#include "net/MessageHub.hpp"
-#include "net/MessageTypes.hpp"
 #include "net/NetSystem.hpp"
-#include "net/Definitions.hpp"
 #include "net/NetStateStore.hpp"
 #include "net/ENetReceiver.hpp"
 
@@ -34,7 +30,7 @@
 #include "world/TickSystem.hpp"
 #include "world/CircularMotion.hpp"
 #include "world/PhysicsNetState.hpp"
-#include "world/MessageTypes.hpp"
+#include "world/EventTypes.hpp"
 #include "world/ProjectileComponent.hpp"
 #include "world/PlayerComponent.hpp"
 
@@ -55,7 +51,6 @@ ComponentList makeProjectile(NetEntityId, ClientId);
 
 #define INTERPOLATION_FREQUENCY 100
 
-// I'll split Client and Server up as soon as I'll find out what they do.
 struct Client;
 Client* client = nullptr; // obvious hack
 
@@ -65,6 +60,8 @@ struct Client : public ENetReceiver {
     sf::Window& window;
     InputSource& input;
     Tasks tasks;
+
+    EventHub eventHub;
 
     Map map;
 
@@ -82,7 +79,6 @@ struct Client : public ENetReceiver {
     Entity* playerEntity;
 
     ENetPeer* peer;
-    std::unique_ptr<MessageHub> messageHub;
     ClientId myId;
 
     Tick tick;
@@ -112,7 +108,6 @@ struct Client : public ENetReceiver {
           playerInputSource(window, input),
           playerEntity(nullptr),
           peer(nullptr),
-          messageHub(new MessageHub),
           myId(0),
           tick(0),
           startNextTick(false),
@@ -125,7 +120,7 @@ struct Client : public ENetReceiver {
             if (!playerEntity || !peer)
                 return;
 
-            messageHub->send<PlayerInputMessage>(peer, playerInput);
+            sendEvent<PlayerInputWish>(peer, playerInput);
             enet_host_flush(host);
 
             // Prediction
@@ -140,54 +135,18 @@ struct Client : public ENetReceiver {
 
         tasks.add(INTERPOLATION_FREQUENCY, [&] () { interpolate(); });
 
+        eventHub.subscribe<CreateEntityOrder>(this,
+                &Client::onCreateEntityOrder);
+        eventHub.subscribe<RemoveEntityOrder>(this,
+                &Client::onRemoveEntityOrder);
+        eventHub.subscribe<LoggedInOrder>(this,
+                &Client::onLoggedInOrder);
+        eventHub.subscribe<PlayerPositionOrder>(this,
+                &Client::onPlayerPositionOrder);
+
         netSystem.registerType(0, makeTeapot);
         netSystem.registerType(1, makePlayer);
         netSystem.registerType(2, makeProjectile);
-
-        messageHub->onMessage<CreateEntityMessage>([&]
-        (NetEntityTypeId type, NetEntityId id, ClientId owner,
-         InitialState const& state) {
-            auto entity = netSystem.createEntity(type, id, owner, state);
-
-            ASSERT_MSG(myId > 0, "Should have received LoggedInMessage "
-                                 << "before CreateEntityMessage.");
-            if (owner == myId) {
-                playerEntity = entity; 
-
-                INFO(client) << "Created player entity: " << playerEntity;
-            }
-        });
-
-        messageHub->onMessage<RemoveEntityMessage>([&]
-        (NetEntityId id) {
-            if (netSystem.exists(id)) {
-                entities.remove(netSystem.get(id)->getEntity());
-            }
-            else
-                WARN(client) << "Cannot delete net obj #" << id;
-        });
-
-        messageHub->onMessage<LoggedInMessage>([&]
-        (ClientId id) {
-            INFO(client) << "Logged into server with id " << (int)id;
-
-            ASSERT(id > 0);
-            myId = id;
-        });
-
-        messageHub->onMessage<PlayerPositionMessage>([&]
-        (vec3 position) {
-            // Prediction correction
-#ifdef USE_PREDICTION
-            if (playerEntity) {
-                auto input =
-                    playerEntity->component<LocalPlayerInputComponent>();
-                if (input) {
-                    input->onCorrection(position);
-                }
-            }
-#endif
-        });
 
         playerInputSource.onPlayerInput.connect([&]
         (PlayerInput const& input) {
@@ -197,11 +156,54 @@ struct Client : public ENetReceiver {
 
     ~Client() {
         if (peer) {
-            messageHub->send<DisconnectMessage>(peer);
+            sendEvent<DisconnectWish>(peer);
             enet_host_flush(host);
 
             enet_host_destroy(host);
         }
+    }
+
+    void onCreateEntityOrder(NetEntityTypeId type,
+                             NetEntityId id,
+                             ClientId owner,
+                             InitialState const& state) {
+        auto entity = netSystem.createEntity(type, id, owner, state);
+
+        ASSERT_MSG(myId > 0, "Should have received my id "
+                             << "before CreateEntityOrder.");
+        if (owner == myId) {
+            playerEntity = entity; 
+
+            INFO(client) << "Created player entity: " << playerEntity;
+        }
+    }
+
+    void onRemoveEntityOrder(NetEntityId id) {
+        if (netSystem.exists(id)) {
+            entities.remove(netSystem.get(id)->getEntity());
+        }
+        else
+            WARN(client) << "Cannot delete net obj #" << id;
+    }
+
+    void onLoggedInOrder(ClientId id) {
+        INFO(client) << "Logged into server with id " << (int)id;
+
+        ASSERT(id > 0);
+        myId = id;
+    }
+
+    void onPlayerPositionOrder(vec3 const& position) {
+        // Prediction correction
+#ifdef USE_PREDICTION
+        if (playerEntity) {
+            auto input =
+                playerEntity->component<LocalPlayerInputComponent>();
+            if (input) {
+                input->onCorrection(position);
+            }
+        }
+#endif
     }
 
     void connect(std::string const& hostName, enet_uint16 port) {
@@ -340,9 +342,9 @@ struct Client : public ENetReceiver {
 
 protected:
     // Implement ENetReceiver
-    void onPacket(int channelId, ENetPeer* peer, ENetPacket* packet) {
+    void onPacket(int channelId, ENetPeer*, ENetPacket* packet) {
         if (channelId == CHANNEL_MESSAGES || channelId == CHANNEL_TIME)
-            messageHub->dispatch(peer, packet);
+            emitEventFromPacket(eventHub, packet);
         else {
             BitStreamReader stream(packet->data,
                                    packet->dataLength);
@@ -424,7 +426,7 @@ int main()
     Log::addSink(new FileLogSink("client.log"));
     Log::setSeverityFilter("net", SEVERITY_INFO);
 
-    initializeMessageTypes();
+    initializeEventTypes();
 
     sf::Window window(sf::VideoMode(800, 600), "OpenGL",
             sf::Style::Default, sf::ContextSettings(32));
