@@ -102,6 +102,8 @@ struct Server : public ENetReceiver {
         eventHub.subscribe<PlayerInputWish>(this, &Server::onPlayerInputWish);
         eventHub.subscribe<DisconnectWish>(this, &Server::onDisconnectWish);
 
+        eventHub.subscribe<Ping>(this, &Server::onPing);
+
         createTestWorld();
     }
 
@@ -145,6 +147,10 @@ struct Server : public ENetReceiver {
 
     void onDisconnectWish(ClientId clientId) {
         handleDisconnect(clients.get(clientId));
+    }
+
+    void onPing(ClientId clientId) {
+        sendEvent<Pong>(clients.get(clientId)->peer);
     }
 
     void createTestWorld() {

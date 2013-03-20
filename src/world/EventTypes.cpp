@@ -14,6 +14,9 @@ static std::vector<EventType*> eventTypes = {
     &ClientConnectedOrder::type,
     &ClientDisconnectedOrder::type,
 
+    &Ping::type,
+    &Pong::type,
+
     &PlayerInputWish::type,
     &PlayerPositionOrder::type
 };

@@ -12,6 +12,9 @@ DEFINE_ORDER(LoggedInOrder, ClientId);
 DEFINE_ORDER(ClientConnectedOrder, ClientId, std::string);
 DEFINE_ORDER(ClientDisconnectedOrder, ClientId);
 
+DEFINE_WISH(Ping);
+DEFINE_ORDER(Pong);
+
 DEFINE_WISH(DisconnectWish);
 
 } // namespace game
