@@ -16,12 +16,12 @@ tryMove(Map const& map, PhysicsComponent* physics, vec3 const& delta) {
     Ray ray = { physics->getPosition(), delta };
     auto intersection = rayMapIntersection(ray, map, nullptr, nullptr);
 
-    if (!intersection || intersection.get().first > 1) {
+    if (!intersection || intersection.get() > 1) {
         // No collision
         physics->setPosition(physics->getPosition() + delta);
     } else {
         // Collision - walk as far as we can
-        float r = intersection.get().first - 0.001;
+        float r = intersection.get() - 0.001;
         if (r < 0) r = 0;
 
         physics->setPosition(physics->getPosition() + r * delta);
@@ -34,7 +34,7 @@ void PhysicsSystem::moveOne(PhysicsComponent* physics, vec3 const& delta) {
     Quad quad;
     auto intersection = rayMapIntersection(ray, map, nullptr, &quad);
 
-    if (!intersection || intersection.get().first > 1) {
+    if (!intersection || intersection.get() > 1) {
         // No collision
         physics->setPosition(physics->getPosition() + delta);
     } else {

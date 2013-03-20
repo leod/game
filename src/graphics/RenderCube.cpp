@@ -16,8 +16,9 @@ extern std::vector<vec3> rawPositions;
 extern std::vector<vec3> rawNormals;
 extern std::vector<GLshort> rawIndices;
 
-RenderCube::RenderCube(PhysicsComponent const* physics, vec3 color)
-    : physics(physics), color(color),
+RenderCube::RenderCube(PhysicsComponent const* physics, vec3 color,
+                       float scale)
+    : physics(physics), color(color), scale(scale),
       positions(GL_ARRAY_BUFFER, rawPositions),
       normals(GL_ARRAY_BUFFER, rawNormals),
       indices(GL_ELEMENT_ARRAY_BUFFER, rawIndices) {
@@ -35,7 +36,7 @@ void RenderCube::render() {
 
         model = glm::translate(model, position);
         model = glm::rotate(model, glm::degrees(angle) - 90, vec3(0, 1, 0));
-        model = glm::scale(model, vec3(3, 3, 3));
+        model = glm::scale(model, vec3(3 * scale, 3 * scale, 3 * scale));
     }
 
     program->bind();

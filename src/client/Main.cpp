@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 #include <GL/glew.h>
 
 #include "core/Component.hpp"
@@ -57,7 +58,7 @@ Client* client = nullptr; // obvious hack
 struct Client : public ENetReceiver {
     sf::Clock clock; // tmp
 
-    sf::Window& window;
+    sf::RenderWindow& window;
     InputSource& input;
     Tasks tasks;
 
@@ -93,7 +94,9 @@ struct Client : public ENetReceiver {
 
     PlayerInput playerInput;
 
-    Client(sf::Window& window, InputSource& input)
+    sf::Font font;
+
+    Client(sf::RenderWindow& window, InputSource& input)
         : ENetReceiver(),
           window(window),
           input(input),
@@ -171,7 +174,7 @@ struct Client : public ENetReceiver {
 
         ASSERT_MSG(myId > 0, "Should have received my id "
                              << "before CreateEntityOrder.");
-        if (owner == myId) {
+        if (owner == myId && type == 1) {
             playerEntity = entity; 
 
             INFO(client) << "Created player entity: " << playerEntity;
@@ -335,6 +338,14 @@ struct Client : public ENetReceiver {
                            renderSystem.getView());
         renderSystem.render();
 
+        //window.pushGLStates();
+        /*sf::Text text("hello world", font);
+        text.setPosition(100, 100);
+        text.setColor({ 255, 0, 0 });*/
+
+        //window.draw(text);
+        //window.popGLStates();
+
         window.display();
 
         checkGLError();
@@ -375,7 +386,8 @@ ComponentList makeTeapot(NetEntityId id, ClientId owner) {
     return {
         physics,
         new RenderCube(physics, vec3(1, 0, 0)),
-        new NetComponent(0, id, owner, { new PhysicsNetState(physics) })
+        new NetComponent(0, id, owner, { new PhysicsNetState(physics) }),
+        new PlayerComponent(nullptr)
     };
 }
 
@@ -414,7 +426,7 @@ ComponentList makeProjectile(NetEntityId id, ClientId owner) {
 
     return {
         physics,
-        new RenderCube(physics, vec3(1, 1, 1)),
+        new RenderCube(physics, vec3(1, 1, 1), 0.3),
         new NetComponent(2, id, owner, { new PhysicsNetState(physics) }),
         new ProjectileComponent(physics, ProjectileComponent::GLOBAL)
     };
@@ -424,11 +436,11 @@ int main()
 {
     Log::addSink(new ConsoleLogSink());
     Log::addSink(new FileLogSink("client.log"));
-    Log::setSeverityFilter("net", SEVERITY_INFO);
+    //Log::setSeverityFilter("net", SEVERITY_INFO);
 
     initializeEventTypes();
 
-    sf::Window window(sf::VideoMode(800, 600), "OpenGL",
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Game Client",
             sf::Style::Default, sf::ContextSettings(32));
     window.setVerticalSyncEnabled(false);
     //window.setMouseCursorVisible(false);

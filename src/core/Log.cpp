@@ -70,12 +70,12 @@ void ConsoleLogSink::write(LogMessage const& message) {
 
     GetConsoleScreenBufferInfo(console, &oldScreenBufferInfo);
 
-#define SET_COLOR(color) SetConsoleTextAttribute(console, color);
-#define RESET_COLOR SetConsoleTextAttribute(console, \
+#   define SET_COLOR(color) SetConsoleTextAttribute(console, color);
+#   define RESET_COLOR SetConsoleTextAttribute(console, \
         oldScreenBufferInfo.wAttributes)
 #else 
-#define SET_COLOR(color)
-#define RESET_COLOR
+#   define SET_COLOR(color)
+#   define RESET_COLOR
 #endif
 
     auto severityColor = [&] () {

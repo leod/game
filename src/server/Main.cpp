@@ -41,7 +41,8 @@ ComponentList makeTeapot(NetEntityId id, vec3 position, vec3 orientation) {
     return {
         physics,
         new NetComponent(0, id, 0, { new PhysicsNetState(physics) }),
-        new CircularMotion(physics)
+        new CircularMotion(physics),
+        new PlayerComponent(nullptr)
     };
 }
 
@@ -122,13 +123,16 @@ struct Server : public ENetReceiver {
             input->onPlayerInput(playerInput);
 
             if (playerInput.shoot) {
+                auto origin = physics->getPosition() +
+                              physics->getOrientation() * 0.5f;
+                auto orientation =
+                    vec3(playerInput.orientation.x, 0,
+                         playerInput.orientation.y);
                 auto components =
                     makeProjectile(netSystem.makeNetEntityId(),
-                                   0,
-                                   physics->getPosition(),
-                                   vec3(playerInput.orientation.x,
-                                        0,
-                                        playerInput.orientation.y));
+                                   clientId,
+                                   origin,
+                                   orientation);
                 entities.create(std::move(components));
             }
 

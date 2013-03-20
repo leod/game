@@ -5,7 +5,11 @@
 namespace game {
 
 #define USE_PREDICTION
-#define SIMULATE_LAG 200
+#define SIMULATE_LAG
+
+#ifdef SIMULATE_LAG
+extern int const lagSimulationMs;
+#endif
 
 // Valid ClientIds are != 0
 typedef uint16_t ClientId;
@@ -13,7 +17,6 @@ typedef uint16_t ClientId;
 enum {
     MAX_CLIENT_ID = 255
 };
-
 
 // Valid Ticks are != 0
 typedef uint32_t Tick;

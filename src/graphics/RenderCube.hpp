@@ -8,7 +8,7 @@
 namespace game {
 
 struct RenderCube : public RenderComponent {
-    RenderCube(PhysicsComponent const*, vec3 color);
+    RenderCube(PhysicsComponent const*, vec3 color, float scale = 1.0f);
 
     // Implements RenderComponent::render
     void render();
@@ -16,6 +16,7 @@ struct RenderCube : public RenderComponent {
 private:
     PhysicsComponent const* physics;
     vec3 color;
+    float scale;
 
     Buffer<vec3> positions;
     Buffer<vec3> normals;

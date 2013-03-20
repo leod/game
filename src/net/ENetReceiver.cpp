@@ -24,7 +24,7 @@ void ENetReceiver::receive() {
         switch (event.type) {
         case ENET_EVENT_TYPE_RECEIVE: {
 #ifdef SIMULATE_LAG
-            auto time = clock.getElapsedTime() + milliseconds(SIMULATE_LAG);
+            auto time = clock.getElapsedTime() + milliseconds(lagSimulationMs);
             auto packet = DelayedPacket { time, event.channelID, event.peer,
                 event.packet };
             delayedPackets.push(packet);

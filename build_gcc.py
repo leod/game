@@ -8,7 +8,7 @@ src_dir = 'src'
 include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
                 'lib/enet/include']
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
-defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32']
+defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32', 'USING_GCC']
 libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
         'opengl32', 'ws2_32', 'winmm']
 
@@ -19,8 +19,8 @@ packages = [
                   'VisionSystem',]),
     ('input', ['ClockTimeSource', 'InputSource', 'SFMLInputSource',
                'TimeSource',]),
-    ('net', ['ENetReceiver', 'Event', 'NetComponent', 'NetStateStore',
-             'NetSystem',]),
+    ('net', ['Definitions', 'ENetReceiver', 'Event', 'NetComponent',
+             'NetStateStore', 'NetSystem',]),
     ('map', ['Map',]),
     ('math', ['Intersection',]),
     ('opengl', ['Buffer', 'Framebuffer', 'Error', 'Program', 'ProgramManager',
@@ -29,7 +29,7 @@ packages = [
     ('world', ['EventTypes', 'LocalPlayerInputComponent', 'PhysicsNetState',
                'PlayerInput', 'PlayerInputComponent', 'PlayerInputSource',
                'ProjectileSystem', 'TickSystem',]),
-    ('util', ['Backtrace', 'BitStream',]),
+    ('util', ['Backtrace', 'BitStream', 'Print',]),
 ]
 
 clientPackages = [

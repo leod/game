@@ -92,9 +92,11 @@ void NetSystem::loadStateFromArray(NetComponent* component,
 void NetSystem::writeRawStates(BitStreamWriter& stream,
                                ClientId ignore) const {
     iterate([&] (NetComponent const* component) {
-        if (ignore != 0 && ignore == component->getOwner())
+        if (ignore != 0 && ignore == component->getOwner() &&
+            component->getNetTypeId() == 1 /* TODO: This is for debugging */)
             return;
 
+        ASSERT(component->getNetId() != 0);
         write(stream, component->getNetId());
 
         std::vector<uint8_t> buffer;
@@ -115,6 +117,7 @@ void NetSystem::readRawStates(BitStreamReader& stream,
         NetEntityId netId;
         read(stream, netId);
 
+        ASSERT(netId != 0);
         if (!exists(netId)) {
             INFO(net) << "Don't have net entity #" << netId << " (reading)";
             continue;
@@ -146,6 +149,9 @@ void NetSystem::interpolateStates(NetStateStore const& a,
     while (i < a.size() && j < b.size()) {
         auto entryA = a[i],
              entryB = b[j];
+
+        ASSERT(entryA.id != 0);
+        ASSERT(entryB.id != 0);
 
         // Note that
         //     a[k].id < a[k+1].id

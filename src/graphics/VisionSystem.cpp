@@ -45,8 +45,8 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
                 rayMapIntersection(ray, map, &block, nullptr);
             float blockTopY = block.groundCenter.y + block.scale.y;
 
-            deltaY[i] = intersection ? blockTopY - intersection.get().second.y
-                : 0.0f; 
+            auto s = position + intersection.get() * directions[i];
+            deltaY[i] = intersection ? blockTopY - s.y : 0.0f; 
 
             distances[i] = (
                 intersection ? glm::min(intersection.get().first, CUTOFF)
