@@ -23,8 +23,21 @@ struct Quad {
     }
 };
 
-typedef boost::optional<std::pair<float, vec3>> Intersection;
+struct Sphere {
+    vec3 center;
+    float radius;
+};
+
+typedef boost::optional<float> Intersection; // Only ray intersections for now
+
+// Returns true iff
+//     a != none and b == none or
+//     a != none and b != none and a < b,
+// so it's a nice way to check if an intersection exists and is closer
+// than another intersection.
+bool operator<=(Intersection a, Intersection b);
 
 Intersection rayQuadIntersection(Ray const&, Quad const&);
+Intersection raySphereIntersection(Ray const&, Sphere const&);
 
 } // namespace game

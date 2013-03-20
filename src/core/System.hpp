@@ -34,13 +34,13 @@ template<typename T> struct SystemBase : public System {
         : System(T::staticGetFamilyId()) {
     }
 
-    void onRegister(Component* c) {
+    void onRegister(Component* c) override {
         T* t = dynamic_cast<T*>(c);
         ASSERT(t != nullptr);
         onRegister(t);
     }
 
-    void onUnregister(Component* c) {
+    void onUnregister(Component* c) override {
         T* t = dynamic_cast<T*>(c);
         ASSERT(t != nullptr);
         onUnregister(t);
@@ -57,17 +57,17 @@ template<typename T> struct SystemBase : public System {
     }
 
     void iterate(std::function<void(T*)> const& f) {
-        EntityManager* registry = getManager();
-        auto it = registry->familyBegin<T>();
-        auto end = registry->familyEnd<T>();
+        EntityManager* manager = getManager();
+        auto it = manager->familyBegin<T>();
+        auto end = manager->familyEnd<T>();
 
         for (; it != end; ++it) f(*it);
     }
 
     void iterate(std::function<void(T const*)> const& f) const {
-        EntityManager const* registry = getManager();
-        auto it = registry->familyBegin<T>();
-        auto end = registry->familyEnd<T>();
+        EntityManager const* manager = getManager();
+        auto it = manager->familyBegin<T>();
+        auto end = manager->familyEnd<T>();
 
         for (; it != end; ++it) f(*it);
     }

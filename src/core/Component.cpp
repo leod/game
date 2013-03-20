@@ -30,7 +30,7 @@ EntityManager const* Component::getManager() const {
 }
 
 void Component::print(std::ostream& os) const {
-    os << typeid(*this).name();
+    os << demangle(typeid(*this).name());
 }
 
 void Component::setOwner(Entity* newOwner) {

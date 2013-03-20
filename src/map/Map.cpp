@@ -42,7 +42,7 @@ rayBlockIntersection(Ray const& ray, Map::Block const& block, Quad* outQuad) {
     auto tryQuad = [&] (Quad const& quad) {
         auto i = rayQuadIntersection(ray, quad);
 
-        if (!intersection || (i && i.get().first < intersection.get().first)) {
+        if (!intersection || (i && i.get() < intersection.get())) {
             intersection = i;
             if (outQuad) *outQuad = quad;
         }
@@ -85,7 +85,7 @@ Intersection rayMapIntersection(Ray const& ray, Map const& map,
         Quad quad;
         auto intersection = rayBlockIntersection(ray, block, &quad);
         if (!closest || (intersection &&
-                intersection.get().first < closest.get().first)) {
+                intersection.get() < closest.get())) {
             closest = intersection;
             closestBlock = &block;
             closestQuad = quad;

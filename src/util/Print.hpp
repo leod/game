@@ -54,4 +54,6 @@ std::ostream& operator<<(std::ostream& os, std::vector<uint8_t> const&) {
     return os << "<data>";
 }
 
+std::string demangle(std::string const&, bool qualified = false);
+
 } // namespace game

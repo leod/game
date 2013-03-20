@@ -44,14 +44,17 @@ Entity::Entity(EntityId id, ComponentList&& components,
 
 std::ostream& operator<<(std::ostream& os, Entity const* entity) {
     if (entity) {
-        os << "Entity#" << entity->getId() << "{";
+        os << "Entity " << entity->getId() << "[";
 
+        size_t i = 0;
         for (auto component : entity->components) {
             os << component;
-            os << ":" << component->getFamilyId();
-            os << ",";
+
+            if (++i != entity->components.size())
+                os << ", ";
         }
-        os << "}";
+
+        os << "]";
     }
     else os << "nullptr";
 
