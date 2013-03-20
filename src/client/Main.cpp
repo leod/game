@@ -13,6 +13,8 @@
 #include "core/Tasks.hpp"
 #include "core/Log.hpp"
 
+#include "util/Profiling.hpp"
+
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
 
@@ -147,12 +149,12 @@ struct Client : public ENetReceiver {
                 &Client::onCreateEntityOrder);
         eventHub.subscribe<RemoveEntityOrder>(this,
                 &Client::onRemoveEntityOrder);
-        eventHub.subscribe<LoggedInOrder>(this,
-                &Client::onLoggedInOrder);
         eventHub.subscribe<PlayerPositionOrder>(this,
                 &Client::onPlayerPositionOrder);
-        eventHub.subscribe<Pong>(this,
-                &Client::onPong);
+        eventHub.subscribe<Pong>(this, &Client::onPong);
+        eventHub.subscribe<LoggedInOrder>(this, &Client::onLoggedInOrder);
+
+        input.onKeyPressed.connect(this, &Client::onKeyPressed);
 
         netSystem.registerType(0, makeTeapot);
         netSystem.registerType(1, makePlayer);
@@ -171,6 +173,11 @@ struct Client : public ENetReceiver {
 
             enet_host_destroy(host);
         }
+    }
+
+    void onKeyPressed(KeyInput const& input) {
+        if (input.code == Key::P)
+            ProfilingData::dump(); 
     }
 
     void onCreateEntityOrder(NetEntityTypeId type,
@@ -295,6 +302,8 @@ struct Client : public ENetReceiver {
     }
 
     void interpolate() {
+        PROFILE(interpolate);
+
         if (tick == 0)
             return;
 
@@ -318,7 +327,13 @@ struct Client : public ENetReceiver {
     }
 
     void update(Time delta) {
-        receive();
+        PROFILE(update);
+
+        {
+            PROFILE(receive);
+            receive();
+        }
+
         tasks.run(delta);
 
         if (!haveUnrepliedPing) {
@@ -332,6 +347,8 @@ struct Client : public ENetReceiver {
     }
 
     void render() {
+        PROFILE(render);
+
         if (playerEntity) {
             auto playerPhys = playerEntity->component<PhysicsComponent>();
 

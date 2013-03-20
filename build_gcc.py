@@ -29,7 +29,7 @@ packages = [
     ('world', ['EventTypes', 'LocalPlayerInputComponent', 'PhysicsNetState',
                'PlayerInput', 'PlayerInputComponent', 'PlayerInputSource',
                'ProjectileSystem', 'TickSystem',]),
-    ('util', ['Backtrace', 'BitStream', 'Print',]),
+    ('util', ['Backtrace', 'BitStream', 'Print', 'Profiling',]),
 ]
 
 clientPackages = [
