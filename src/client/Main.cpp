@@ -96,6 +96,9 @@ struct Client : public ENetReceiver {
 
     sf::Font font;
 
+    Time timeSentLastPing;
+    bool haveUnrepliedPing;
+
     Client(sf::RenderWindow& window, InputSource& input)
         : ENetReceiver(),
           window(window),
@@ -115,7 +118,9 @@ struct Client : public ENetReceiver {
           tick(0),
           startNextTick(false),
           isFirstTick(true),
-          mapRenderer(map, textures, programs, visionSystem) {
+          mapRenderer(map, textures, programs, visionSystem),
+          timeSentLastPing(clock.getElapsedTime()),
+          haveUnrepliedPing(false) {
         ::client = this; // obvious hack
 
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
@@ -146,6 +151,8 @@ struct Client : public ENetReceiver {
                 &Client::onLoggedInOrder);
         eventHub.subscribe<PlayerPositionOrder>(this,
                 &Client::onPlayerPositionOrder);
+        eventHub.subscribe<Pong>(this,
+                &Client::onPong);
 
         netSystem.registerType(0, makeTeapot);
         netSystem.registerType(1, makePlayer);
@@ -209,6 +216,17 @@ struct Client : public ENetReceiver {
 #endif
     }
 
+    void onPong() {
+        if (!haveUnrepliedPing) {
+            WARN(client) << "Got unwanted Pong";
+            return;
+        }
+
+        INFO(client) << "Ping: " 
+             << (clock.getElapsedTime() - timeSentLastPing).asMilliseconds();
+        haveUnrepliedPing = false;
+    }
+
     void connect(std::string const& hostName, enet_uint16 port) {
         INFO(client) << "Connecting to " << host << ":" << port;
 
@@ -267,6 +285,8 @@ struct Client : public ENetReceiver {
 
         //TRACE(client) << "@" << clock.getElapsedTime().asMilliseconds()
                       //<< ": Starting tick #" << curState.tick();
+        /*TRACE(client) << "    @" << clock.getElapsedTime().asMilliseconds()
+                      << ": Starting tick";*/
 
         tick = curState.tick();
         tickInterpolation = 0;
@@ -279,13 +299,19 @@ struct Client : public ENetReceiver {
             return;
 
         if (tickInterpolation >= 1) {
-            tickInterpolation = 1;
+            //tickInterpolation = 1;
             startNextTick = true;
             /*std::cout << "@" << clock.getElapsedTime().asMilliseconds()
                       << ": end of tick" << std::endl;*/
+            /*TRACE(client) << "@" << clock.getElapsedTime().asMilliseconds()
+                          << ": End of tick";*/
             startTick();
+            //TRACE(client) << "ohhh, ok?";
             //std::cout << "end interpolation start" << std::endl;
         }
+
+        if (tickInterpolation >= 1.5)
+            tickInterpolation = 1.5;
         netSystem.interpolateStates(curState, nextState, tickInterpolation);
 
         tickInterpolation += (float)TICK_FREQUENCY / INTERPOLATION_FREQUENCY;
@@ -294,6 +320,15 @@ struct Client : public ENetReceiver {
     void update(Time delta) {
         receive();
         tasks.run(delta);
+
+        if (!haveUnrepliedPing) {
+            if (clock.getElapsedTime() - timeSentLastPing >
+                seconds(1)) {
+                timeSentLastPing = clock.getElapsedTime();
+                sendEvent<Ping>(peer);
+                haveUnrepliedPing = true;
+            } 
+        }
     }
 
     void render() {
@@ -338,13 +373,13 @@ struct Client : public ENetReceiver {
                            renderSystem.getView());
         renderSystem.render();
 
-        //window.pushGLStates();
-        /*sf::Text text("hello world", font);
+        window.pushGLStates();
+        sf::Text text("hello world", font);
         text.setPosition(100, 100);
-        text.setColor({ 255, 0, 0 });*/
+        text.setColor({ 255, 0, 0 });
 
-        //window.draw(text);
-        //window.popGLStates();
+        window.draw(text);
+        window.popGLStates();
 
         window.display();
 

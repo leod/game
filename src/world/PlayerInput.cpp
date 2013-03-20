@@ -44,16 +44,16 @@ void runPlayerInput(PhysicsComponent* physics, PlayerInput const& input) {
     vec3 orientation = vec3(input.orientation.x, 0, input.orientation.y);
 
     if (input.walkForward)
-        delta += 0.3f * orientation;
+        delta += 0.2f * orientation;
     else if (input.walkBackward)
-        delta -= 0.3f * orientation;
+        delta -= 0.2f * orientation;
     if (input.strafeRight)
-        delta += 0.2f * glm::cross(orientation, vec3(0, 1, 0));
+        delta += 0.135f * glm::cross(orientation, vec3(0, 1, 0));
     else if (input.strafeLeft)
-        delta -= 0.2f * glm::cross(orientation, vec3(0, 1, 0));
+        delta -= 0.135f * glm::cross(orientation, vec3(0, 1, 0));
 
-    if (glm::length(delta) > 0.3f)
-        delta *= (0.3f / glm::length(delta));
+    if (glm::length(delta) > 0.2f)
+        delta *= (0.2f / glm::length(delta));
 
     system->moveOne(physics, delta);
 

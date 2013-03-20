@@ -37,7 +37,7 @@ void ProjectileSystem::tick(bool localOnly) {
         auto physics = projectile->getPhysics();
         Ray ray = { physics->getPosition(), physics->getOrientation() };
 
-        float velocity = 0.1; // TODO
+        float velocity = 2; // TODO
 
         // Entity intersection
         Intersection entIntersection;
