@@ -29,7 +29,7 @@ void ProjectileSystem::tick(bool localOnly) {
             return;
 
         projectile->lifetime++;
-        if (projectile->lifetime == 100 && false) {
+        if (projectile->lifetime == 100) {
             deleteMe.push_back(projectile);
             return;
         }
@@ -37,7 +37,7 @@ void ProjectileSystem::tick(bool localOnly) {
         auto physics = projectile->getPhysics();
         Ray ray = { physics->getPosition(), physics->getOrientation() };
 
-        float velocity = 2; // TODO
+        float velocity = 0.4; // TODO
 
         // Entity intersection
         Intersection entIntersection;
@@ -61,8 +61,6 @@ void ProjectileSystem::tick(bool localOnly) {
                 if (intersection <= entIntersection) {
                     entIntersection = intersection;
                     entity = (*it)->getEntity();
-
-                    //TRACE(world) << entIntersection.get() << " - " << entity;
                 }
             }
         }
@@ -84,7 +82,6 @@ void ProjectileSystem::tick(bool localOnly) {
         else {
             physics->setPosition(physics->getPosition()
                                  + physics->getOrientation() * velocity);
-            //TRACE(world) << physics->getPosition();
         }
     });
 

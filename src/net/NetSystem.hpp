@@ -7,15 +7,13 @@
 #include "math/Math.hpp"
 #include "net/NetComponent.hpp"
 #include "net/EventTypes.hpp"
+#include "net/NetEntityType.hpp"
 
 namespace game {
 
 struct BitStreamWriter;
 struct BitStreamReader;
 struct NetStateStore;
-
-typedef std::function<ComponentList(NetEntityId, ClientId)>
-    NetEntityMaker;
 
 struct NetSystem : public SystemBase<NetComponent> {
     // Implement SystemBase<NetComponent>
@@ -28,32 +26,23 @@ struct NetSystem : public SystemBase<NetComponent> {
     bool exists(NetEntityId) const;
     void remove(NetEntityId);
 
-    void storeStateInArray(NetComponent const*, std::vector<uint8_t>& out)
-        const;
-    void loadStateFromArray(NetComponent*, std::vector<uint8_t> const& in)
-        const;
-
     void writeRawStates(BitStreamWriter&, ClientId ignore = 0) const;
     void readRawStates(BitStreamReader&, NetStateStore&) const;
 
     void applyStates(NetStateStore const&);
     void interpolateStates(NetStateStore const&, NetStateStore const&, float);
 
-    // TODO: Ids will be automated.
-    template<typename Maker>
-    void registerType(NetEntityTypeId typeId, Maker maker) {
-        entityTypes[typeId] = maker;
-    }
+    void registerType(NetEntityType const&);
+    NetEntityType const& getType(NetEntityTypeId) const;
 
-    Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId,
-                         InitialState const&);
+    Entity* createEntity(NetEntityTypeId, NetEntityId, ClientId);
 
 private:
     // We keep a map of net entities separately from EntityManager,
     // so that we can index by NetEntityId.
     std::map<NetEntityId, NetComponent*> components;
 
-    std::map<NetEntityTypeId, NetEntityMaker> entityTypes;
+    std::map<NetEntityTypeId, NetEntityType> entityTypes;
 };
 
 } // namespace game

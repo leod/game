@@ -21,7 +21,11 @@ namespace game {
 
 typedef uint8_t EventTypeId; // 0 is reserved
 
+struct EventBase;
+
 struct EventType {
+    typedef EventBase* (*Create)();
+
     // Calls the constructor of the event type on some memory location
     typedef void (*Init)(void*);
 
@@ -30,10 +34,11 @@ struct EventType {
 
     size_t const size;
 
+    Create const create;
     Init const init;
     Name const name;
 
-    EventType(size_t, Init, Name);
+    EventType(size_t, Create, Init, Name);
 
     EventTypeId id() const;
 
@@ -83,6 +88,10 @@ struct Event : public EventBase {
     }
 
     // Implement EventType
+    static EventBase* create() {
+        return new E;
+    }
+
     static void init(void* event) {
         new(event) E;
     }
@@ -137,6 +146,7 @@ private:
 template<typename E, typename... Types>
 EventType Event<E, Types...>::type = {
     sizeof(E),
+    &E::create,
     &E::init,
     &E::name,
 };

@@ -18,16 +18,23 @@ struct BitStreamWriter {
     uint8_t const* ptr() const;
     size_t size() const;
 
+    void reset();
+
 private:
     std::vector<uint8_t> buffer;
 };
 
 struct BitStreamReader {
+    BitStreamReader(std::vector<uint8_t> const&);
     BitStreamReader(uint8_t const* buffer, size_t bufferLength);
 
     void readBytes(uint8_t* out, size_t size);
 
     bool eof();
+
+    std::vector<uint8_t> restVector() const;
+
+    void skip(size_t offset);
 
 private:
     uint8_t const* buffer;

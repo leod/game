@@ -5,6 +5,8 @@
 
 namespace game {
 
+extern NetStateType const physicsNetStateType;
+
 struct PhysicsComponent;
 
 struct PhysicsNetState : public NetStateBase<PhysicsState> {

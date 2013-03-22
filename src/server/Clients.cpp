@@ -21,8 +21,8 @@ std::ostream& operator<<(std::ostream& os, ClientInfo const& client) {
     return os;
 }
 
-Clients::Clients(EventHub& eventHub)
-    : eventHub(eventHub) {
+Clients::Clients(Tick& tickRef, EventHub& eventHub)
+    : tickRef(tickRef), eventHub(eventHub) {
 }
 
 ClientInfo* Clients::add(ENetPeer* peer) {
@@ -74,6 +74,10 @@ typename Clients::ClientList::const_iterator Clients::begin() const {
 
 typename Clients::ClientList::const_iterator Clients::end() const {
     return clients.end();
+}
+
+Tick Clients::tick() const {
+    return tickRef;
 }
 
 ClientId Clients::makeClientId() const {

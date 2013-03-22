@@ -11,8 +11,8 @@ EventBase::~EventBase() {
 
 }
 
-EventType::EventType(size_t size, Init init, Name name)
-    : size(size), init(init),  name(name) {
+EventType::EventType(size_t size, Create create, Init init, Name name)
+    : size(size), create(create), init(init),  name(name) {
 }
 
 EventTypeId EventType::id() const {
@@ -23,7 +23,7 @@ void EventType::initialize(std::vector<EventType*> const& types) {
     EventType::types = types;
 
     // Assign ids
-    EventTypeId id = 0;
+    EventTypeId id = 1;
     for (auto type : types)
         type->id_ = id++;
 
@@ -42,10 +42,11 @@ void EventType::initialize(std::vector<EventType*> const& types) {
 }
 
 EventType const& EventType::getById(EventTypeId id) {
+    ASSERT(id > 0);
     ASSERT(id <= types.size());
-    ASSERT(types[id]->id() == id);
+    ASSERT(types[id - 1]->id() == id);
 
-    return *types.at(id);
+    return *types.at(id - 1);
 }
 
 bool EventType::initialized = false;

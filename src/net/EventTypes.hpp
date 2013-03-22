@@ -4,9 +4,7 @@
 
 namespace game {
 
-typedef std::vector<uint8_t> InitialState;
-DEFINE_ORDER(CreateEntityOrder,
-             NetEntityTypeId, NetEntityId, ClientId, InitialState);
+DEFINE_ORDER(CreateEntityOrder, NetEntityTypeId, NetEntityId, ClientId);
 DEFINE_ORDER(RemoveEntityOrder, NetEntityId);
 DEFINE_ORDER(LoggedInOrder, ClientId);
 DEFINE_ORDER(ClientConnectedOrder, ClientId, std::string);
