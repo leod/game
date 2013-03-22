@@ -3,7 +3,7 @@
 namespace game {
 
 #ifdef SIMULATE_LAG
-int const lagSimulationMs = 50;
+int const lagSimulationMs = 100;
 #endif
 
 } // namespace game

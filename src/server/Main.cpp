@@ -13,6 +13,7 @@
 #include "core/Time.hpp"
 #include "core/Event.hpp"
 
+#include "util/Profiling.hpp"
 #include "input/ClockTimeSource.hpp"
 #include "net/NetSystem.hpp"
 #include "net/Definitions.hpp"
@@ -98,6 +99,7 @@ struct Server : public ENetReceiver {
                      &projectileSystem }),
           tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
+        tasks.add(0.1, [&] () { ProfilingData::dump(); });
 
         eventHub.subscribe<PlayerInputWish>(this, &Server::onPlayerInputWish);
         eventHub.subscribe<DisconnectWish>(this, &Server::onDisconnectWish);
@@ -126,7 +128,7 @@ struct Server : public ENetReceiver {
 
             if (playerInput.shoot) {
                 auto origin = physics->getPosition() +
-                              physics->getOrientation() * 0.5f;
+                              physics->getOrientation() * 0.2f;
                 auto orientation =
                     vec3(playerInput.orientation.x, 0,
                          playerInput.orientation.y);
@@ -177,10 +179,15 @@ struct Server : public ENetReceiver {
     }
 
     void runTick() {
+        PROFILE(runTick);
+
         receive();
 
         tickSystem.tick();
-        projectileSystem.tick(ProjectileComponent::GLOBAL);
+        {
+            PROFILE(projectiles);
+            projectileSystem.tick(ProjectileComponent::GLOBAL);
+        }
 
         sendTicks();
 
@@ -188,11 +195,18 @@ struct Server : public ENetReceiver {
     }
 
     void update(Time delta) {
-        receive();
+        PROFILE(update);
+
+        {
+            PROFILE(receive);
+            receive();
+        }
         tasks.run(delta);
     }
 
     void sendTicks() const {
+        PROFILE(sendTicks);
+
         for (auto& client : clients) {
             if (!client->connected)
                 continue;
@@ -210,12 +224,12 @@ struct Server : public ENetReceiver {
             }
 
 #ifdef USE_PREDICTION
-            netSystem.writeRawStates(stream, client->id);
+            netSystem.writeStates(stream, client->id);
 #else
-            netSystem.writeRawStates(stream);
+            netSystem.writeStates(stream);
 #endif
 
-            TRACE(server) << "Sending state for tick #" << tick;
+            //TRACE(server) << "Sending state for tick #" << tick;
             sendTick(client.get(), stream);
         }
     }

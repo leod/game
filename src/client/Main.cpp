@@ -428,7 +428,7 @@ protected:
             while (eventQueue.addFromStream(tick, stream));
 
             tickStateQueue.emplace(tick);
-            netSystem.readRawStates(stream, tickStateQueue.back());
+            netSystem.readStates(stream, tickStateQueue.back());
 
             if (startNextTick)
                 startTick();

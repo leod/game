@@ -12,8 +12,8 @@
 namespace game {
 
 void NetSystem::onRegister(NetComponent* component) {
-    TRACE(net) << "Creating net entity #" << component->getNetId()
-               << ": " << component->getEntity();
+    /*TRACE(net) << "Creating net entity #" << component->getNetId()
+               << ": " << component->getEntity();*/
 
     ASSERT_MSG(components.find(component->getNetId()) == components.end(),
                "NetEntityId " << component->getNetId() <<
@@ -23,7 +23,7 @@ void NetSystem::onRegister(NetComponent* component) {
 }
 
 void NetSystem::onUnregister(NetComponent* component) {
-    TRACE(net) << "Removing net entity #" << component->getNetId();
+    //TRACE(net) << "Removing net entity #" << component->getNetId();
 
     size_t numErased = components.erase(component->getNetId());
     ASSERT(numErased == 1);
@@ -61,8 +61,8 @@ void NetSystem::remove(NetEntityId id) {
     components.erase(componentIt);
 }
 
-void NetSystem::writeRawStates(BitStreamWriter& stream,
-                               ClientId ignore) const {
+void NetSystem::writeStates(BitStreamWriter& stream,
+                            ClientId ignore) const {
     iterate([&] (NetComponent const* component) {
         if (ignore != 0 && ignore == component->getOwner() &&
             component->getNetTypeId() == 1 /* TODO: This is for debugging */)
@@ -87,8 +87,8 @@ void NetSystem::writeRawStates(BitStreamWriter& stream,
     });
 }
 
-void NetSystem::readRawStates(BitStreamReader& stream,
-                              NetStateStore& store) const {
+void NetSystem::readStates(BitStreamReader& stream,
+                           NetStateStore& store) const {
     while (!stream.eof()) {
         NetEntityId netId;
         read(stream, netId);
