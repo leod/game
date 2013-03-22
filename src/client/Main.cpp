@@ -26,6 +26,7 @@
 #include "net/NetSystem.hpp"
 #include "net/NetStateStore.hpp"
 #include "net/ENetReceiver.hpp"
+#include "net/EventQueue.hpp"
 
 #include "world/PlayerInputSource.hpp"
 #include "world/PlayerInputComponent.hpp"
@@ -66,6 +67,8 @@ struct Client : public ENetReceiver {
 
     EventHub eventHub;
 
+    EventQueue eventQueue;
+
     Map map;
 
     TextureManager textures;
@@ -90,7 +93,8 @@ struct Client : public ENetReceiver {
     NetStateStore curState;
     NetStateStore nextState;
     float tickInterpolation;
-    std::queue<NetStateStore> tickStateQueue;
+
+    std::queue<std::pair<Tick, std::vector<uint8_t>>> tickStateQueue;
 
     MapRenderer mapRenderer;
 
@@ -156,9 +160,12 @@ struct Client : public ENetReceiver {
 
         input.onKeyPressed.connect(this, &Client::onKeyPressed);
 
-        netSystem.registerType(0, makeTeapot);
-        netSystem.registerType(1, makePlayer);
-        netSystem.registerType(2, makeProjectile);
+        netSystem.registerType(
+                { 0, { &physicsNetStateType }, makeTeapot });
+        netSystem.registerType(
+                { 1, { &physicsNetStateType }, makePlayer } );
+        netSystem.registerType(
+                { 2, { &physicsNetStateType }, makeProjectile });
 
         playerInputSource.onPlayerInput.connect([&]
         (PlayerInput const& input) {
@@ -182,9 +189,8 @@ struct Client : public ENetReceiver {
 
     void onCreateEntityOrder(NetEntityTypeId type,
                              NetEntityId id,
-                             ClientId owner,
-                             InitialState const& state) {
-        auto entity = netSystem.createEntity(type, id, owner, state);
+                             ClientId owner) {
+        auto entity = netSystem.createEntity(type, id, owner);
 
         ASSERT_MSG(myId > 0, "Should have received my id "
                              << "before CreateEntityOrder.");
@@ -259,6 +265,16 @@ struct Client : public ENetReceiver {
             throw std::runtime_error("Failed to connect to host");
     }
 
+    void readNextState(NetStateStore& store) {
+        ASSERT(!tickStateQueue.empty());
+
+        store = NetStateStore(tickStateQueue.front().first);
+
+        BitStreamReader stream(tickStateQueue.front().second);
+        netSystem.readRawStates(stream, store);
+        tickStateQueue.pop();
+    }
+
     void startTick() {
         if (tickStateQueue.size() < 1) {
             // Start the tick as soon as it arrives, so we don't have to wait
@@ -273,32 +289,30 @@ struct Client : public ENetReceiver {
                 return;
             }
 
-            curState = tickStateQueue.front();
-            tickStateQueue.pop();
-
-            nextState = tickStateQueue.front();
-            tickStateQueue.pop();
+            readNextState(curState);
+            readNextState(nextState);
 
             isFirstTick = false;
         } else {
             curState = nextState;
 
-            nextState = tickStateQueue.front();
-            tickStateQueue.pop();
+            readNextState(nextState);
         }
 
-        // Now we have new curState and nextStates, so we can
-        // load the new state from curState.
+        // Now we have new curState and nextStates
 
         //TRACE(client) << "@" << clock.getElapsedTime().asMilliseconds()
                       //<< ": Starting tick #" << curState.tick();
-        /*TRACE(client) << "    @" << clock.getElapsedTime().asMilliseconds()
-                      << ": Starting tick";*/
 
         tick = curState.tick();
-        tickInterpolation = 0;
+        
+        // Run events of this tick
+        while (!eventQueue.empty() && eventQueue.frontTick() <= tick)
+            eventQueue.popAndEmit(eventHub);
 
-        //netSystem.applyStates(curState);
+        netSystem.applyStates(curState);
+
+        tickInterpolation = 0;
     }
 
     void interpolate() {
@@ -413,11 +427,13 @@ protected:
                                    packet->dataLength);
             Tick tick;
             read(stream, tick);
-
             ASSERT(tick > 0);
 
-            tickStateQueue.emplace(tick);
-            netSystem.readRawStates(stream, tickStateQueue.back());
+            //INFO(net) << "Received tick " << tick;
+
+            while (eventQueue.addFromStream(tick, stream));
+
+            tickStateQueue.emplace(tick, stream.restVector());
 
             if (startNextTick)
                 startTick();

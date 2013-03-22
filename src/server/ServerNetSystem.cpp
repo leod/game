@@ -8,18 +8,6 @@
 
 namespace game {
 
-static CreateEntityOrder
-makeCreateEntityOrder(NetSystem const* netSystem,
-                      NetComponent const* component) {
-    std::vector<uint8_t> initialState;
-    netSystem->storeStateInArray(component, initialState);
-
-    return CreateEntityOrder::make(component->getNetTypeId(),
-                                   component->getNetId(),
-                                   component->getOwner(),
-                                   initialState);
-}
-
 ServerNetSystem::ServerNetSystem(EventHub&, Clients& clients)
     : clients(clients), netEntityCounter(0) {
 }
@@ -27,13 +15,15 @@ ServerNetSystem::ServerNetSystem(EventHub&, Clients& clients)
 void ServerNetSystem::onRegister(NetComponent* component) {
     NetSystem::onRegister(component);
 
-    clients.broadcast(makeCreateEntityOrder(this, component));
-}
+    clients.queueEvent<CreateEntityOrder>(
+        component->getNetTypeId(),
+        component->getNetId(), component->getOwner());
+ }
 
 void ServerNetSystem::onUnregister(NetComponent* component) {
     NetSystem::onUnregister(component);
 
-    clients.broadcast<RemoveEntityOrder>(component->getNetId());
+    clients.queueEvent<RemoveEntityOrder>(component->getNetId());
 }
 
 NetEntityId ServerNetSystem::makeNetEntityId() {
@@ -48,7 +38,10 @@ ServerNetSystem::sendCreateEntityOrders(ClientInfo* const client) const {
         if (component->getOwner() == client->id)
             return;
 
-        sendEvent(client->peer, makeCreateEntityOrder(this, component));
+        client->queueEvent<CreateEntityOrder>(clients.tick(),
+            component->getNetTypeId(),
+            component->getNetId(),
+            component->getOwner());
     });
 }
 

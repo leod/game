@@ -25,7 +25,7 @@ void interpolateState(PhysicsState const* a, PhysicsState const* b, float t,
     state->orientation = a->orientation * (1 - t) + b->orientation * t;
 }
 
-static NetStateType const stateType =
+NetStateType const physicsNetStateType =
         makeNetStateType(writeState, readState, interpolateState);
 
 PhysicsNetState::PhysicsNetState(PhysicsComponent* physics)
@@ -33,7 +33,7 @@ PhysicsNetState::PhysicsNetState(PhysicsComponent* physics)
 }
 
 NetStateType const& PhysicsNetState::type() const {
-    return stateType;
+    return physicsNetStateType;
 }
 
 PhysicsState PhysicsNetState::load() const {

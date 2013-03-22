@@ -88,7 +88,7 @@ struct Server : public ENetReceiver {
 
     Server()
         : ENetReceiver(),
-          clients(eventHub),
+          clients(tick, eventHub),
           physicsSystem(map),
           netSystem(eventHub, clients),
           projectileSystem(map),
@@ -181,7 +181,8 @@ struct Server : public ENetReceiver {
 
         tickSystem.tick();
         projectileSystem.tick(ProjectileComponent::GLOBAL);
-        sendStates();
+
+        sendTicks();
 
         ++tick;
     }
@@ -191,26 +192,35 @@ struct Server : public ENetReceiver {
         tasks.run(delta);
     }
 
-    void sendStates() const {
+    void sendTicks() const {
         for (auto& client : clients) {
             if (!client->connected)
                 continue;
-            
+
             BitStreamWriter stream;
             write(stream, tick);
+
+            while (!client->eventQueue.empty() &&
+                   client->eventQueue.frontTick() <= tick)
+                client->eventQueue.popAndWrite(stream);
+
+            {
+                EventTypeId zero = 0;
+                write(stream, zero);
+            }
+
 #ifdef USE_PREDICTION
             netSystem.writeRawStates(stream, client->id);
 #else
             netSystem.writeRawStates(stream);
 #endif
 
-            sendState(client.get(), stream);
-
-            //TRACE(server) << "Sending state for tick #" << tick;
+            TRACE(server) << "Sending state for tick #" << tick;
+            sendTick(client.get(), stream);
         }
     }
 
-    void sendState(ClientInfo* client, BitStreamWriter const& stream) const {
+    void sendTick(ClientInfo* client, BitStreamWriter const& stream) const {
         ENetPacket* packet = enet_packet_create(
                 reinterpret_cast<void const*>(stream.ptr()),
                 stream.size(),

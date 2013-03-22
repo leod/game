@@ -12,7 +12,8 @@
 namespace game {
 
 void NetSystem::onRegister(NetComponent* component) {
-    TRACE(net) << "Creating net entity #" << component->getNetId();
+    TRACE(net) << "Creating net entity #" << component->getNetId()
+               << ": " << component->getEntity();
 
     ASSERT_MSG(components.find(component->getNetId()) == components.end(),
                "NetEntityId " << component->getNetId() <<
@@ -60,35 +61,6 @@ void NetSystem::remove(NetEntityId id) {
     components.erase(componentIt);
 }
 
-void NetSystem::storeStateInArray(NetComponent const* component,
-                                  std::vector<uint8_t>& out) const {
-    {
-        size_t size = 0;
-        for (auto state : component->getStates())
-            size += state->type().size;
-        out.resize(size);
-    }
-
-    size_t index = 0;
-    for (auto state : component->getStates()) {
-        state->load(&out[index]);
-        index += state->type().size;
-    }
-}
-
-void NetSystem::loadStateFromArray(NetComponent* component,
-                                   std::vector<uint8_t> const& in) const {
-    size_t index = 0;
-    for (auto state : component->getStates()) {
-        ASSERT(index < in.size());
-
-        state->store(&in[index]);
-        index += state->type().size;
-    }
-
-    ASSERT(index == in.size());
-}
-
 void NetSystem::writeRawStates(BitStreamWriter& stream,
                                ClientId ignore) const {
     iterate([&] (NetComponent const* component) {
@@ -96,10 +68,14 @@ void NetSystem::writeRawStates(BitStreamWriter& stream,
             component->getNetTypeId() == 1 /* TODO: This is for debugging */)
             return;
 
+        //INFO(net) << "Writing state for " << component->getNetId();
+
         ASSERT(component->getNetId() != 0);
         write(stream, component->getNetId());
 
         std::vector<uint8_t> buffer;
+
+        write(stream, component->getNetTypeId());
 
         for (auto state : component->getStates()) {
             if (buffer.size() < state->type().size)
@@ -118,22 +94,21 @@ void NetSystem::readRawStates(BitStreamReader& stream,
         read(stream, netId);
 
         ASSERT(netId != 0);
-        if (!exists(netId)) {
-            INFO(net) << "Don't have net entity #" << netId << " (reading)";
-            continue;
-        }
 
-        NetComponent const* component = get(netId);
+        NetEntityTypeId typeId;
+        read(stream, typeId);
+
+        NetEntityType const& entityType = getType(typeId);
 
         size_t requiredSize = 0;
-        for (auto state : component->getStates())
-            requiredSize += state->type().size;
+        for (auto state : entityType.states)
+            requiredSize += state->size;
 
         uint8_t* buffer = store.allocate(netId, requiredSize);
 
-        for (auto state : component->getStates()) {
-            state->type().read(stream, buffer);
-            buffer += state->type().size;
+        for (auto state : entityType.states) {
+            state->read(stream, buffer);
+            buffer += state->size;
         }
     }
 }
@@ -172,13 +147,9 @@ void NetSystem::interpolateStates(NetStateStore const& a,
         ASSERT(entryA.size == entryB.size);
 
         if (!exists(entryA.id)) {
-            // As far as I can tell this can happen if a CreateEntityMessage
-            // arrives after the first states it appears in.
-            // This happens because we send the states unreliably and the
-            // messages reliably.
-            INFO(net) << "Don't have net entity #" << entryA.id
+            // TODO: Does this still happen?
+            WARN(net) << "Don't have net entity #" << entryA.id
                       << " in tick #" << a.tick() << " (interpolating)";
-            // TODO
             continue;
         }
 
@@ -209,10 +180,12 @@ void NetSystem::applyStates(NetStateStore const& store) {
         auto offset = entry.offset;
 
         if (!exists(entry.id)) {
-            std::cout << "NetSystem: Don't have net entity #" << entry.id
-                      << " in tick #" << store.tick() << std::endl;
+            INFO(net) << "Don't have net entity #" << entry.id
+                      << " in tick #" << store.tick();
             continue; // Entity was removed
         }
+
+        //INFO(net) << "Applying " << entry.id;
         
         NetComponent const* component = get(entry.id);
         
@@ -223,12 +196,21 @@ void NetSystem::applyStates(NetStateStore const& store) {
     }
 }
 
-Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
-        ClientId owner, InitialState const& state) {
-    auto maker = entityTypes.find(typeId);
-    ASSERT(maker != entityTypes.end());
+void NetSystem::registerType(NetEntityType const& type) {
+    entityTypes[type.typeId] = std::move(type);
+}
 
-    auto entity = getManager()->create(maker->second(id, owner));
+NetEntityType const& NetSystem::getType(NetEntityTypeId typeId) const {
+    auto entityType = entityTypes.find(typeId);
+    ASSERT(entityType != entityTypes.end());
+
+    return entityType->second;
+}
+
+Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
+        ClientId owner) {
+    auto entityType = getType(typeId);
+    auto entity = getManager()->create(entityType.make(id, owner));
 
     auto netComponent = entity->component<NetComponent>();
 
@@ -238,8 +220,6 @@ Entity* NetSystem::createEntity(NetEntityTypeId typeId, NetEntityId id,
     ASSERT(netComponent->getNetId() == id);
     ASSERT(netComponent->getOwner() == owner);
 #endif
-
-    loadStateFromArray(netComponent, state);
 
     return entity;
 }

@@ -29,6 +29,15 @@ size_t BitStreamWriter::size() const {
     return buffer.size();
 }
 
+void BitStreamWriter::reset() {
+    buffer.resize(0);
+}
+
+BitStreamReader::BitStreamReader(std::vector<uint8_t> const& v)
+    : BitStreamReader(&v[0], v.size()) {
+
+}
+
 BitStreamReader::BitStreamReader(uint8_t const* buffer, size_t bufferLength)
     : buffer(buffer), bufferLength(bufferLength), index(0) {
     ASSERT(buffer != nullptr);
@@ -46,6 +55,15 @@ void BitStreamReader::readBytes(uint8_t* out, size_t size) {
 
 bool BitStreamReader::eof() {
     return index == bufferLength;
+}
+
+std::vector<uint8_t> BitStreamReader::restVector() const {
+    return std::vector<uint8_t>(buffer + index, buffer + bufferLength);
+}
+
+void BitStreamReader::skip(size_t offset) {
+    ASSERT(index + offset <= bufferLength);
+    index += offset;
 }
 
 void write(BitStreamWriter& stream, std::string const& str) {
