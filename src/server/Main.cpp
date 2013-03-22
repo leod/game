@@ -224,7 +224,7 @@ struct Server : public ENetReceiver {
         ENetPacket* packet = enet_packet_create(
                 reinterpret_cast<void const*>(stream.ptr()),
                 stream.size(),
-                0);
+                ENET_PACKET_FLAG_RELIABLE);
         enet_peer_send(client->peer, 1, packet);
     }
 

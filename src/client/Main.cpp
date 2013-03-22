@@ -94,7 +94,7 @@ struct Client : public ENetReceiver {
     NetStateStore nextState;
     float tickInterpolation;
 
-    std::queue<std::pair<Tick, std::vector<uint8_t>>> tickStateQueue;
+    std::queue<NetStateStore> tickStateQueue;
 
     MapRenderer mapRenderer;
 
@@ -265,16 +265,6 @@ struct Client : public ENetReceiver {
             throw std::runtime_error("Failed to connect to host");
     }
 
-    void readNextState(NetStateStore& store) {
-        ASSERT(!tickStateQueue.empty());
-
-        store = NetStateStore(tickStateQueue.front().first);
-
-        BitStreamReader stream(tickStateQueue.front().second);
-        netSystem.readRawStates(stream, store);
-        tickStateQueue.pop();
-    }
-
     void startTick() {
         if (tickStateQueue.size() < 1) {
             // Start the tick as soon as it arrives, so we don't have to wait
@@ -289,14 +279,18 @@ struct Client : public ENetReceiver {
                 return;
             }
 
-            readNextState(curState);
-            readNextState(nextState);
+            curState = tickStateQueue.front();
+            tickStateQueue.pop();
+
+            nextState = tickStateQueue.front();
+            tickStateQueue.pop();
 
             isFirstTick = false;
         } else {
             curState = nextState;
 
-            readNextState(nextState);
+            nextState = tickStateQueue.front();
+            tickStateQueue.pop();
         }
 
         // Now we have new curState and nextStates
@@ -433,7 +427,8 @@ protected:
 
             while (eventQueue.addFromStream(tick, stream));
 
-            tickStateQueue.emplace(tick, stream.restVector());
+            tickStateQueue.emplace(tick);
+            netSystem.readRawStates(stream, tickStateQueue.back());
 
             if (startNextTick)
                 startTick();
