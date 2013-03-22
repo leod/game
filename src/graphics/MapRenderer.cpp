@@ -15,8 +15,8 @@ MapRenderer::MapRenderer(Map const& map,
                          ProgramManager& programs,
                          VisionSystem& vision)
     : map(map),
-      program(programs.load("shaders/cube_vertex.glsl",
-                            "shaders/cube_fragment.glsl")),
+      program(programs.load("shaders/map_vertex.glsl",
+                            "shaders/map_fragment.glsl")),
       vision(vision),
       cubePositions(GL_ARRAY_BUFFER,
         { vec3(-0.5, -0.5,  0.5), // Front
@@ -82,7 +82,7 @@ MapRenderer::MapRenderer(Map const& map,
 }
 
 void MapRenderer::render(mat4 const& projection, mat4 const& view) {
-    floor->bind(); {
+    /*floor->bind(); {
         float t = 5.0f;
 
         glEnable(GL_TEXTURE_2D);
@@ -102,7 +102,7 @@ void MapRenderer::render(mat4 const& projection, mat4 const& view) {
         glVertex3f(-35, 0, 35);
 
         glEnd();
-    }
+    }*/
 
     program->bind();
 
@@ -130,7 +130,7 @@ void MapRenderer::render(mat4 const& projection, mat4 const& view) {
     }
 
     // Floor hack
-    if(0){
+    if(1){
         program->setUniform(program->getUniformLocation("diffuse"),
                             vec3(0.7, 0.7, 0.7));
         mat4 model = glm::translate(mat4(), vec3(0, 0, 0));

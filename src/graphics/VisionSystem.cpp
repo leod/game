@@ -9,7 +9,7 @@
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Program.hpp"
 
-//#define ENABLE
+#define ENABLE
 
 namespace game {
 
@@ -20,14 +20,15 @@ VisionSystem::VisionSystem(Map const& map, ProgramManager& programs)
       framebuffer(Framebuffer::COLOR, ivec2(1280, 1024)) {
 }
 
-void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
+void VisionSystem::renderVision(mat4 const&, mat4 const&) {
 #ifdef ENABLE
     iterate([&] (VisionComponent* component) {
         auto position = component->getPosition();
 
 #define NUM_SAMPLES 300
-#define CUTOFF 30.0f
+#define CUTOFF 15.0f
         vec3 directions[NUM_SAMPLES];
+
         float distances[NUM_SAMPLES]; 
         float deltaY[NUM_SAMPLES];
 
@@ -45,12 +46,16 @@ void VisionSystem::renderVision(mat4 const& projection, mat4 const& view) {
                 rayMapIntersection(ray, map, &block, nullptr);
             float blockTopY = block.groundCenter.y + block.scale.y;
 
-            auto s = position + intersection.get() * directions[i];
-            deltaY[i] = intersection ? blockTopY - s.y : 0.0f; 
+            if (intersection) {
+                deltaY[i] = blockTopY -
+                    (position + intersection.get() * directions[i]).y;
+                distances[i] = glm::min(intersection.get(), CUTOFF);
+                //std::cout << "HIT " << directions[i] << std::endl;
+            } else {
+                deltaY[i] = 0;
+                distances[i] = CUTOFF;
+            }
 
-            distances[i] = (
-                intersection ? glm::min(intersection.get().first, CUTOFF)
-                             : CUTOFF);
             //std::cout << distances[i] << std::endl;
         }
 

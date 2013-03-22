@@ -26,8 +26,8 @@ struct NetSystem : public SystemBase<NetComponent> {
     bool exists(NetEntityId) const;
     void remove(NetEntityId);
 
-    void writeRawStates(BitStreamWriter&, ClientId ignore = 0) const;
-    void readRawStates(BitStreamReader&, NetStateStore&) const;
+    void writeStates(BitStreamWriter&, ClientId ignore = 0) const;
+    void readStates(BitStreamReader&, NetStateStore&) const;
 
     void applyStates(NetStateStore const&);
     void interpolateStates(NetStateStore const&, NetStateStore const&, float);

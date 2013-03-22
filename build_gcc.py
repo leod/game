@@ -2,7 +2,7 @@ import os
 from fabricate import *
 
 target = 'game'
-cflags = '-Wall -Wextra -pedantic -g -std=c++11'.split()
+cflags = '-Wall -Wextra -g -std=c++11'.split()
 
 src_dir = 'src'
 include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',

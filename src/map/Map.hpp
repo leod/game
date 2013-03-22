@@ -21,6 +21,7 @@ struct Map {
         
         vec3 rotScale;
 
+        Block() {}
         Block(vec3, float, vec3);
     };
 
