@@ -10,7 +10,7 @@ include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
 defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32', 'USING_GCC']
 libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
-        'opengl32', 'ws2_32', 'winmm']
+        'ws2_32', 'winmm', 'glew', 'opengl32', 'jpeg', 'gdi32']
 
 packages = [
     ('core', ['Component', 'Entity', 'EntityManager', 'Event', 'Log',
@@ -69,6 +69,7 @@ def link(packages, target, build_dir=os.path.join('build', 'gcc'), flags=None):
                                         'protocol.o', 'unix.o', 'win32.o'])
     after();
     run('g++',
+        '-static',
         join_flags('-L', lib_dirs), 
         objects, bs, join_flags('-l', libs), '-o', target, flags)
 

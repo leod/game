@@ -241,7 +241,7 @@ struct Client : public ENetReceiver {
     }
 
     void connect(std::string const& hostName, enet_uint16 port) {
-        INFO(client) << "Connecting to " << host << ":" << port;
+        INFO(client) << "Connecting to " << hostName << ":" << port;
 
         ENetAddress address;
         enet_address_set_host(&address, hostName.c_str());
@@ -416,7 +416,7 @@ protected:
     void onPacket(int channelId, ENetPeer*, ENetPacket* packet) {
         if (channelId == CHANNEL_MESSAGES || channelId == CHANNEL_TIME)
             emitEventFromPacket(eventHub, packet);
-        else {
+        else if (channelId == CHANNEL_TICKS) {
             BitStreamReader stream(packet->data,
                                    packet->dataLength);
             Tick tick;
@@ -489,7 +489,7 @@ ComponentList makeProjectile(NetEntityId id, ClientId owner) {
 
     return {
         physics,
-        new RenderCube(physics, vec3(1, 1, 1), 0.3),
+        new RenderCube(physics, vec3(1, 0, 1), 0.3),
         new NetComponent(2, id, owner, { new PhysicsNetState(physics) }),
         new ProjectileComponent(physics, ProjectileComponent::GLOBAL)
     };
@@ -539,11 +539,12 @@ int main()
     Client client(window, input);
 
     {
-        //std::cout << "Please enter IP of server to connect to: ";
-        std::string host = "localhost";
-        //std::getline(std::cin, host);
+        std::cout << "\nPlease enter IP of server to connect to: " << std::flush;
+        std::string host;
+        std::getline(std::cin, host);
+        std::cout << host << std::endl;
 
-        client.connect(host, 20000);
+        client.connect(host, 40003);
     }
 
     while (running) {
