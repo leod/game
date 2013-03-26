@@ -2,8 +2,15 @@
 #include <windows.h>
 
 struct LoadBacktrace {
+    HMODULE module;
+
     LoadBacktrace() {
-        LoadLibraryA("backtrace.dll");
+        module = LoadLibraryA("backtrace.dll");
+    }
+
+    ~LoadBacktrace() {
+        if (module)
+            FreeLibrary(module);
     }
 };
 

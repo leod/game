@@ -10,7 +10,7 @@ include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
 defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32', 'USING_GCC']
 libs = ['glew', 'sfml-graphics-s', 'sfml-window-s', 'sfml-system-s',
-        'glu32', 'ws2_32', 'winmm', 'opengl32', 'jpeg', 'gdi32']
+        'glu32', 'enet', 'ws2_32', 'winmm', 'opengl32', 'jpeg', 'gdi32']
 
 packages = [
     ('core', ['Component', 'Entity', 'EntityManager', 'Event', 'Log',
@@ -66,7 +66,7 @@ def link(packages, target, build_dir=os.path.join('build', 'gcc'), flags=None):
     run('g++',
         '-static',
         join_flags('-L', lib_dirs), 
-        objects, bs, join_flags('-l', libs), '-o', target, flags)
+        objects, join_flags('-l', libs), '-o', target, flags)
 
 def check():
     return int(outofdate(build))
