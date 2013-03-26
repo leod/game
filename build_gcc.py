@@ -9,8 +9,8 @@ include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
                 'lib/enet/include']
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
 defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32', 'USING_GCC']
-libs = ['sfml-graphics-s', 'sfml-window-s', 'sfml-system-s', 'glu32',
-        'ws2_32', 'winmm', 'glew', 'opengl32', 'jpeg', 'gdi32']
+libs = ['glew', 'sfml-graphics-s', 'sfml-window-s', 'sfml-system-s',
+        'glu32', 'ws2_32', 'winmm', 'opengl32', 'jpeg', 'gdi32']
 
 packages = [
     ('core', ['Component', 'Entity', 'EntityManager', 'Event', 'Log',
@@ -62,11 +62,6 @@ def link(packages, target, build_dir=os.path.join('build', 'gcc'), flags=None):
     objects = [os.path.join(build_dir, package + '_' + source + '.o')
                for (package, sources) in packages
                for source in sources]
-    # This is a workaround. Linking libenet.a and libwinmm.a directly
-    # causes ld.exe to crash.
-    bs = join_flags('lib/enet/.libs/', ['callbacks.o', 'compress.o', 'host.o',
-                                        'list.o', 'packet.o', 'peer.o',
-                                        'protocol.o', 'unix.o', 'win32.o'])
     after();
     run('g++',
         '-static',
