@@ -59,7 +59,7 @@ void sendEvent(ENetPeer* peer, EventBase const& event) {
     // Create enet packet and send off
     ENetPacket* packet = enet_packet_create(
            stream.ptr(), stream.size(), ENET_PACKET_FLAG_RELIABLE); 
-    enet_peer_send(peer, 0, packet);
+    enet_peer_send(peer, CHANNEL_MESSAGES, packet);
 }
 
 } // namespace game

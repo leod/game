@@ -170,7 +170,7 @@ struct Server : public ENetReceiver {
     void start() {
         ENetAddress address;
         address.host = ENET_HOST_ANY;
-        address.port = 20000;
+        address.port = 40003;
 
         host = enet_host_create(&address, 32, 2, 0, 0);
 
@@ -239,7 +239,7 @@ struct Server : public ENetReceiver {
                 reinterpret_cast<void const*>(stream.ptr()),
                 stream.size(),
                 ENET_PACKET_FLAG_RELIABLE);
-        enet_peer_send(client->peer, 1, packet);
+        enet_peer_send(client->peer, CHANNEL_TICKS, packet);
     }
 
     void handleDisconnect(ClientInfo* client) {

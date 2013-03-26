@@ -5,7 +5,7 @@
 namespace game {
 
 #define USE_PREDICTION
-#define SIMULATE_LAG
+//#define SIMULATE_LAG
 
 #ifdef SIMULATE_LAG
 extern int const lagSimulationMs;
@@ -23,7 +23,7 @@ typedef uint32_t Tick;
 
 enum NetChannel {
     CHANNEL_MESSAGES = 0,
-    CHANNEL_STATES = 1,
+    CHANNEL_TICKS = 1,
     CHANNEL_TIME = 2
 };
 
