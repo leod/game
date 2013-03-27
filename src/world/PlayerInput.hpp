@@ -18,6 +18,8 @@ struct PlayerInput {
     PlayerInput(bool strafeLeft, bool strafeRight,
                 bool walkForward, bool walkBackward,
                 bool shoot, vec2 orientation);
+
+    bool isWalking() const;
 };
 
 std::ostream& operator<<(std::ostream&, PlayerInput const&);

@@ -12,9 +12,10 @@ defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32', 'USING_GCC']
 
 # If you change this order, ld.exe will crash. Have fun.
 libs = ['glew', 'sfml-graphics-s', 'sfml-window-s', 'sfml-system-s',
-        'glu32', 'enet', 'ws2_32', 'winmm', 'opengl32', 'jpeg', 'gdi32']
+        'sfml-audio-s', 'glu32', 'enet', 'ws2_32', 'winmm', 'opengl32', 'jpeg',
+        'gdi32', 'sndfile']
 
-packages = [
+corePackages = [
     ('core', ['Component', 'Entity', 'EntityManager', 'Event', 'Log',
               'System', 'Tasks',]),
     ('graphics', ['MapRenderer', 'RenderCube', 'RenderSystem',
@@ -26,6 +27,7 @@ packages = [
     ('math', ['Intersection',]),
     ('opengl', ['Buffer', 'Framebuffer', 'Error', 'Program', 'ProgramManager',
                 'Shader', 'Texture', 'TextureManager',]),
+    ('sound', ['Sound', 'SoundPlayer',]),
     ('world', ['EventTypes', 'LocalPlayerInputComponent', 'Map',
                'PhysicsNetState', 'PhysicsSystem', 'PlayerInput',
                'PlayerInputComponent', 'PlayerInputSource', 'ProjectileSystem',
@@ -42,9 +44,9 @@ serverPackages = [
 ]
 
 def build():
-    compile(packages + clientPackages + serverPackages)
-    link(packages + clientPackages, 'client')
-    link(packages + serverPackages, 'server')
+    compile(corePackages + clientPackages + serverPackages)
+    link(corePackages + clientPackages, 'client')
+    link(corePackages + serverPackages, 'server')
 
 def join_flags(flag, params):
     return [flag + param for param in params]

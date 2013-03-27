@@ -47,6 +47,8 @@
 #include "graphics/MapRenderer.hpp"
 #include "graphics/VisionSystem.hpp"
 
+#include "sound/SoundPlayer.hpp"
+
 using namespace game;
 
 ComponentList makeTeapot(NetEntityId, ClientId);
@@ -105,6 +107,8 @@ struct Client : public ENetReceiver {
     Time timeSentLastPing;
     bool haveUnrepliedPing;
 
+    SoundPlayer soundPlayer;
+
     Client(sf::RenderWindow& window, InputSource& input)
         : ENetReceiver(),
           window(window),
@@ -129,6 +133,8 @@ struct Client : public ENetReceiver {
           haveUnrepliedPing(false) {
         ::client = this; // obvious hack
 
+        SoundPlayer::setGlobalVolume(100);
+
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
         tasks.add(TICK_FREQUENCY, [&] () { 
             if (!playerEntity || !peer)
@@ -143,6 +149,12 @@ struct Client : public ENetReceiver {
                 playerEntity->component<LocalPlayerInputComponent>();
             if (input) {
                 input->onPlayerInput(playerInput);
+            }
+
+            if (playerInput.isWalking()) {
+                auto physics = playerEntity->component<PhysicsComponent>();
+                if (physics)
+                    soundPlayer.play(Sound::FOOTSTEP, physics->getPosition());
             }
 #endif
         });
@@ -340,6 +352,12 @@ struct Client : public ENetReceiver {
         {
             PROFILE(receive);
             receive();
+        }
+
+        if (playerEntity) {
+            auto physics = playerEntity->component<PhysicsComponent>();
+            //if (physics)
+                //SoundPlayer::setListenerPosition(physics->getPosition());
         }
 
         tasks.run(delta);
