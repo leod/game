@@ -1,7 +1,7 @@
 #include "world/PlayerInputComponent.hpp"
 
 #include "math/Math.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsComponent.hpp"
 #include "world/PlayerInput.hpp"
 #include "world/PlayerInputSource.hpp"
 

@@ -20,7 +20,7 @@
 #include "net/NetState.hpp"
 #include "net/NetComponent.hpp"
 #include "net/ENetReceiver.hpp"
-#include "map/Map.hpp"
+#include "world/Map.hpp"
 #include "world/TickSystem.hpp"
 #include "world/PhysicsNetState.hpp"
 #include "world/CircularMotion.hpp"
@@ -29,8 +29,8 @@
 #include "world/ProjectileComponent.hpp"
 #include "world/ProjectileSystem.hpp"
 #include "world/PlayerComponent.hpp"
-#include "physics/PhysicsComponent.hpp"
-#include "physics/PhysicsSystem.hpp"
+#include "world/PhysicsComponent.hpp"
+#include "world/PhysicsSystem.hpp"
 
 #include "server/Clients.hpp"
 #include "server/ServerNetSystem.hpp"
@@ -317,7 +317,7 @@ int main() {
             server.update(deltaTime);
             deltaTime = time.nextDelta();            
 
-            sf::sleep(sf::milliseconds(0));
+            sf::sleep(sf::milliseconds(1));
         }
     } catch(std::exception& exception) {
         std::cerr << exception.what() << std::endl;

@@ -3,7 +3,7 @@
 #include "math/Math.hpp"
 #include "opengl/Buffer.hpp"
 #include "graphics/RenderComponent.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsComponent.hpp"
 
 namespace game {
 

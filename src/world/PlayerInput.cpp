@@ -1,8 +1,8 @@
 #include "world/PlayerInput.hpp"
 
 #include "util/Print.hpp"
-#include "physics/PhysicsComponent.hpp"
-#include "physics/PhysicsSystem.hpp"
+#include "world/PhysicsComponent.hpp"
+#include "world/PhysicsSystem.hpp"
 
 namespace game {
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Component.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsComponent.hpp"
 
 namespace game {
 

@@ -1,7 +1,7 @@
 #include "world/ProjectileSystem.hpp"
 
-#include "map/Map.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/Map.hpp"
+#include "world/PhysicsComponent.hpp"
 #include "net/NetComponent.hpp"
 #include "world/PlayerComponent.hpp"
 

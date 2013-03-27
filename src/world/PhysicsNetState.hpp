@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/PhysicsState.hpp"
+#include "world/PhysicsState.hpp"
 #include "net/NetState.hpp"
 
 namespace game {
