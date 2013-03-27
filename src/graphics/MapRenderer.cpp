@@ -5,7 +5,7 @@
 #include "opengl/ProgramManager.hpp"
 #include "opengl/TextureManager.hpp"
 #include "opengl/Program.hpp"
-#include "map/Map.hpp"
+#include "world/Map.hpp"
 #include "graphics/VisionSystem.hpp"
 
 namespace game {

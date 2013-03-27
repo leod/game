@@ -5,7 +5,7 @@
 
 #include "core/Error.hpp"
 #include "util/BitStream.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsComponent.hpp"
 
 namespace game {
 

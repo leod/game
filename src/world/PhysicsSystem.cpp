@@ -1,9 +1,9 @@
-#include "physics/PhysicsSystem.hpp"
+#include "world/PhysicsSystem.hpp"
 
 #include "core/Log.hpp"
 
-#include "map/Map.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/Map.hpp"
+#include "world/PhysicsComponent.hpp"
 
 namespace game {
 

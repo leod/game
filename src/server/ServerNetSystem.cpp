@@ -2,7 +2,7 @@
 
 #include "core/Log.hpp"
 #include "net/EventTypes.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsComponent.hpp"
 
 #include "server/Clients.hpp"
 

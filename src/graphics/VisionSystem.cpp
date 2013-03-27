@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 
 #include "util/Print.hpp"
-#include "map/Map.hpp"
+#include "world/Map.hpp"
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Program.hpp"
 
@@ -25,7 +25,7 @@ void VisionSystem::renderVision(mat4 const&, mat4 const&) {
     iterate([&] (VisionComponent* component) {
         auto position = component->getPosition();
 
-#define NUM_SAMPLES 300
+#define NUM_SAMPLES 100
 #define CUTOFF 15.0f
         vec3 directions[NUM_SAMPLES];
 

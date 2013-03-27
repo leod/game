@@ -3,7 +3,7 @@
 #include <iostream>
 #include "util/Print.hpp"
 
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsComponent.hpp"
 #include "world/TickComponent.hpp"
 
 namespace game {

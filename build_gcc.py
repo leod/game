@@ -9,6 +9,8 @@ include_dirs = ['src', 'lib', 'lib/SFML/include', 'lib/SFML/extlibs/headers',
                 'lib/enet/include']
 lib_dirs = ['lib/SFML/lib', 'lib/enet/.libs']
 defines = ['SFML_STATIC', 'GLEW_STATIC', 'WIN32', 'USING_GCC']
+
+# If you change this order, ld.exe will crash. Have fun.
 libs = ['glew', 'sfml-graphics-s', 'sfml-window-s', 'sfml-system-s',
         'glu32', 'enet', 'ws2_32', 'winmm', 'opengl32', 'jpeg', 'gdi32']
 
@@ -21,14 +23,13 @@ packages = [
                'TimeSource',]),
     ('net', ['Definitions', 'ENetReceiver', 'Event', 'EventQueue', 
              'NetComponent', 'NetStateStore', 'NetSystem',]),
-    ('map', ['Map',]),
     ('math', ['Intersection',]),
     ('opengl', ['Buffer', 'Framebuffer', 'Error', 'Program', 'ProgramManager',
                 'Shader', 'Texture', 'TextureManager',]),
-    ('physics', ['PhysicsSystem',]),
-    ('world', ['EventTypes', 'LocalPlayerInputComponent', 'PhysicsNetState',
-               'PlayerInput', 'PlayerInputComponent', 'PlayerInputSource',
-               'ProjectileSystem', 'TickSystem',]),
+    ('world', ['EventTypes', 'LocalPlayerInputComponent', 'Map',
+               'PhysicsNetState', 'PhysicsSystem', 'PlayerInput',
+               'PlayerInputComponent', 'PlayerInputSource', 'ProjectileSystem',
+               'TickSystem',]),
     ('util', ['Backtrace', 'BitStream', 'Print', 'Profiling',]),
 ]
 

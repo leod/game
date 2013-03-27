@@ -18,10 +18,10 @@
 #include "input/SFMLInputSource.hpp"
 #include "input/ClockTimeSource.hpp"
 
-#include "physics/PhysicsSystem.hpp"
-#include "physics/PhysicsComponent.hpp"
+#include "world/PhysicsSystem.hpp"
+#include "world/PhysicsComponent.hpp"
 
-#include "map/Map.hpp"
+#include "world/Map.hpp"
 
 #include "net/NetSystem.hpp"
 #include "net/NetStateStore.hpp"
@@ -345,8 +345,7 @@ struct Client : public ENetReceiver {
         tasks.run(delta);
 
         if (!haveUnrepliedPing) {
-            if (clock.getElapsedTime() - timeSentLastPing >
-                seconds(1)) {
+            if (clock.getElapsedTime() - timeSentLastPing > seconds(1)) {
                 timeSentLastPing = clock.getElapsedTime();
                 sendEvent<Ping>(peer);
                 haveUnrepliedPing = true;
@@ -539,10 +538,9 @@ int main()
     Client client(window, input);
 
     {
-        std::cout << "\nPlease enter IP of server to connect to: " << std::flush;
-        std::string host;
-        std::getline(std::cin, host);
-        std::cout << host << std::endl;
+        //std::cout << "\nPlease enter IP of server to connect to: " << std::flush;
+        std::string host = "localhost";
+        //std::getline(std::cin, host);
 
         client.connect(host, 40003);
     }
