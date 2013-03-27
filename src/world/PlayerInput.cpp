@@ -25,6 +25,10 @@ PlayerInput::PlayerInput(bool strafeLeft, bool strafeRight,
       orientation(orientation) {
 }
 
+bool PlayerInput::isWalking() const {
+    return strafeLeft || strafeRight || walkForward || walkBackward;
+}
+
 std::ostream& operator<<(std::ostream& os, PlayerInput const& input) {
     os << "PlayerInput("
        << input.strafeLeft
