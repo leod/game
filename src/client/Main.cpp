@@ -46,6 +46,8 @@
 #include "graphics/RenderCube.hpp"
 #include "graphics/MapRenderer.hpp"
 #include "graphics/VisionSystem.hpp"
+#include "graphics/RenderOBJComponent.hpp"
+#include "graphics/RenderPlayerComponent.hpp"
 
 #include "sound/SoundPlayer.hpp"
 
@@ -486,7 +488,8 @@ ComponentList makePlayer(NetEntityId id, ClientId owner) {
 
     auto components = ComponentList {
         physics,
-        new RenderCube(physics, colors[owner % 7]),
+        new RenderPlayerComponent(physics, colors[owner % 7],
+                                  client->textures),
         new NetComponent(1, id, owner, { new PhysicsNetState(physics) }),
         new PlayerComponent(nullptr)
     };
@@ -556,7 +559,7 @@ int main()
     Client client(window, input);
 
     {
-        //std::cout << "\nPlease enter IP of server to connect to: " << std::flush;
+        //std::cout << "\nPlease enter IP of server to connect to: ";
         std::string host = "localhost";
         //std::getline(std::cin, host);
 

@@ -128,7 +128,7 @@ struct Server : public ENetReceiver {
 
             if (playerInput.shoot) {
                 auto origin = physics->getPosition() +
-                              physics->getOrientation() * 0.2f;
+                              physics->getOrientation() * 0.65f;
                 auto orientation =
                     vec3(playerInput.orientation.x, 0,
                          playerInput.orientation.y);
