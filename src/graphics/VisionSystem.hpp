@@ -11,7 +11,7 @@ struct Map;
 struct ProgramManager;
 struct Program;
 
-struct VisionSystem : public SystemBase<VisionComponent> {
+struct VisionSystem : public System<VisionComponent> {
     VisionSystem(Map const&, ProgramManager&);
 
     void renderVision(mat4 const& projection, mat4 const& view);

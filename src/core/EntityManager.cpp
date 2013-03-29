@@ -8,7 +8,7 @@
 
 namespace game {
 
-EntityManager::EntityManager(std::vector<System*> const& systems)
+EntityManager::EntityManager(std::vector<SystemBase*> const& systems)
     : biggestId() {
     for (auto s : systems) {
         // TODO: See if this limitation makes sense.
@@ -89,11 +89,11 @@ void EntityManager::remove(Entity* entity) {
     delete entity;
 }
 
-System* EntityManager::system(FamilyId familyId) {
+SystemBase* EntityManager::system(FamilyId familyId) {
     return systems[familyId];
 }
 
-System const* EntityManager::system(FamilyId familyId) const {
+SystemBase const* EntityManager::system(FamilyId familyId) const {
     return systems.find(familyId)->second;
 }
 

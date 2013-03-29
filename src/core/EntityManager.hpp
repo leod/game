@@ -7,7 +7,7 @@
 
 namespace game {
 
-struct System;
+struct SystemBase;
 
 // Use boost::transform_iterator to create a custom component 
 // iterator that hides the ugly downcasting we have to do because
@@ -48,7 +48,7 @@ using ConstComponentItT =
 typedef ComponentItT<Component*> ComponentIt;
 
 struct EntityManager {
-    EntityManager(std::vector<System*> const&);
+    EntityManager(std::vector<SystemBase*> const&);
 
     Entity* get(EntityId);
     Entity const* get(EntityId) const;
@@ -66,8 +66,8 @@ struct EntityManager {
     // of the EntityManager (or nullptr, if none was given).
     //
     // The template functions can be used to hide some of the ugly clutter.
-    System* system(FamilyId);
-    System const* system(FamilyId) const;
+    SystemBase* system(FamilyId);
+    SystemBase const* system(FamilyId) const;
 
     template<typename T>
     T* system() {
@@ -126,7 +126,7 @@ struct EntityManager {
     }
 
 private:
-    std::map<FamilyId, System*> systems;
+    std::map<FamilyId, SystemBase*> systems;
     std::map<FamilyId, ComponentList> families;
     std::map<EntityId, Entity*> entities;
 

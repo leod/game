@@ -5,7 +5,7 @@
 
 namespace game {
 
-struct TickSystem : public SystemBase<TickComponent> {
+struct TickSystem : public System<TickComponent> {
     void tick();
 };
 

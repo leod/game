@@ -15,10 +15,10 @@ struct BitStreamWriter;
 struct BitStreamReader;
 struct NetStateStore;
 
-struct NetSystem : public SystemBase<NetComponent> {
-    // Implement SystemBase<NetComponent>
-    void onRegister(NetComponent*);
-    void onUnregister(NetComponent*);
+struct NetSystem : public System<NetComponent> {
+    // Implement System<NetComponent>
+    void onRegister(NetComponent*) override;
+    void onUnregister(NetComponent*) override;
 
     NetComponent* get(NetEntityId);
     NetComponent const* get(NetEntityId) const;

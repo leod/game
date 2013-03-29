@@ -14,7 +14,7 @@ struct ProgramManager;
 struct VisionSystem;
 struct Texture;
 
-struct RenderSystem : public SystemBase<RenderComponent> {
+struct RenderSystem : public System<RenderComponent> {
     RenderSystem(sf::Window const& window,
                  TextureManager& textures,
                  ProgramManager& programs,

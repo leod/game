@@ -7,7 +7,7 @@ namespace game {
 
 struct Map;
 
-struct ProjectileSystem : public SystemBase<ProjectileComponent> {
+struct ProjectileSystem : public System<ProjectileComponent> {
     ProjectileSystem(Map&);
 
     void tick(bool localOnly);

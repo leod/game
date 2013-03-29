@@ -10,11 +10,11 @@
 
 namespace game {
 
-struct System {
+struct SystemBase {
     friend struct EntityManager;
 
-    System(FamilyId);
-    virtual ~System();
+    SystemBase(FamilyId);
+    virtual ~SystemBase();
 
     virtual void onRegister(Component*);
     virtual void onUnregister(Component*);
@@ -29,9 +29,9 @@ private:
     EntityManager* entities;
 };
 
-template<typename T> struct SystemBase : public System {
-    SystemBase()
-        : System(T::staticGetFamilyId()) {
+template<typename T> struct System : public SystemBase {
+    System()
+        : SystemBase(T::staticGetFamilyId()) {
     }
 
     void onRegister(Component* c) override {
