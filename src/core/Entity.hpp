@@ -10,20 +10,20 @@ typedef int EntityId;
 
 template<typename T>
 using ComponentListT = std::vector<T*>;
-typedef ComponentListT<Component> ComponentList;
+typedef ComponentListT<ComponentBase> ComponentList;
 
 struct EntityManager;
 
 // An entity is an Id and a list of components.
 // An entity can have at most one component of each family.
 struct Entity {
-    friend struct Component;
+    friend struct ComponentBase;
     friend struct EntityManager;
 
     ~Entity();
 
-    Component* component(FamilyId);
-    Component const* component(FamilyId) const;
+    ComponentBase* component(FamilyId);
+    ComponentBase const* component(FamilyId) const;
 
     template<typename T> T* component() {
         return dynamic_cast<T*>(component(T::staticGetFamilyId()));

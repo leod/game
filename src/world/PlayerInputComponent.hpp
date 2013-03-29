@@ -8,7 +8,7 @@ namespace game {
 
 struct PhysicsComponent;
 
-struct PlayerInputComponent : public ComponentBase<PlayerInputComponent> {
+struct PlayerInputComponent : public Component<PlayerInputComponent> {
     PlayerInputComponent(PhysicsComponent*);
 
     void onPlayerInput(PlayerInput const&);

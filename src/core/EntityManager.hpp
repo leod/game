@@ -17,7 +17,7 @@ namespace detail {
 
 template<typename T>
 struct CastComponent {
-    T* operator()(Component* component) const {
+    T* operator()(ComponentBase* component) const {
         ASSERT(component != nullptr);
 
         T* result;
@@ -26,7 +26,7 @@ struct CastComponent {
         ASSERT_MSG(result != nullptr, "Component has invalid family.");
 #else
         // AFAIK, static_cast produces undefined behavior if
-        // T isn't a subclass of Component.
+        // T isn't a subclass of ComponentBase.
         result = static_cast<T*>(component);
 #endif
         return result;
@@ -45,7 +45,7 @@ using ConstComponentItT =
     boost::transform_iterator<detail::CastComponent<T>,
                               typename ComponentList::const_iterator,
                               T const*>;
-typedef ComponentItT<Component*> ComponentIt;
+typedef ComponentItT<ComponentBase*> ComponentIt;
 
 struct EntityManager {
     EntityManager(std::vector<SystemBase*> const&);
@@ -62,7 +62,7 @@ struct EntityManager {
     // Returns the system that is registered as being responsible for the
     // given type of component (= family).
     // For example, system(RenderSystem::staticGetFamilyId()) returns the
-    // SystemBase<RenderComponent> instance that was passed to the constructor
+    // System<RenderComponent> instance that was passed to the constructor
     // of the EntityManager (or nullptr, if none was given).
     //
     // The template functions can be used to hide some of the ugly clutter.

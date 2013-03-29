@@ -5,44 +5,45 @@
 
 namespace game {
 
-Component::Component()
+ComponentBase::ComponentBase()
     : owner(nullptr) {
 }
 
-Component::~Component() {
+ComponentBase::~ComponentBase() {
 
 }
 
-Entity* Component::getEntity() {
+Entity* ComponentBase::getEntity() {
     return owner;
 }
 
-Entity const* Component::getEntity() const {
+Entity const* ComponentBase::getEntity() const {
     return owner;
 }
 
-EntityManager* Component::getManager() {
+EntityManager* ComponentBase::getManager() {
     return owner->entities;
 }
 
-EntityManager const* Component::getManager() const {
+EntityManager const* ComponentBase::getManager() const {
     return owner->entities;
 }
 
-void Component::print(std::ostream& os) const {
+void ComponentBase::print(std::ostream& os) const {
     os << demangle(typeid(*this).name());
 }
 
-void Component::setOwner(Entity* newOwner) {
+void ComponentBase::setOwner(Entity* newOwner) {
     ASSERT_MSG(owner == nullptr, "Owner has already been set.");
     ASSERT_MSG(newOwner != nullptr, "Owner must be non-null.");
 
     owner = newOwner;
 }
 
-FamilyId Component::globalFamilyCounter;
+FamilyId ComponentBase::globalFamilyCounter;
 
-std::ostream& operator<<(std::ostream& os, Component const* component) {
+std::ostream& operator<<(std::ostream& os, ComponentBase const* component) {
+    ASSERT(component);
     component->print(os);
     return os;
 }

@@ -13,12 +13,9 @@ typedef int FamilyId;
 struct Entity;
 struct EntityManager;
 
-struct Component {
-    friend struct EntityManager;
-    template<typename T> friend struct ComponentFamily;
-
-    Component();
-    virtual ~Component();
+struct ComponentBase {
+    ComponentBase();
+    virtual ~ComponentBase();
 
     virtual FamilyId getFamilyId() const = 0;
 
@@ -31,20 +28,19 @@ protected:
     virtual void print(std::ostream&) const;
 
 private:
-    Entity* owner;
+    friend struct EntityManager;
+    template<typename T> friend struct Component;
 
-    void setOwner(Entity* newOwner);
+    Entity* owner;
+    void setOwner(Entity* newOwner); // Called by EntityManager at registration
 
     static FamilyId globalFamilyCounter;
 
-    friend std::ostream& operator<<(std::ostream&, Component const*);
+    friend std::ostream& operator<<(std::ostream&, ComponentBase const*);
 };
 
-// ComponentFamily should be used as a baseclass for components
-// that define a family of components, as it automatically
-// generates a globally unique ID for the family.
 template<typename T>
-struct ComponentFamily : public Component {
+struct Component : public ComponentBase {
     static FamilyId staticGetFamilyId() {
         ASSERT_MSG(familyId.familyId != 0,
                    "AutoFamilyId not initialized properly.");
@@ -69,9 +65,9 @@ private:
 };
 
 template<typename T>
-typename ComponentFamily<T>::AutoFamilyId ComponentFamily<T>::familyId;
+typename Component<T>::AutoFamilyId Component<T>::familyId;
 
 template<typename T>
-using ComponentBase = ComponentFamily<T>;
+using ComponentFamily = Component<T>;
 
 } // namespace game
