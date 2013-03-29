@@ -16,8 +16,8 @@ struct SystemBase {
     SystemBase(FamilyId);
     virtual ~SystemBase();
 
-    virtual void onRegister(Component*);
-    virtual void onUnregister(Component*);
+    virtual void onRegister(ComponentBase*);
+    virtual void onUnregister(ComponentBase*);
 
     FamilyId getFamilyId() const;
     EntityManager* getManager();
@@ -34,13 +34,13 @@ template<typename T> struct System : public SystemBase {
         : SystemBase(T::staticGetFamilyId()) {
     }
 
-    void onRegister(Component* c) override {
+    void onRegister(ComponentBase* c) override {
         T* t = dynamic_cast<T*>(c);
         ASSERT(t != nullptr);
         onRegister(t);
     }
 
-    void onUnregister(Component* c) override {
+    void onUnregister(ComponentBase* c) override {
         T* t = dynamic_cast<T*>(c);
         ASSERT(t != nullptr);
         onUnregister(t);

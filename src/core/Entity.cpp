@@ -9,17 +9,17 @@ Entity::~Entity() {
         delete component;
 }
 
-Component* Entity::component(FamilyId familyId) {
+ComponentBase* Entity::component(FamilyId familyId) {
     auto it = std::find_if(components.begin(), components.end(),
-            [familyId] (Component* component) {
+            [familyId] (ComponentBase* component) {
                 return component->getFamilyId() == familyId;
             });
     return it != components.end() ? *it : nullptr;
 }
 
-Component const* Entity::component(FamilyId familyId) const {
+ComponentBase const* Entity::component(FamilyId familyId) const {
     auto it = std::find_if(components.begin(), components.end(),
-            [familyId] (Component const* component) {
+            [familyId] (ComponentBase const* component) {
                 return component->getFamilyId() == familyId;
             });
     return it != components.end() ? *it : nullptr;

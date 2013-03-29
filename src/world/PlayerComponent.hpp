@@ -6,7 +6,7 @@ namespace game {
 
 struct Player;
 
-struct PlayerComponent : public ComponentBase<PlayerComponent> {
+struct PlayerComponent : public Component<PlayerComponent> {
     PlayerComponent(Player* player)
        : player(player), life(100) {
     }

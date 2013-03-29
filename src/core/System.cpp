@@ -9,10 +9,10 @@ SystemBase::SystemBase(FamilyId familyId)
 SystemBase::~SystemBase() {
 }
 
-void SystemBase::onRegister(Component*) {
+void SystemBase::onRegister(ComponentBase*) {
 }
 
-void SystemBase::onUnregister(Component*) {
+void SystemBase::onUnregister(ComponentBase*) {
 }
 
 FamilyId SystemBase::getFamilyId() const {
@@ -27,4 +27,4 @@ EntityManager const* SystemBase::getManager() const {
     return entities;
 }
 
-}
+} // namespace game
