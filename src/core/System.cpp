@@ -2,28 +2,28 @@
 
 namespace game {
 
-System::System(FamilyId familyId)
+SystemBase::SystemBase(FamilyId familyId)
     : familyId(familyId), entities(nullptr) {
 }
 
-System::~System() {
+SystemBase::~SystemBase() {
 }
 
-void System::onRegister(Component*) {
+void SystemBase::onRegister(Component*) {
 }
 
-void System::onUnregister(Component*) {
+void SystemBase::onUnregister(Component*) {
 }
 
-FamilyId System::getFamilyId() const {
+FamilyId SystemBase::getFamilyId() const {
     return familyId;
 }
 
-EntityManager* System::getManager() {
+EntityManager* SystemBase::getManager() {
     return entities;
 }
 
-EntityManager const* System::getManager() const {
+EntityManager const* SystemBase::getManager() const {
     return entities;
 }
 
