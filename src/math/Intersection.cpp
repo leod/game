@@ -9,10 +9,10 @@ using boost::none;
 
 namespace game {
 
-bool operator<=(Intersection a, Intersection b) {
+bool operator<(Intersection a, Intersection b) {
     if (a) {
         if (b)
-            return a.get() <= b.get();
+            return a.get() < b.get();
         else
             return true;
     }
@@ -61,6 +61,7 @@ Intersection raySphereIntersection(Ray const& ray, Sphere const& sphere) {
     float x = (-b - sqrt(d)) / (2 * a);
     float y = (-b + sqrt(d)) / (2 * a);
 
+    // Return smallest non-negative solution, if any such solutions exist
     if (x > y)
         std::swap(x, y);
 
@@ -71,6 +72,52 @@ Intersection raySphereIntersection(Ray const& ray, Sphere const& sphere) {
         return y;
 
     return x;
+}
+
+Intersection rayBoundingBoxIntersection(Ray const& ray,
+                                        BoundingBox const& bbox,
+                                        vec3* outNormal) {
+    // TODO: This is as naive as it gets :D
+    Intersection intersection;
+
+    auto c = bbox.min +
+        vec3(bbox.max.x - bbox.min.x, 0, bbox.max.z - bbox.min.z) * 0.5f;
+    auto s = bbox.max - bbox.min;
+
+    auto tryQuad = [&] (Quad const& quad) {
+        auto i = rayQuadIntersection(ray, quad);
+
+        if (i < intersection) {
+            intersection = i;
+            if (outNormal) *outNormal = quad.n();
+        }
+    };
+
+    // Bottom quad
+    tryQuad({ c,
+              vec3(s.x / 2, 0, 0), vec3(0, 0, s.z / 2) });
+
+    // Top quad
+    tryQuad({ c + s.y,
+              vec3(s.x / 2, 0, 0), vec3(0, 0, s.z / 2) });
+
+    // Left quad
+    tryQuad({ c + vec3(-s.x / 2, s.y / 2, 0),
+              vec3(0, s.y / 2, 0), vec3(0, 0, s.z / 2) });
+
+    // Right quad
+    tryQuad({ c + vec3(s.x / 2, s.y / 2, 0),
+              vec3(0, s.y / 2, 0), vec3(0, 0, s.z / 2) });
+
+    // Front quad
+    tryQuad({ c + vec3(0, s.y / 2, s.z / 2),
+              vec3(s.x / 2, 0, 0), vec3(0, s.y / 2, 0) });
+
+    // Back quad
+    tryQuad({ c + vec3(0, s.y / 2, -s.z / 2),
+              vec3(s.x / 2, 0, 0), vec3(0, s.y / 2, 0) });
+
+    return intersection;
 }
 
 } // namespace game

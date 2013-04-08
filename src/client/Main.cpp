@@ -42,9 +42,10 @@
 #include "opengl/ProgramManager.hpp"
 #include "opengl/Error.hpp"
 
+#include "graphics/GroundRenderer.hpp"
 #include "graphics/RenderSystem.hpp"
 #include "graphics/RenderCube.hpp"
-#include "graphics/MapRenderer.hpp"
+#include "graphics/RenderMapObjectComponent.hpp"
 #include "graphics/VisionSystem.hpp"
 #include "graphics/RenderOBJComponent.hpp"
 #include "graphics/RenderPlayerComponent.hpp"
@@ -61,6 +62,8 @@ ComponentList makeProjectile(NetEntityId, ClientId);
 
 struct Client;
 Client* client = nullptr; // obvious hack
+
+static ComponentList makeMapObject(MapObjectComponent const* object);
 
 struct Client : public ENetReceiver {
     sf::Clock clock; // tmp
@@ -100,8 +103,6 @@ struct Client : public ENetReceiver {
 
     std::queue<NetStateStore> tickStateQueue;
 
-    MapRenderer mapRenderer;
-
     PlayerInput playerInput;
 
     sf::Font font;
@@ -111,14 +112,18 @@ struct Client : public ENetReceiver {
 
     SoundPlayer soundPlayer;
 
+    GroundRenderer groundRenderer;
+
     Client(sf::RenderWindow& window, InputSource& input)
         : ENetReceiver(),
           window(window),
           input(input),
+          map(makeMapObject),
           physicsSystem(map),
           visionSystem(map, programs),
           renderSystem(window, textures, programs, visionSystem),
-          entities({ &physicsSystem,
+          entities({ &map,
+                     &physicsSystem,
                      &renderSystem,
                      &visionSystem,
                      &tickSystem,
@@ -130,12 +135,14 @@ struct Client : public ENetReceiver {
           tick(0),
           startNextTick(false),
           isFirstTick(true),
-          mapRenderer(map, textures, programs, visionSystem),
           timeSentLastPing(clock.getElapsedTime()),
-          haveUnrepliedPing(false) {
+          haveUnrepliedPing(false),
+          groundRenderer(map, textures, programs, visionSystem) {
         ::client = this; // obvious hack
 
         SoundPlayer::setGlobalVolume(100);
+
+        map.createTestMap();
 
         tasks.add(TICK_FREQUENCY, [&] () { startTick(); });
         tasks.add(TICK_FREQUENCY, [&] () { 
@@ -413,8 +420,8 @@ struct Client : public ENetReceiver {
                                   renderSystem.getView());
         //visionSystem.getTexture().saveToFile("vision.png");
 
-        mapRenderer.render(renderSystem.getProjection(),
-                           renderSystem.getView());
+        groundRenderer.render(renderSystem.getProjection(),
+                              renderSystem.getView());
         renderSystem.render();
 
         window.pushGLStates();
@@ -436,8 +443,7 @@ protected:
         if (channelId == CHANNEL_MESSAGES || channelId == CHANNEL_TIME)
             emitEventFromPacket(eventHub, packet);
         else if (channelId == CHANNEL_TICKS) {
-            BitStreamReader stream(packet->data,
-                                   packet->dataLength);
+            BitStreamReader stream(packet->data, packet->dataLength);
             Tick tick;
             read(stream, tick);
             ASSERT(tick > 0);
@@ -512,6 +518,12 @@ ComponentList makeProjectile(NetEntityId id, ClientId owner) {
         new RenderCube(physics, vec3(1, 0, 1), 0.3),
         new NetComponent(2, id, owner, { new PhysicsNetState(physics) }),
         new ProjectileComponent(physics, ProjectileComponent::GLOBAL)
+    };
+}
+
+ComponentList makeMapObject(MapObjectComponent const* object) {
+    return {
+        new RenderMapObjectComponent(object, client->textures)
     };
 }
 

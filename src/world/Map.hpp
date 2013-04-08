@@ -4,34 +4,47 @@
 
 #include <boost/optional.hpp>
 
+#include "core/Component.hpp"
+#include "core/System.hpp"
 #include "math/Math.hpp"
 #include "math/Intersection.hpp"
 
 namespace game {
 
-struct Map {
-    // Creates a test map
+struct MapObjectType {
+    std::string modelFilename;
+
+    BoundingBox bbox;
+};
+
+struct MapObjectComponent : public Component<MapObjectComponent> {
+    MapObjectType const* type;
+    vec3 const position;
+    mat4 const modelTransform;
+    BoundingBox const bbox;
+    
+    MapObjectComponent(MapObjectType const*, vec3 const& position,
+                       vec3 const& scale, float yRotation);
+};
+
+struct Map : public System<MapObjectComponent> {
+    typedef std::function<ComponentList(MapObjectComponent const*)> Inject;
+
     Map();
+    Map(Inject const&);
 
-    // Very simplified map is good enough for now
-    struct Block {
-        vec3 groundCenter;
-        float yRotation;
-        vec3 scale;
-        
-        vec3 rotScale;
-
-        Block() {}
-        Block(vec3, float, vec3);
-    };
-
-    std::vector<Block> const& getBlocks() const;
+    void createTestMap();
 
 private:
-    std::vector<Block> blocks;
+    Inject const inject;
+
+    MapObjectType testType;
+
+    void addObject(MapObjectComponent*);
 };
 
 Intersection rayMapIntersection(Ray const&, Map const&,
-        Map::Block* outBlock = nullptr, Quad* outQuad = nullptr);
+        MapObjectComponent const** outObject = nullptr,
+        vec3* outNormal = nullptr);
 
 } // namespace game

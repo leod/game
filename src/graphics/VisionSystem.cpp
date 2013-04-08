@@ -25,35 +25,34 @@ void VisionSystem::renderVision(mat4 const&, mat4 const&) {
     iterate([&] (VisionComponent* component) {
         auto position = component->getPosition();
 
-#define NUM_SAMPLES 100
+#define NUM_SAMPLES 360
 #define CUTOFF 15.0f
         vec3 directions[NUM_SAMPLES];
-
         float distances[NUM_SAMPLES]; 
-        float deltaY[NUM_SAMPLES];
+        MapObjectComponent const* objects[NUM_SAMPLES];
 
         for (int i = 0; i < NUM_SAMPLES; ++i) {
             float angle = 
                     glm::radians(static_cast<float>(i) / NUM_SAMPLES * 360);
             float x = glm::cos(angle);
             float z = glm::sin(angle);
+
             directions[i] = vec3(x, 0, z);
             //std::cout << directions[i] << std::endl;
 
             Ray ray = { position, directions[i] };
-            Map::Block block;
+            MapObjectComponent const* object;
             Intersection intersection =
-                rayMapIntersection(ray, map, &block, nullptr);
-            float blockTopY = block.groundCenter.y + block.scale.y;
+                rayMapIntersection(ray, map, &object);
 
             if (intersection) {
-                deltaY[i] = blockTopY -
-                    (position + intersection.get() * directions[i]).y;
                 distances[i] = glm::min(intersection.get(), CUTOFF);
+                objects[i] = object;
+                
                 //std::cout << "HIT " << directions[i] << std::endl;
             } else {
-                deltaY[i] = 0;
                 distances[i] = CUTOFF;
+                objects[i] = nullptr;
             }
 
             //std::cout << distances[i] << std::endl;
@@ -61,18 +60,20 @@ void VisionSystem::renderVision(mat4 const&, mat4 const&) {
 
         glClearColor(0.0, 0.0, 0.0, 1.0);
         framebuffer.renderInto(
-        [&position, &distances, &directions, &deltaY] () {
+        [&position, &directions, &distances, &objects] () {
             glBegin(GL_TRIANGLE_FAN);
             glColor3f(1.0, 1.0, 1.0);
             glVertex3f(position.x, position.y, position.z);
 
             for (int i = 0; i < NUM_SAMPLES; ++i) {
                 vec3 target = position + distances[i] * directions[i];
-                glVertex3f(target.x, target.y + deltaY[i], target.z);
+                float targetY = objects[i] ? objects[i]->bbox.max.y : target.y;
+                glVertex3f(target.x, targetY, target.z);
             }
 
             vec3 target = position + distances[0] * directions[0];
-            glVertex3f(target.x, target.y + deltaY[0], target.z);
+            float targetY = objects[0] ? objects[0]->bbox.max.y : target.y;
+            glVertex3f(target.x, targetY, target.z);
 
             glEnd();
         }, Framebuffer::CLEAR);

@@ -93,13 +93,16 @@ struct Server : public ENetReceiver {
           physicsSystem(map),
           netSystem(eventHub, clients),
           projectileSystem(map),
-          entities({ &physicsSystem,
+          entities({ &map,
+                     &physicsSystem,
                      &netSystem,
                      &tickSystem,
                      &projectileSystem }),
           tick(1) {
         tasks.add(TICK_FREQUENCY, [&] () { runTick(); });
         tasks.add(0.1, [&] () { ProfilingData::dump(); });
+
+        map.createTestMap();
 
         eventHub.subscribe<PlayerInputWish>(this, &Server::onPlayerInputWish);
         eventHub.subscribe<DisconnectWish>(this, &Server::onDisconnectWish);

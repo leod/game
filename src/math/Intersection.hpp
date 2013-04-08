@@ -5,6 +5,7 @@
 #include <boost/optional.hpp>
 
 #include "math/Math.hpp"
+#include "math/BoundingBox.hpp"
 
 namespace game {
 
@@ -35,9 +36,11 @@ typedef boost::optional<float> Intersection; // Only ray intersections for now
 //     a != none and b != none and a < b,
 // so it's a nice way to check if an intersection exists and is closer
 // than another intersection.
-bool operator<=(Intersection a, Intersection b);
+bool operator<(Intersection a, Intersection b);
 
 Intersection rayQuadIntersection(Ray const&, Quad const&);
 Intersection raySphereIntersection(Ray const&, Sphere const&);
+Intersection rayBoundingBoxIntersection(Ray const&, BoundingBox const&,
+                                        vec3* outNormal = nullptr);
 
 } // namespace game
