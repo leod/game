@@ -1,11 +1,11 @@
 #pragma once
 
-#include "math/Vector3.hpp"
+#include "math/Math.hpp"
 
 namespace game {
 
 struct BoundingBox {
-    Vector3f min, max;
+    vec3 min, max;
 
     // TODO
 };

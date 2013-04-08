@@ -31,15 +31,13 @@ tryMove(Map const& map, PhysicsComponent* physics, vec3 const& delta) {
 void PhysicsSystem::moveOne(PhysicsComponent* physics, vec3 const& delta) {
     Ray ray = { physics->getPosition(), delta };
 
-    Quad quad;
-    auto intersection = rayMapIntersection(ray, map, nullptr, &quad);
+    vec3 n;
+    auto intersection = rayMapIntersection(ray, map, nullptr, &n);
 
     if (!intersection || intersection.get() > 1) {
         // No collision
         physics->setPosition(physics->getPosition() + delta);
     } else {
-        auto n = quad.n();
-
         // Collision with a surface having normal vector n.
         // Decompose delta into a part parallel to n and a part
         // orthogonal to n

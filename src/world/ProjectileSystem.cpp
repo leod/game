@@ -58,7 +58,7 @@ void ProjectileSystem::tick(bool localOnly) {
                 Sphere sphere = { physics->getPosition(), 0.3 };
                 auto intersection = raySphereIntersection(ray, sphere);
 
-                if (intersection <= entIntersection) {
+                if (intersection < entIntersection) {
                     entIntersection = intersection;
                     entity = (*it)->getEntity();
                 }
@@ -70,16 +70,16 @@ void ProjectileSystem::tick(bool localOnly) {
 
         // Pick closest intersection
         if (mapIntersection && mapIntersection.get() <= velocity &&
-            mapIntersection <= entIntersection) {
+            mapIntersection < entIntersection) {
             deleteMe.push_back(projectile);
         }
-        else if (entIntersection && entIntersection.get() <= velocity &&
-                 entIntersection <= mapIntersection) {
+        else if (entIntersection && entIntersection.get() <= velocity) {
             ASSERT(entity);
             TRACE(world) << "Hit " << entity;
             deleteMe.push_back(projectile);
         }
         else {
+            // No intersection
             physics->setPosition(physics->getPosition()
                                  + physics->getOrientation() * velocity);
         }

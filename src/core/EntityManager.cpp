@@ -55,6 +55,8 @@ Entity* EntityManager::create(ComponentList&& components) {
             it->second->onRegister(component);
     }
 
+    TRACE(core) << "Created entity " << id << ": " << entity;
+
     return entity;
 }
 

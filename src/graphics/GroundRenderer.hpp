@@ -12,21 +12,23 @@ struct VisionSystem;
 struct Program;
 struct Texture;
 
-struct MapRenderer {
-    MapRenderer(Map const&, TextureManager&, ProgramManager&, VisionSystem&);
+struct GroundRenderer {
+    GroundRenderer(Map const&, TextureManager&, ProgramManager&,
+                   VisionSystem&);
 
     void render(mat4 const& projection, mat4 const& view);
 
 private:
     Map const& map;
 
+    Texture* floorTexture;
     Program* program;
 
-    VisionSystem& vision;
+    VisionSystem& visionSystem;
 
-    Buffer<vec3> cubePositions;
-    Buffer<vec3> cubeNormals;
-    Texture* floor;
+    Buffer<vec3> quadVertices;
+    Buffer<vec3> quadNormals;
+    Buffer<vec2> quadTexCoords;
 };
 
 } // namespace game

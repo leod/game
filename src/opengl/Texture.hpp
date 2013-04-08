@@ -13,7 +13,7 @@ struct Texture {
     ~Texture();
 
     GLuint getName() const;
-    void bind() const;
+    void bind(GLint layer = 0) const;
 
     void saveToFile(std::string const& filename) const;
 
