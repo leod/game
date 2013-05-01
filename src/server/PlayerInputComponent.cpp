@@ -1,9 +1,8 @@
-#include "world/PlayerInputComponent.hpp"
+#include "server/PlayerInputComponent.hpp"
 
 #include "math/Math.hpp"
 #include "world/PhysicsComponent.hpp"
 #include "world/PlayerInput.hpp"
-#include "world/PlayerInputSource.hpp"
 
 namespace game {
 

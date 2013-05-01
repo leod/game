@@ -11,9 +11,8 @@ struct PhysicsComponent;
 
 // When did my struct names start to be so long?
 // I feel dirty :(
-struct LocalPlayerInputComponent 
-    : public Component<LocalPlayerInputComponent> {
-    LocalPlayerInputComponent(PhysicsComponent*);
+struct PlayerInputComponent : public Component<PlayerInputComponent> {
+    PlayerInputComponent(PhysicsComponent*);
 
     void onPlayerInput(PlayerInput const&);
 

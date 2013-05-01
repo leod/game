@@ -23,9 +23,7 @@
 #include "world/Map.hpp"
 #include "world/TickSystem.hpp"
 #include "world/PhysicsNetState.hpp"
-#include "world/CircularMotion.hpp"
 #include "world/EventTypes.hpp"
-#include "world/PlayerInputComponent.hpp"
 #include "world/ProjectileComponent.hpp"
 #include "world/ProjectileSystem.hpp"
 #include "world/PlayerComponent.hpp"
@@ -33,6 +31,8 @@
 #include "world/PhysicsSystem.hpp"
 
 #include "server/Clients.hpp"
+#include "server/DummyMotionComponent.hpp"
+#include "server/PlayerInputComponent.hpp"
 #include "server/ServerNetSystem.hpp"
 
 using namespace game;
