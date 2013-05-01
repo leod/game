@@ -24,7 +24,7 @@ struct OBJ {
         Material();
 
         Material(Material const& a)
-            : diffuse(a.diffuse) {
+            : texture(a.texture), diffuse(a.diffuse) {
 
         }
     };
@@ -33,7 +33,7 @@ struct OBJ {
         Material material;
 
         std::unique_ptr<Buffer<vec3>> vertices;
-        std::unique_ptr<Buffer<vec2>> texcoords;
+        std::unique_ptr<Buffer<vec2>> texCoords;
         std::unique_ptr<Buffer<vec3>> normals;
 
         Part(Material, Buffer<vec3>*, Buffer<vec2>*, Buffer<vec3>*); 

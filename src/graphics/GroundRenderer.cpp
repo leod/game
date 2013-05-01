@@ -66,8 +66,10 @@ void GroundRenderer::render(mat4 const& projection, mat4 const& view) {
     program->unsetAttrib(2);
     program->unbind();
 
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glBindTexture(GL_TEXTURE_2D, 1);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 } // namespace game
