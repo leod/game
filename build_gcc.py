@@ -29,19 +29,18 @@ corePackages = [
     ('opengl', ['Buffer', 'Framebuffer', 'Error', 'Program', 'ProgramManager',
                 'Shader', 'Texture', 'TextureManager',]),
     ('sound', ['Sound', 'SoundPlayer',]),
-    ('world', ['EventTypes', 'LocalPlayerInputComponent', 'Map',
-               'PhysicsNetState', 'PhysicsSystem', 'PlayerInput',
-               'PlayerInputComponent', 'PlayerInputSource', 'ProjectileSystem',
-               'TickSystem',]),
+    ('world', ['EventTypes', 'Map', 'PhysicsNetState', 'PhysicsSystem',
+               'PlayerInput', 'ProjectileSystem', 'TickSystem',]),
     ('util', ['Backtrace', 'BitStream', 'Print', 'Profiling',]),
 ]
 
 clientPackages = [
-    ('client', ['Main',]),
+    ('client', ['Main', 'PlayerInputComponent', 'PlayerInputSource',]),
 ]
 
 serverPackages = [
-    ('server', ['Main', 'Clients', 'ServerNetSystem',]),
+    ('server', ['Clients', 'Main', 'PlayerInputComponent',
+                'ServerNetSystem',]),
 ]
 
 def build():

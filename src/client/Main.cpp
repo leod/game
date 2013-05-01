@@ -28,11 +28,7 @@
 #include "net/ENetReceiver.hpp"
 #include "net/EventQueue.hpp"
 
-#include "world/PlayerInputSource.hpp"
-#include "world/PlayerInputComponent.hpp"
-#include "world/LocalPlayerInputComponent.hpp"
 #include "world/TickSystem.hpp"
-#include "world/CircularMotion.hpp"
 #include "world/PhysicsNetState.hpp"
 #include "world/EventTypes.hpp"
 #include "world/ProjectileComponent.hpp"
@@ -51,6 +47,9 @@
 #include "graphics/RenderPlayerComponent.hpp"
 
 #include "sound/SoundPlayer.hpp"
+
+#include "client/PlayerInputComponent.hpp"
+#include "client/PlayerInputSource.hpp"
 
 using namespace game;
 
@@ -155,7 +154,7 @@ struct Client : public ENetReceiver {
             // Prediction
 #ifdef USE_PREDICTION
             auto input =
-                playerEntity->component<LocalPlayerInputComponent>();
+                playerEntity->component<PlayerInputComponent>();
             if (input) {
                 input->onPlayerInput(playerInput);
             }
@@ -242,7 +241,7 @@ struct Client : public ENetReceiver {
 #ifdef USE_PREDICTION
         if (playerEntity) {
             auto input =
-                playerEntity->component<LocalPlayerInputComponent>();
+                playerEntity->component<PlayerInputComponent>();
             if (input) {
                 input->onCorrection(position);
             }
@@ -503,7 +502,7 @@ ComponentList makePlayer(NetEntityId id, ClientId owner) {
     if (client && owner == client->myId) {
         components.push_back(new VisionComponent(physics));
 #ifdef USE_PREDICTION
-        components.push_back(new LocalPlayerInputComponent(physics));
+        components.push_back(new PlayerInputComponent(physics));
 #endif
     }
 

@@ -1,24 +1,23 @@
-#include "world/LocalPlayerInputComponent.hpp"
+#include "client/PlayerInputComponent.hpp"
 
 #include "core/Log.hpp"
 #include "math/Math.hpp"
 #include "world/PhysicsComponent.hpp"
 #include "world/PlayerInput.hpp"
-#include "world/PlayerInputSource.hpp"
 
 namespace game {
 
-LocalPlayerInputComponent::LocalPlayerInputComponent(PhysicsComponent* physics)
+PlayerInputComponent::PlayerInputComponent(PhysicsComponent* physics)
     : physics(physics) {
 }
 
-void LocalPlayerInputComponent::onPlayerInput(PlayerInput const& input) {
+void PlayerInputComponent::onPlayerInput(PlayerInput const& input) {
     runPlayerInput(physics, input);
 
     log.push_back({ input, physics->getPosition() });
 }
 
-void LocalPlayerInputComponent::onCorrection(vec3 const& position) {
+void PlayerInputComponent::onCorrection(vec3 const& position) {
     if (log.empty()) {
         WARN(world) << "Received correction but log is empty";
         return;
@@ -36,7 +35,7 @@ void LocalPlayerInputComponent::onCorrection(vec3 const& position) {
     }
 }
 
-void LocalPlayerInputComponent::replay(vec3 const& start) {
+void PlayerInputComponent::replay(vec3 const& start) {
     physics->setPosition(start);
 
     for (auto const& entry : log)
