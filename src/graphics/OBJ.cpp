@@ -28,8 +28,8 @@ OBJ::Material::Material()
 }
 
 OBJ::Part::Part(Material material, Buffer<vec3>* vertices,
-        Buffer<vec2>* texcoords, Buffer<vec3>* normals) 
-    : material(material), vertices(vertices), texcoords(texcoords),
+        Buffer<vec2>* texCoords, Buffer<vec3>* normals) 
+    : material(material), vertices(vertices), texCoords(texCoords),
       normals(normals) {
 }
 
@@ -110,19 +110,19 @@ void OBJ::load(std::string const& filename, TextureManager& textures) {
     // Given by the .mtl file specified by "mtllib".
     MaterialLib mtllib;
 
-    // The vertices, texcoords and normals specified by lines starting with
+    // The vertices, texCoords and normals specified by lines starting with
     // "v", "vt" and "vn" respectively are loaded into these vectors, so that
     // they may be referenced by "f" lines (faces).
     std::vector<vec3> vertices;
-    std::vector<vec2> texcoords;
+    std::vector<vec2> texCoords;
     std::vector<vec3> normals;
 
-    // These vectors hold the current vertices, texcoords and normals as given
+    // These vectors hold the current vertices, texCoords and normals as given
     // by the "f" lines. Everytime either a "usemtl" or a "o" (= object) line
     // is encountered, the vectors are emptied and a new Part is added to the
     // OBJ using their contents.
     std::vector<vec3> curVertices;
-    std::vector<vec2> curTexcoords;
+    std::vector<vec2> curTexCoords;
     std::vector<vec3> curNormals;
 
     // Last material specified by "usemtl".
@@ -132,15 +132,15 @@ void OBJ::load(std::string const& filename, TextureManager& textures) {
     auto addPart = [&] () {
         if (curVertices.empty())
             return;
-        if (!curTexcoords.empty()) {
+        if (!curTexCoords.empty()) {
             if (curVertices.size() != curNormals.size() ||
-                curNormals.size() != curTexcoords.size())
+                curNormals.size() != curTexCoords.size())
                 error("Inconsistent faces");
 
             parts.emplace_back(
                 curMaterial,
                 new Buffer<vec3>(GL_ARRAY_BUFFER, curVertices),
-                new Buffer<vec2>(GL_ARRAY_BUFFER, curTexcoords),
+                new Buffer<vec2>(GL_ARRAY_BUFFER, curTexCoords),
                 new Buffer<vec3>(GL_ARRAY_BUFFER, curNormals)
             );
         } else {
@@ -156,7 +156,7 @@ void OBJ::load(std::string const& filename, TextureManager& textures) {
         }
 
         curVertices.clear();
-        curTexcoords.clear();
+        curTexCoords.clear();
         curNormals.clear();
     };
 
@@ -181,7 +181,7 @@ void OBJ::load(std::string const& filename, TextureManager& textures) {
             float u, v;
             if (sscanf(line.c_str(), "vt %f %f", &u, &v) != 2)
                 error("Invalid texcoord line");
-            texcoords.push_back(vec2(u, v));
+            texCoords.push_back(vec2(u, v));
         }
         
         // "vn x y z": Add normal
@@ -207,16 +207,16 @@ void OBJ::load(std::string const& filename, TextureManager& textures) {
                 curVertices.push_back(vertices.at(v2 - 1)); 
                 curVertices.push_back(vertices.at(v3 - 1)); 
 
-                curTexcoords.push_back(texcoords.at(vt1 - 1));
-                curTexcoords.push_back(texcoords.at(vt2 - 1));
-                curTexcoords.push_back(texcoords.at(vt3 - 1));
+                curTexCoords.push_back(texCoords.at(vt1 - 1));
+                curTexCoords.push_back(texCoords.at(vt2 - 1));
+                curTexCoords.push_back(texCoords.at(vt3 - 1));
 
                 curNormals.push_back(normals.at(vn1 - 1));
                 curNormals.push_back(normals.at(vn2 - 1));
                 curNormals.push_back(normals.at(vn3 - 1));
             } else if (sscanf(line.c_str(), "f %d//%d %d//%d %d//%d",
                         &v1, &vn1, &v2, &vn2, &v3, &vn3) == 6) {
-                // No texcoords given
+                // No texCoords given
 
                 curVertices.push_back(vertices.at(v1 - 1)); 
                 curVertices.push_back(vertices.at(v2 - 1)); 

@@ -32,15 +32,24 @@ void RenderMapObjectComponent::render() {
     for (auto& part : obj.parts) {
         program->setAttrib(0, *part.vertices);
         program->setAttrib(1, *part.normals);
-        program->setUniform(program->getUniformLocation("diffuse"),
-                            vec3(1, 1, 1));
+        program->setAttrib(2, *part.texCoords);
+
+        if (part.material.texture) {
+            part.material.texture->bind(1);
+            program->setUniform(program->getUniformLocation("diffuse"), 1); 
+        }
 
         glDrawArrays(GL_TRIANGLES, 0, part.vertices->getNumElements());
     }
 
     program->unsetAttrib(0);
     program->unsetAttrib(1);
+    program->unsetAttrib(2);
     program->unbind();
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
