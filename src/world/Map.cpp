@@ -41,7 +41,7 @@ Map::Map()
 
 Map::Map(Inject const& inject)
     : inject(inject),
-      testType({ "cube.obj", { vec3(-1, -1, -1), vec3(1, 1, 1) } }) {
+      testType({ "box.obj", { vec3(-1, -1, -1), vec3(1, 1, 1) } }) {
 }
 
 void Map::createTestMap() {

@@ -34,10 +34,10 @@ void RenderMapObjectComponent::render() {
         program->setAttrib(1, *part.normals);
         program->setAttrib(2, *part.texCoords);
 
-        if (part.material.texture) {
+        /*if (part.material.texture) {
             part.material.texture->bind(1);
             program->setUniform(program->getUniformLocation("diffuse"), 1); 
-        }
+        }*/
 
         glDrawArrays(GL_TRIANGLES, 0, part.vertices->getNumElements());
     }

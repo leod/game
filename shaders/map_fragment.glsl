@@ -13,6 +13,7 @@ void main() {
     float alpha = clamp(texture(vision, frag_screenCoord).r + 0.3, 0, 1);
     alpha *= frag_alpha;
 
-    fragColor = texture(diffuse, frag_texCoord) * alpha;
+    //fragColor = texture(diffuse, frag_texCoord) * alpha;
+    fragColor = vec4(1, 0, 1, 1) * alpha;
 }
 

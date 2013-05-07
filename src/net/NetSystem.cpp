@@ -129,7 +129,8 @@ void NetSystem::interpolateStates(NetStateStore const& a,
         ASSERT(entryB.id != 0);
 
         // Note that
-        //     a[k].id < a[k+1].id
+        //     a[k].id < a[k+1].id,
+        //     b[k].id < b[k+1].id
 
         // Skip ahead if a and b are not at the same net object
         if (entryA.id < entryB.id) {
