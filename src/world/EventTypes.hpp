@@ -9,6 +9,8 @@ namespace game {
 DEFINE_WISH(PlayerInputWish, PlayerInput);
 DEFINE_ORDER(PlayerPositionOrder, vec3);
 
+DEFINE_ORDER(PlayerKilledOrder, ClientId, ClientId);
+
 void initializeEventTypes();
 
 } // namespace game

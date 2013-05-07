@@ -16,6 +16,9 @@
 
 #define DEFINE_EVENT(_name, ...) \
     DEFINE_EVENT_WITH_BASE(::game::Event, _name, ##__VA_ARGS__)
+
+#define DEFINE_LOCAL_EVENT(_name, ...) \
+    DEFINE_EVENT_WITH_BASE(::game::Event, _name, ##__VA_ARGS__)
                                       
 namespace game {
 
