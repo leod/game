@@ -169,7 +169,7 @@ struct EventHub {
     }
 
     void emitBase(EventBase const* event) const {
-        auto signalIt = signals.find(event->getType().id());
+        auto signalIt = signals.find(&event->getType());
         if (signalIt == signals.end())
             return;
 
@@ -184,7 +184,7 @@ struct EventHub {
             event->unpack(f); 
         };
 
-        signals[E::type.id()].connect(wrapper);
+        signals[&E::type].connect(wrapper);
     }
 
     template<typename E, typename Receiver, typename R, typename... A>
@@ -197,7 +197,7 @@ struct EventHub {
     }
 
 private:
-    std::map<EventTypeId, Signal<EventBase const*>> signals;
+    std::map<EventType const*, Signal<EventBase const*>> signals;
 };
 
 } // namespace game
