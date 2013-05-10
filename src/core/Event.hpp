@@ -165,11 +165,11 @@ struct EventHub {
 
     template<typename E>
     void emit(E const& event) const {
-        emitBase(&event);
+        emitBase(event);
     }
 
-    void emitBase(EventBase const* event) const {
-        auto signalIt = signals.find(&event->getType());
+    void emitBase(EventBase const& event) const {
+        auto signalIt = signals.find(&event.getType());
         if (signalIt == signals.end())
             return;
 
@@ -179,9 +179,9 @@ struct EventHub {
 
     template<typename E, typename F>
     void subscribe(F f) {
-        auto wrapper = [=] (EventBase const* eventHandle) {
-            auto event = static_cast<E const*>(eventHandle);
-            event->unpack(f); 
+        auto wrapper = [=] (EventBase const& eventHandle) {
+            auto event = static_cast<E const&>(eventHandle);
+            event.unpack(f); 
         };
 
         signals[&E::type].connect(wrapper);
@@ -197,7 +197,7 @@ struct EventHub {
     }
 
 private:
-    std::map<EventType const*, Signal<EventBase const*>> signals;
+    std::map<EventType const*, Signal<EventBase const&>> signals;
 };
 
 } // namespace game

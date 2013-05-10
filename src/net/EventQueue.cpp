@@ -50,7 +50,7 @@ void EventQueue::popAndEmit(EventHub& hub) {
         //TRACE(net) << "Emit event: " << ss.str();
     }
 
-    hub.emitBase(event);
+    hub.emitBase(*event);
     delete event;
 }
 
