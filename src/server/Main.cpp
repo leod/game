@@ -117,6 +117,10 @@ struct Server : public ENetReceiver {
             enet_host_destroy(host);
     }
 
+    void broadcastOrders(EventBase* event) {
+
+    }
+
     void onPlayerInputWish(ClientId clientId, PlayerInput const& playerInput) {
         auto client = clients.get(clientId);
 

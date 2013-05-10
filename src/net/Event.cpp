@@ -45,7 +45,7 @@ void emitEventFromPacket(EventHub const& hub, ENetPacket const* packet,
     }
 
     // Emit event
-    hub.emitBase(event);
+    hub.emitBase(*event);
 
     event->~EventBase();
 }
